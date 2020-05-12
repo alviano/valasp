@@ -1,5 +1,7 @@
 #!/bin/sh
 
+echo "Utility to create a new environment with the *production* requirements"
+echo
 echo "Specify the environment name, or type ENTER to use valasp"
 read name
 if [ -z "$name" ]; then
