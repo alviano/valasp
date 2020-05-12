@@ -12,7 +12,7 @@ context.blacklist('_foo', [1])
 
 
 @validate(context=context)
-class node:
+class Node:
     value: int
 
     def __post_init__(self):
@@ -24,9 +24,9 @@ class node:
 
 
 @validate(context=context)
-class edge:
-    from_: node
-    to: node
+class Edge:
+    from_: Node
+    to: Node
 
     def __post_init__(self):
         if not (self.from_ < self.to):
@@ -34,7 +34,7 @@ class edge:
 
 
 @validate(context=context)
-class foo:
+class Foo:
     bar: Callable
     buzz: str
 
@@ -46,11 +46,11 @@ class foo:
 
 
 @validate(context=context)
-class make_fun:
+class Make_fun:
     bar: int
 
 #@validate(context=context)
-#class fake:
+#class Fake:
 #    pass
 
 
