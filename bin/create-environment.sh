@@ -6,4 +6,4 @@ if [ -z "$name" ]; then
     name="valasp"
 fi
 
-conda env create --name "$name" --file `dirname $0`/../requirements.txt
+conda create --name "$name" --file `dirname $0`/../requirements.txt
