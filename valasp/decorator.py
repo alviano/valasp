@@ -13,7 +13,7 @@ class ValAsp:
         self.args = list(f'{a}' for a in self.annotations)
 
         if not self.annotations:
-            raise ValueError('cannot process classes with no annotations')
+            raise TypeError('cannot process classes with no annotations')
 
         self.__add_init()
         self.__add_str()

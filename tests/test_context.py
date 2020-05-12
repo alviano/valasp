@@ -1,6 +1,7 @@
 import pytest
-from clingo import SymbolType, Number, Control, Model, Symbol
+from clingo import Number, Symbol
 
+from tests.utils import run_clingo
 from valasp import Context
 from valasp.context import ClassName, PredicateName
 
@@ -76,30 +77,10 @@ def test_register_class():
     assert sum_first(10) == sum(range(10))
 
 
-def run_clingo(context: Context, base_program: str) -> Model:
-    control = Control()
-    control.add("base", [], base_program)
-    control.add("validators", [], context.validators())
-    control.ground([
-        ("base", []),
-        ("validators", [])
-    ], context=context)
-
-    res = []
-
-    def on_model(model):
-        nonlocal res
-        for atom in model.symbols(atoms=True):
-            res.append(atom)
-
-    control.solve(on_model=on_model)
-    return res
-
-
 def test_register_term():
     context = Context()
     context.register_term(PredicateName('successor'), ['x'], ['return x.number + 1'])
-    model = run_clingo(context, "one(@successor(0)).")
+    model = run_clingo(context, ["one(@successor(0))."])
     assert str(model) == '[one(1)]'
 
 
@@ -113,19 +94,19 @@ def test_add_validator():
     context = Context()
     context.register_class(PositiveNumber)
     context.add_validator(PredicateName('positiveNumber'), 1)
-    model = run_clingo(context, "positiveNumber(1).")
+    model = run_clingo(context, ["positiveNumber(1)."])
     assert str(model) == '[positiveNumber(1)]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, "positiveNumber(0).")
+        run_clingo(context, ["positiveNumber(0)."])
 
 
 def test_blacklist():
     context = Context()
     context.blacklist(PredicateName('number'), [2])
 
-    model = run_clingo(context, "number(1).")
+    model = run_clingo(context, ["number(1)."])
     assert str(model) == "[number(1)]"
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, "number(1,2).")
+        run_clingo(context, ["number(1,2)."])
