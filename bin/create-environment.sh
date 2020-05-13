@@ -6,7 +6,7 @@ if [ -z "$name" ]; then
     name="valasp"
 fi
 
-conda create --name "$name"
+conda create --name "$name" python=3.7
 
 conda install --name "$name" pytest
 conda install --name "$name" -c potassco clingo

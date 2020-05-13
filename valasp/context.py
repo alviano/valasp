@@ -13,7 +13,7 @@ class ClassName:
     def __post_init__(self):
         if not(1 <= len(self.value) <= 256):
             raise ValueError("the length of the given value is not in the range 1..256")
-        if not re.fullmatch(r'[A-Z_][A-Za-z0-9_]*', self.value):
+        if not re.fullmatch(r'_*[A-Z][A-Za-z0-9_]*', self.value):
             raise ValueError("invalid value")
 
     def __str__(self):
@@ -30,7 +30,7 @@ class PredicateName:
     def __post_init__(self):
         if not(1 <= len(self.value) <= 256):
             raise ValueError("the length of the given value is not in the range 1..256")
-        if not re.fullmatch(r'[a-z_][A-Za-z0-9_]*', self.value):
+        if not re.fullmatch(r'_*[a-z][A-Za-z0-9_]*', self.value):
             raise ValueError("invalid value")
 
     def __str__(self):

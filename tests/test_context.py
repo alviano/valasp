@@ -10,7 +10,6 @@ def test_class_name_upper_case():
     with pytest.raises(ValueError):
         ClassName('invalid')
 
-
 def test_class_name_to_predicate():
     pred: PredicateName = ClassName('ValidClassName').to_predicate()
     assert str(pred) == 'validClassName'
@@ -34,6 +33,30 @@ def test_predicate_name_to_class():
 def test_predicate_name_to_class_to_predicate():
     pred = PredicateName('validPredicateName')
     assert pred.to_class().to_predicate() == pred
+
+
+def test_underscore_prefix_in_names():
+    assert str(PredicateName('_abc')) == '_abc'
+
+    with pytest.raises(ValueError):
+        PredicateName('_Abc')
+
+    assert str(ClassName('_Abc')) == '_Abc'
+
+    with pytest.raises(ValueError):
+        ClassName('_abc')
+
+    with pytest.raises(ValueError):
+        PredicateName('_')
+
+    with pytest.raises(ValueError):
+        ClassName('_')
+
+    with pytest.raises(ValueError):
+        PredicateName('__')
+
+    with pytest.raises(ValueError):
+        ClassName('__')
 
 
 def test_max_arity_must_be_positive():
