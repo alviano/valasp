@@ -6,4 +6,7 @@ if [ -z "$name" ]; then
     name="valasp"
 fi
 
-conda create --name "$name" --file `dirname $0`/../requirements.txt
+conda create --name "$name"
+
+conda install --name "$name" pytest
+conda install --name "$name" -c potassco clingo

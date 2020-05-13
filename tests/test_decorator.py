@@ -3,7 +3,6 @@ from clingo import Number
 
 from tests.utils import run_clingo
 from valasp import Context, validate
-from valasp.decorator import ValAsp
 
 
 def test_must_have_annotations():
