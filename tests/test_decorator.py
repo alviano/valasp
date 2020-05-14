@@ -105,3 +105,21 @@ def test_complex_type():
 
     with pytest.raises(RuntimeError):
         run_clingo(context, ['node(1). node(2). edge(2,1).'])
+
+
+def test_underscore_in_annotations():
+    context = Context()
+
+    @validate(context=context)
+    class Foo:
+        __init__: int
+
+    assert str(Foo(Number(1))) == 'Foo(1)'
+    assert Foo(Number(1)).__init__ == 1
+
+    @validate(context=context)
+    class Bar:
+        __str__: int
+
+    assert str(Bar(Number(1))) == 'Bar(1)'
+    assert Bar(Number(1)).__str__ == 1
