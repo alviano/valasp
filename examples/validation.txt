@@ -1,0 +1,4 @@
+@validate_term(atom=node, name=value, type=int, enum=1;2;3;4)
+@validate_term(atom=edge , name=from, type=node)
+@validate_term(atom=edge , name=to, type=node)
+@validate_atom(atom=edge , first=from, second=to, check=different)
