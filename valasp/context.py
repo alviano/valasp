@@ -120,6 +120,7 @@ class Context:
 
     def run_solver(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
         control = self.run_grounder(base_program)
+        self.run_class_checks()
         res = []
 
         def on_model(model):
@@ -129,3 +130,9 @@ class Context:
 
         control.solve(on_model=on_model)
         return res
+
+    def run(self, control: clingo.Control) -> None:
+        control.add("valasp", [], self.validators())
+        control.ground([("base", []), ("valasp", [])], context=self)
+        self.run_class_checks()
+        control.solve()
