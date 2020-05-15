@@ -70,10 +70,11 @@ class Context:
         return FunctionType(code.co_consts[0], self.__globals)
 
     def register_class(self, other: ClassVar) -> None:
-        key = ClassName(other.__name__)
-        if self.is_reserved(str(key)):
+        key = str(ClassName(other.__name__))
+        if self.is_reserved(key):
             raise KeyError(f'{key} is reserved')
-        self.__globals[str(key)] = other
+        self.__globals[key] = other
+        self.__reserved.add(key)
         self.__classes.append(other)
 
     def register_term(self, name: PredicateName, args: List[str], body_lines: List[str]):

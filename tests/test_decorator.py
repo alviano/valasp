@@ -4,6 +4,7 @@ import pytest
 from clingo import Number, String, Function
 
 from valasp import Context, validate
+from valasp.context import ValAspWarning
 
 
 def test_must_have_annotations():
@@ -47,14 +48,24 @@ def test_int():
         context.run_solver(["node(a)."])
 
 
-def test_post_init():
+def test_cannot_have_init():
+    with pytest.raises(ValueError):
+        @validate(context=Context())
+        class Node:
+            value: int
+
+            def __init__(self):
+                self.value = 0
+
+
+def test_check_method():
     context = Context()
 
     @validate(context=context)
     class Node:
         value: int
 
-        def __post_init__(self):
+        def check(self):
             if not(1 <= self.value <= 10):
                 raise ValueError("must be in 1..10")
 
@@ -97,7 +108,7 @@ def test_complex_type():
         from_: Node
         to: Node
 
-        def __post_init__(self):
+        def check_ordered(self):
             if not(self.from_ < self.to):
                 raise ValueError("nodes must be ordered")
 
@@ -208,8 +219,6 @@ def test_class_checks():
                 raise ValueError(f"expecting 2 instances of {cls.__name__}, but found {cls.instances} of them")
 
         def __post_init__(self):
-            if self.value <= 0:
-                raise ValueError("must be positive")
             self.__class__.instances += 1
     Node.instances = 0
 
@@ -223,3 +232,16 @@ def test_class_checks():
     context.run_grounder(["node(3)."])
     with pytest.raises(ValueError):
         context.run_class_checks()
+
+
+def test_checks_must_have_no_arguments():
+    with pytest.warns(ValAspWarning):
+        @validate(context=Context())
+        class Foo:
+            foo: int
+
+            def check_fail(self, _):
+                raise TypeError()
+
+        with pytest.raises(TypeError):
+            Foo(Number(0)).check_fail(0)
