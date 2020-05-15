@@ -204,13 +204,13 @@ def test_class_checks():
 
         @classmethod
         def check_exactly_two_instances(cls):
-            if Node.instances != 2:
-                raise ValueError(f"expecting 2 instances of Node, but found {Node.instances} of them")
+            if cls.instances != 2:
+                raise ValueError(f"expecting 2 instances of {cls.__name__}, but found {cls.instances} of them")
 
         def __post_init__(self):
             if self.value <= 0:
                 raise ValueError("must be positive")
-            Node.instances += 1
+            self.__class__.instances += 1
     Node.instances = 0
 
     context.run_grounder(["node(1)."])

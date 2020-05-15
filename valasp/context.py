@@ -1,10 +1,15 @@
 import inspect
 import re
+import warnings
 from dataclasses import dataclass
 
 import clingo
 from types import FunctionType
 from typing import ClassVar, List, Callable
+
+
+class ValAspWarning(UserWarning):
+    pass
 
 
 @dataclass(frozen=True)
@@ -116,7 +121,12 @@ class Context:
         for cls in self.__classes:
             for method in inspect.getmembers(cls, predicate=inspect.ismethod):
                 if method[0].startswith('check'):
-                    getattr(cls, method[0])()
+                    m = getattr(cls, method[0])
+                    if len(inspect.signature(m).parameters) != 0:
+                        warnings.warn(f"ignore method {m.__name__} of class {cls.__name__} because it has parameters",
+                                      ValAspWarning)
+                    else:
+                        m()
 
     def run_solver(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
         control = self.run_grounder(base_program)

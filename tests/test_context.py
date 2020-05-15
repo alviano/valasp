@@ -2,7 +2,7 @@ import pytest
 from clingo import Number, Symbol, Control
 
 from valasp import Context
-from valasp.context import ClassName, PredicateName
+from valasp.context import ClassName, PredicateName, ValAspWarning
 
 
 def test_class_name_upper_case():
@@ -179,7 +179,7 @@ def test_class_checks_must_have_no_arguments():
     context = Context()
     context.register_class(Foo)
 
-    with pytest.raises(TypeError):
+    with pytest.warns(ValAspWarning):
         context.run_class_checks()
 
 
