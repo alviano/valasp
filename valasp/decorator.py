@@ -1,7 +1,8 @@
 import inspect
+import warnings
 from typing import ClassVar, Callable, List, Optional, Any
 
-from valasp.context import Context, ClassName
+from valasp.context import Context, ClassName, ValAspWarning
 
 
 class ValAsp:
@@ -66,8 +67,19 @@ class ValAsp:
         body = []
         for k, v in self.annotations.items():
             body.extend(init_arg(k, v))
+
+        for method in inspect.getmembers(self.cls, predicate=inspect.isfunction):
+            if method[0].startswith('check'):
+                m = getattr(self.cls, method[0])
+                if len(inspect.signature(m).parameters) != 1:
+                    warnings.warn(f"ignore method {m.__name__} of class {self.cls.__name__} because it has parameters",
+                                  ValAspWarning)
+                else:
+                    body.append(f'self.{m.__name__}()')
+
         if getattr(self.cls, '__post_init__', None):
             body.append('self.__post_init__()')
+
         self.__set_method('__init__', self.args, body)
 
     def __add_str(self) -> None:

@@ -1,8 +1,18 @@
 import pytest
-from clingo import Number, Symbol
+from clingo import Number, Symbol, Control
 
 from valasp import Context
-from valasp.context import ClassName, PredicateName
+from valasp.context import ClassName, PredicateName, ValAspWarning
+
+
+def test_class_name_no_blank():
+    with pytest.raises(ValueError):
+        ClassName('')
+
+
+def test_predicate_name_no_blank():
+    with pytest.raises(ValueError):
+        PredicateName('')
 
 
 def test_class_name_upper_case():
@@ -100,7 +110,23 @@ def test_register_class():
     assert sum_first(10) == sum(range(10))
 
 
-def test_run_clingo():
+def test_register_class_with_reserved_name():
+    class A:
+        a: int
+
+    context = Context()
+    context.register_class(A)
+    with pytest.raises(KeyError):
+        context.register_class(A)
+
+    with pytest.raises(ValueError):
+        class clingo:
+            a: int
+
+        context.register_class(clingo)
+
+
+def test_run_solver():
     context = Context()
     assert str(context.run_solver(["hello_world."])) == "[hello_world]"
 
@@ -140,10 +166,22 @@ def test_blacklist():
         context.run_solver(["number(1,2)."])
 
 
+def test_blacklist_all_arities():
+    context = Context()
+    context.blacklist(PredicateName('number'))
+    with pytest.raises(RuntimeError):
+        context.run_solver(["number(1)."])
+
+
+def test_cannot_blacklist_arity_zero():
+    with pytest.raises(ValueError):
+        Context().blacklist('foo', [0])
+
 def test_run_class_checks():
     class Foo:
         def __init__(self, _: Symbol):
             Foo.instances += 1
+            self.check_foo()
 
         @classmethod
         def check_exactly_two_instances(cls):
@@ -151,7 +189,7 @@ def test_run_class_checks():
                 raise ValueError("please, define exactly two instances")
 
         def check_foo(self):
-            raise ValueError("this will not be classed automatically")
+            pass
     Foo.instances = 0
 
     context = Context()
@@ -174,10 +212,33 @@ def test_class_checks_must_have_no_arguments():
     class Foo:
         @classmethod
         def check_fail(cls, _):
-            pass
+            raise TypeError()
 
     context = Context()
     context.register_class(Foo)
 
     with pytest.raises(TypeError):
+        Foo.check_fail(0)
+
+    with pytest.warns(ValAspWarning):
         context.run_class_checks()
+
+
+def test_run():
+    context = Context()
+
+    class Foo:
+        @classmethod
+        def check_fail(cls):
+            raise ValueError('so nice')
+
+    context.register_class(Foo)
+
+    context.run(Control(), with_validators=False)
+    context.run(Control(), with_validators=False, with_solve=False)
+
+    with pytest.raises(ValueError):
+        context.run(Control(), with_validators=True)
+
+    with pytest.raises(ValueError):
+        context.run(Control(), with_validators=True, with_solve=True)

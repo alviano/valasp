@@ -1,10 +1,15 @@
 import inspect
 import re
+import warnings
 from dataclasses import dataclass
 
 import clingo
 from types import FunctionType
 from typing import ClassVar, List, Callable
+
+
+class ValAspWarning(UserWarning):
+    pass
 
 
 @dataclass(frozen=True)
@@ -65,10 +70,11 @@ class Context:
         return FunctionType(code.co_consts[0], self.__globals)
 
     def register_class(self, other: ClassVar) -> None:
-        key = ClassName(other.__name__)
-        if self.is_reserved(str(key)):
+        key = str(ClassName(other.__name__))
+        if self.is_reserved(key):
             raise KeyError(f'{key} is reserved')
-        self.__globals[str(key)] = other
+        self.__globals[key] = other
+        self.__reserved.add(key)
         self.__classes.append(other)
 
     def register_term(self, name: PredicateName, args: List[str], body_lines: List[str]):
@@ -116,7 +122,12 @@ class Context:
         for cls in self.__classes:
             for method in inspect.getmembers(cls, predicate=inspect.ismethod):
                 if method[0].startswith('check'):
-                    getattr(cls, method[0])()
+                    m = getattr(cls, method[0])
+                    if len(inspect.signature(m).parameters) != 0:
+                        warnings.warn(f"ignore method {m.__name__} of class {cls.__name__} because it has parameters",
+                                      ValAspWarning)
+                    else:
+                        m()
 
     def run_solver(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
         control = self.run_grounder(base_program)
@@ -131,8 +142,10 @@ class Context:
         control.solve(on_model=on_model)
         return res
 
-    def run(self, control: clingo.Control) -> None:
-        control.add("valasp", [], self.validators())
+    def run(self, control: clingo.Control, with_validators: bool = True, with_solve: bool = True) -> None:
+        control.add("valasp", [], self.validators() if with_validators else '')
         control.ground([("base", []), ("valasp", [])], context=self)
-        self.run_class_checks()
-        control.solve()
+        if with_validators:
+            self.run_class_checks()
+        if with_solve:
+            control.solve()
