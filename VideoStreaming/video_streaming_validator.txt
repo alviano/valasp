@@ -9,3 +9,10 @@
 @validate_term(atom=assign, name=resolution, type=int)
 @validate_term(atom=assign, name=bitrate, type=int)
 @validate_term(atom=assign, name=sat, type=int)
+@validate_term(predicate=obj, name=value, type=int, min=0)
+@validate_term(predicate=obj, name=userid, type=int)
+@validate_sum(predicate=obj , term=value, min=10, max=100)
+@validate_count(predicate=obj , term=value, min=3, max=9)
+
+obj(BEST_SAT-SAT_VALUE,USER_ID) :- 
+    assign(USER_ID, _, _, BITRATE, SAT_VALUE), user(USER_ID, _, _,_, BEST_SAT, _).

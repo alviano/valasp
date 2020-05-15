@@ -24,7 +24,7 @@ OTHER DEALINGS IN THE SOFTWARE.
 """
 
 
-supported_types = ['int', 'str']
+supported_types = ['int', 'str', 'Any']
 __all_types__ = {}
 
 class ErrorMessages:
@@ -92,6 +92,8 @@ class Term:
             self.__process_int__()
         elif self.__term['type'] == 'str' or self.__term['type'] == 'function':
             self.__process_str__()
+        elif self.__term['type'] == 'Any':
+            pass
         elif self.__term['type'] in __all_types__:
             pass
         else:
@@ -160,9 +162,40 @@ class Atom:
         self.__output = []
         self.__output.append('@validate(context=context)')
         self.__output.append('class %s:' % self.__predicate)
+        self.__sums = atom['sums']
+        self.__counts = atom['counts']
+        self.__all_sums = []
+        self.__all_counts = []
 
     def get_output(self):
         return self.__output
+
+    def __process_sums_count__(self, my_list, validation, elem):
+        for i in my_list:
+            if 'term' in i:
+                min_value = -pow(2, 31)
+                max_value = pow(2, 31) - 1
+                if 'min' in i:
+                    if __is_integer__(i['min']):
+                        min_value = max(min_value, int(i['min']))
+                if 'max' in i:
+                    if __is_integer__(i['max']):
+                        max_value = min(max_value, int(i['max']))
+                aggregate_name = '%s_of_%s' % (elem, i['term'])
+                if elem == 'sum':
+                    self.__output.append('\t%s = [0, 0, %s, %s]' % (aggregate_name, min_value, max_value))
+                    self.__all_sums.append(aggregate_name)
+                else:
+                    self.__output.append('\t%s = [0, %s, %s]' % (aggregate_name, min_value, max_value))
+                    self.__all_counts.append(aggregate_name)
+                if elem == 'sum':
+                    validation.append(
+                        'self.%s_of_%s[1 if self._%s_ >= 0 else 0] += abs(self._%s_)' % (elem, i['term'], i['term'], i['term']))
+                else:
+                    validation.append(
+                        'self.%s_of_%s[0] += 1' % (elem, i['term']))
+            else:
+                print('Warning: missing term in %s' % elem)
 
     def process(self):
         validation = []
@@ -188,6 +221,21 @@ class Atom:
             if 'le' in check:
                 __compute_constraints__(check, validation, 'le', params, '>')
 
+        self.__process_sums_count__(self.__sums, validation, 'sum')
+        self.__process_sums_count__(self.__counts, validation, 'count')
+
+        self.__output.append('\t@classmethod')
+        self.__output.append('\tdef check(cls):')
+        if len(self.__all_sums) + len(self.__all_counts) > 0:
+            for j in self.__all_sums:
+                self.__output.append('\t\tif cls.%s[0] < cls.%s[3]: raise ValueError(f\'sum of %s cannot be less than {cls.%s[3]}\')' % (j, j, j.replace('sum_of_',''), j))
+                self.__output.append('\t\tif cls.%s[1] > cls.%s[2]: raise ValueError(f\'sum of %s cannot be greater than {cls.%s[2]}\')' % (j, j, j.replace('sum_of_', ''), j))
+            for j in self.__all_counts:
+                self.__output.append('\t\tif cls.%s[0] < cls.%s[1]: raise ValueError(f\'count of %s cannot be less than {cls.%s[1]}\')' % (j, j, j.replace('count_of_',''), j))
+                self.__output.append('\t\tif cls.%s[0] > cls.%s[2]: raise ValueError(f\'count of %s cannot be greater than {cls.%s[2]}\')' % (j, j, j.replace('count_of_', ''), j))
+        else:
+            self.__output.append('\t\tpass')
+
         self.__output.append('\tdef __post_init__(self):')
         if len(validation) == 0:
             self.__output.append('\t\tpass')
@@ -199,7 +247,7 @@ class Atom:
 
 class Output:
 
-    def __init__(self, output):
+    def __init__(self, output, rules):
         self.__template = f'#script(python).\n\n' \
                           f'import clingo\n' \
                           f'import re\n' \
@@ -214,7 +262,8 @@ class Output:
                           f'\t("validators", []),\n' \
                           f'\t], context=context)\n' \
                           f'\tprg.solve()\n' \
-                          f'#end.\n'
+                          f'#end.\n' \
+                          f'{rules}\n'
 
     def get_output(self):
         return self.__template
@@ -224,11 +273,15 @@ class Validation:
     def __init__(self):
         self.__output = []
         self.__atoms = None
+        self.__rules = []
 
-    def start_validation(self, atoms):
+    def start_validation(self, atoms, rules):
         self.__atoms = atoms
+        self.__rules = rules
         for atom in atoms:
             for term in atom['terms']:
+                if 'type' not in term:
+                    term['type'] = 'Any'
                 if term['type'] not in supported_types:
                     term['type'] = __my_capitalize__(term['type'])
                     term['type'] = '%s' % term['type']
@@ -245,5 +298,5 @@ class Validation:
             self.__output += a.get_output()
 
     def end_validation(self):
-        output = Output('\n'.join(self.__output))
+        output = Output('\n'.join(self.__output), '\n'.join(self.__rules))
         return output.get_output()
