@@ -1,10 +1,10 @@
-from typing import ClassVar, Callable, List
+from typing import ClassVar, Callable, List, Optional
 
 from valasp.context import Context, ClassName
 
 
 class ValAsp:
-    def __init__(self, cls: ClassVar, context: Context):
+    def __init__(self, cls: ClassVar, context: Context, auto_blacklist: bool):
         self.cls = cls
         self.context = context
 
@@ -19,6 +19,8 @@ class ValAsp:
         self.__add_str()
         self.__add_cmp()
         self.__add_validator()
+        if auto_blacklist:
+            self.__add_blacklist()
 
         self.context.register_class(self.cls)
 
@@ -71,11 +73,13 @@ class ValAsp:
 
     def __add_validator(self) -> None:
         self.context.add_validator(self.name.to_predicate(), len(self.args))
+
+    def __add_blacklist(self) -> None:
         self.context.blacklist(self.name.to_predicate(), self.context.all_arities_but(len(self.args)))
 
 
-def validate(context: Context):
+def validate(context: Context, auto_blacklist: bool = True):
     def decorator(cls: ClassVar):
-        ValAsp(cls, context)
+        ValAsp(cls, context, auto_blacklist)
         return cls
     return decorator

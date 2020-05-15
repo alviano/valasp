@@ -1,7 +1,6 @@
 import pytest
 from clingo import Number
 
-from tests.utils import run_clingo
 from valasp import Context, validate
 
 
@@ -39,11 +38,11 @@ def test_int():
     class Node:
         value: int
 
-    model = run_clingo(context, ["node(0)."])
+    model = context.run_clingo(["node(0)."])
     assert str(model) == '[node(0)]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["node(a)."])
+        context.run_clingo(["node(a)."])
 
 
 def test_post_init():
@@ -57,14 +56,14 @@ def test_post_init():
             if not(1 <= self.value <= 10):
                 raise ValueError("must be in 1..10")
 
-    model = run_clingo(context, ["node(10)."])
+    model = context.run_clingo(["node(10)."])
     assert str(model) == '[node(10)]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["node(0)."])
+        context.run_clingo(["node(0)."])
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["node(11)."])
+        context.run_clingo(["node(11)."])
 
 
 def test_string():
@@ -74,14 +73,14 @@ def test_string():
     class Name:
         value: str
 
-    model = run_clingo(context, ['name("mario").'])
+    model = context.run_clingo(['name("mario").'])
     assert str(model) == '[name("mario")]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["name(mario)."])
+        context.run_clingo(["name(mario)."])
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["name(123)."])
+        context.run_clingo(["name(123)."])
 
 
 def test_complex_type():
@@ -100,8 +99,51 @@ def test_complex_type():
             if not(self.from_ < self.to):
                 raise ValueError("nodes must be ordered")
 
-    model = run_clingo(context, ['node(1). node(2). edge(1,2).'])
+    model = context.run_clingo(['node(1). node(2). edge(1,2).'])
     assert str(model) == '[node(1), node(2), edge(1,2)]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ['node(1). node(2). edge(2,1).'])
+        context.run_clingo(['node(1). node(2). edge(2,1).'])
+
+
+def test_underscore_in_annotations():
+    context = Context()
+
+    @validate(context=context)
+    class Foo:
+        __init__: int
+
+    assert str(Foo(Number(1))) == 'Foo(1)'
+    assert Foo(Number(1)).__init__ == 1
+
+    @validate(context=context)
+    class Bar:
+        __str__: int
+
+    assert str(Bar(Number(1))) == 'Bar(1)'
+    assert Bar(Number(1)).__str__ == 1
+
+
+def test_auto_blacklist():
+    context = Context()
+
+    @validate(context=context)
+    class Edge:
+        source: int
+        dest: int
+
+    assert str(context.run_clingo(["edge(1,2)."])) == '[edge(1,2)]'
+
+    with pytest.raises(RuntimeError):
+        context.run_clingo(["edge(1,2). edge((1,2))."])
+
+
+def test_disable_auto_blacklist():
+    context = Context()
+
+    @validate(context=context, auto_blacklist=False)
+    class Edge:
+        source: int
+        dest: int
+
+    assert str(context.run_clingo(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'

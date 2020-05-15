@@ -1,0 +1,26 @@
+% idea for the future: why we don't use ASP facts to specify the validation?
+
+validate_atom(
+    predicate(node),
+    term(
+        value,
+        type(int),
+        enum(1,2,3,4)
+    )
+).
+
+validate_atom(
+    predicate(edge),
+    term(
+        from,
+        type(node)
+    ),
+    term(
+        to,
+        type(node)
+    ),
+    different(
+        from,
+        to
+    )
+).
