@@ -37,7 +37,8 @@ class Atom:
         self.__atom['predicate'] = self.__predicate
         self.__atom['terms'] = self.__terms
         self.__atom['checks'] = self.__checks
-
+        self.__atom['sums'] = []
+        self.__atom['counts'] = []
 
     def __parse_term(self, term):
         local = {}
@@ -45,7 +46,7 @@ class Atom:
             elements = __split__(i, '=')
             if len(elements) != 2:
                 raise ValueError('Wrong syntax while processing %s' % term)
-            if not i.startswith('atom=') and not i.startswith('enum='):
+            if not i.startswith('predicate=') and not i.startswith('enum='):
                 local['%s' % elements[0]] = '%s' % elements[1]
             if i.startswith('enum'):
                 enum_elements = __split__(elements[1], ';')
@@ -53,12 +54,11 @@ class Atom:
 
         return local
 
-
     def __parse_check(self, check):
         local = {}
         local_check = ''
         for c in check:
-            if not c.startswith('atom='):
+            if not c.startswith('predicate='):
                 elements = __split__(c, '=')
                 if len(elements) != 2:
                     raise ValueError('Wrong syntax while processing %s' % check)
@@ -83,8 +83,28 @@ class Atom:
         local[local_check].append(local_map)
         return local
 
+    def __parse_count_sum(self, current):
+        local = {}
+        for i in current:
+            elements = __split__(i, '=')
+            if len(elements) != 2:
+                raise ValueError('Wrong syntax while processing %s' % current)
+            if not i.startswith('predicate=') and not i.startswith('enum='):
+                local['%s' % elements[0]] = '%s' % elements[1]
+            if i.startswith('enum'):
+                enum_elements = __split__(elements[1], ';')
+                local['%s' % elements[0]] = enum_elements
+
+        return local
+
     def add_term(self, term):
         self.__terms.append(self.__parse_term(term))
+
+    def add_sum(self, sum_):
+        self.__atom['sums'].append(self.__parse_count_sum(sum_))
+
+    def add_count(self, count_):
+        self.__atom['counts'].append(self.__parse_count_sum(count_))
 
     def add_check(self, check):
         res = self.__parse_check(check)
@@ -99,22 +119,8 @@ atoms = {}
 ANNOTATION = '@'
 ANNOTATION_TERM = ANNOTATION + 'validate_term'
 ANNOTATION_ATOM = ANNOTATION + 'validate_atom'
-
-
-def __validate_atom__(current):
-    current = current.replace(' ', '')
-    current = current.replace('\t', '')
-    current = current.replace('%s(' % ANNOTATION_ATOM, '')
-    current = current.replace(')', '')
-    elements = __split__(current, ',')
-
-    name = ""
-    for e in elements:
-        if e.startswith('atom='):
-            name = e.replace('atom=', '')
-            if name not in atoms:
-                atoms[name] = Atom(name)
-            atoms[name].add_check(elements)
+ANNOTATION_SUM = ANNOTATION + 'validate_sum'
+ANNOTATION_COUNT = ANNOTATION + 'validate_count'
 
 
 def __split__(mystr, c):
@@ -124,18 +130,43 @@ def __split__(mystr, c):
     return list(elements)
 
 
-def __validate_term__(current):
+def __validate_element__(current, annotation):
     current = ''.join(shlex.split(current))
     current = current.replace('\t', '')
-    current = current.replace('%s(' % ANNOTATION_TERM, '')
+    current = current.replace('%s(' % annotation, '')
     current = current.replace(')', '')
     elements = __split__(current, ',')
     for e in elements:
-        if e.startswith('atom='):
-            name = e.replace('atom=', '')
+        if e.startswith('predicate='):
+            name = e.replace('predicate=', '')
             if name not in atoms:
                 atoms[name] = Atom(name)
-            atoms[name].add_term(elements)
+            if annotation == ANNOTATION_ATOM:
+                atoms[name].add_check(elements)
+            elif annotation == ANNOTATION_TERM:
+                atoms[name].add_term(elements)
+            elif annotation == ANNOTATION_SUM:
+                atoms[name].add_sum(elements)
+            elif annotation == ANNOTATION_COUNT:
+                atoms[name].add_count(elements)
+            else:
+                raise ValueError('Wrong annotation')
+
+
+def __validate_atom__(current):
+    __validate_element__(current, ANNOTATION_ATOM)
+
+
+def __validate_term__(current):
+    __validate_element__(current, ANNOTATION_TERM)
+
+
+def __validate_count__(current):
+    __validate_element__(current, ANNOTATION_COUNT)
+
+
+def __validate_sum__(current):
+    __validate_element__(current, ANNOTATION_SUM)
 
 
 def __process__(current):
@@ -143,9 +174,16 @@ def __process__(current):
         __validate_atom__(current)
     elif current.startswith(ANNOTATION_TERM):
         __validate_term__(current)
+    elif current.startswith(ANNOTATION_COUNT):
+        __validate_count__(current)
+    elif current.startswith(ANNOTATION_SUM):
+        __validate_sum__(current)
 
 
 def create_json_structure(filename):
+    global atoms
+    atoms = {}
+    asp_rules = []
     with open(filename) as encodingASP:
         lines = encodingASP.readlines()
 
@@ -154,8 +192,10 @@ def create_json_structure(filename):
         line = line.lstrip()
         if line.startswith(ANNOTATION):
             __process__(line)
+        elif line != '':
+            asp_rules.append(line)
 
-    my_json = {'atoms': []}
+    my_json = {'atoms': [], 'rules': asp_rules}
     for i in atoms:
         my_json['atoms'].append(atoms[i].get_root())
     return my_json
