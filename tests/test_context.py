@@ -102,13 +102,13 @@ def test_register_class():
 
 def test_run_clingo():
     context = Context()
-    assert str(context.run_clingo(["hello_world."])) == "[hello_world]"
+    assert str(context.run_solver(["hello_world."])) == "[hello_world]"
 
 
 def test_register_term():
     context = Context()
     context.register_term(PredicateName('successor'), ['x'], ['return x.number + 1'])
-    model = context.run_clingo(["one(@successor(0))."])
+    model = context.run_solver(["one(@successor(0))."])
     assert str(model) == '[one(1)]'
 
 
@@ -122,19 +122,62 @@ def test_add_validator():
     context = Context()
     context.register_class(PositiveNumber)
     context.add_validator(PredicateName('positiveNumber'), 1)
-    model = context.run_clingo(["positiveNumber(1)."])
+    model = context.run_solver(["positiveNumber(1)."])
     assert str(model) == '[positiveNumber(1)]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["positiveNumber(0)."])
+        context.run_solver(["positiveNumber(0)."])
 
 
 def test_blacklist():
     context = Context()
     context.blacklist(PredicateName('number'), [2])
 
-    model = context.run_clingo(["number(1)."])
+    model = context.run_solver(["number(1)."])
     assert str(model) == "[number(1)]"
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["number(1,2)."])
+        context.run_solver(["number(1,2)."])
+
+
+def test_run_class_checks():
+    class Foo:
+        def __init__(self, _: Symbol):
+            Foo.instances += 1
+
+        @classmethod
+        def check_exactly_two_instances(cls):
+            if Foo.instances != 2:
+                raise ValueError("please, define exactly two instances")
+
+        def check_foo(self):
+            raise ValueError("this will not be classed automatically")
+    Foo.instances = 0
+
+    context = Context()
+    context.register_class(Foo)
+    context.add_validator(PredicateName('foo'), 1)
+
+    with pytest.raises(ValueError):
+        Foo(Number(1))
+        context.run_class_checks()
+
+    Foo(Number(2))
+    context.run_class_checks()
+
+    with pytest.raises(ValueError):
+        Foo(Number(3))
+        context.run_class_checks()
+
+
+def test_class_checks_must_have_no_arguments():
+    class Foo:
+        @classmethod
+        def check_fail(cls, _):
+            pass
+
+    context = Context()
+    context.register_class(Foo)
+
+    with pytest.raises(TypeError):
+        context.run_class_checks()

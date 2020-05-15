@@ -1,3 +1,4 @@
+import inspect
 import re
 from dataclasses import dataclass
 
@@ -48,6 +49,7 @@ class Context:
         self.__globals = {k: v for k, v in globals().items() if k[0:2] == '__' or k[0].islower()}
         self.__reserved = set(self.__globals.keys())
         self.__validators: List[str] = []
+        self.__classes: List[ClassVar] = []
 
         self.__max_arity = max_arity
 
@@ -67,6 +69,7 @@ class Context:
         if self.is_reserved(str(key)):
             raise KeyError(f'{key} is reserved')
         self.__globals[str(key)] = other
+        self.__classes.append(other)
 
     def register_term(self, name: PredicateName, args: List[str], body_lines: List[str]):
         setattr(self, str(name), self.make_fun(str(name), args, body_lines))
@@ -76,8 +79,9 @@ class Context:
 
     def add_validator(self, predicate: PredicateName, arity: int) -> None:
         args_as_vars = ','.join(f'X{i}' for i in range(arity))
-        self.__validators.append(f':- {predicate}({args_as_vars}); @validate_{predicate}({args_as_vars}) != 1.')
-        self.register_term(PredicateName(f'validate_{predicate}'), [args_as_vars], [
+        at_term = f'valasp_validate_{predicate}'
+        self.__validators.append(f':- {predicate}({args_as_vars}); @{at_term}({args_as_vars}) != 1.')
+        self.register_term(PredicateName(at_term), [args_as_vars], [
             f'{predicate.to_class()}({args_as_vars})',
             f'return 1'
         ])
@@ -102,11 +106,20 @@ class Context:
     def all_arities_but(self, excluded: int) -> List[int]:
         return [x+1 for x in range(self.__max_arity) if x+1 != excluded]
 
-    def run_clingo(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
+    def run_grounder(self, base_program: List[str]) -> clingo.Control:
         control = clingo.Control()
         control.add("base", [], '\n'.join(base_program + [self.validators()]))
         control.ground([("base", [])], context=self)
+        return control
 
+    def run_class_checks(self) -> None:
+        for cls in self.__classes:
+            for method in inspect.getmembers(cls, predicate=inspect.ismethod):
+                if method[0].startswith('check'):
+                    getattr(cls, method[0])()
+
+    def run_solver(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
+        control = self.run_grounder(base_program)
         res = []
 
         def on_model(model):

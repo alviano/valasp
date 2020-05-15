@@ -40,11 +40,11 @@ def test_int():
     class Node:
         value: int
 
-    model = context.run_clingo(["node(0)."])
+    model = context.run_solver(["node(0)."])
     assert str(model) == '[node(0)]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["node(a)."])
+        context.run_solver(["node(a)."])
 
 
 def test_post_init():
@@ -58,14 +58,14 @@ def test_post_init():
             if not(1 <= self.value <= 10):
                 raise ValueError("must be in 1..10")
 
-    model = context.run_clingo(["node(10)."])
+    model = context.run_solver(["node(10)."])
     assert str(model) == '[node(10)]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["node(0)."])
+        context.run_solver(["node(0)."])
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["node(11)."])
+        context.run_solver(["node(11)."])
 
 
 def test_string():
@@ -75,14 +75,14 @@ def test_string():
     class Name:
         value: str
 
-    model = context.run_clingo(['name("mario").'])
+    model = context.run_solver(['name("mario").'])
     assert str(model) == '[name("mario")]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["name(mario)."])
+        context.run_solver(["name(mario)."])
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["name(123)."])
+        context.run_solver(["name(123)."])
 
 
 def test_complex_type():
@@ -101,11 +101,11 @@ def test_complex_type():
             if not(self.from_ < self.to):
                 raise ValueError("nodes must be ordered")
 
-    model = context.run_clingo(['node(1). node(2). edge(1,2).'])
+    model = context.run_solver(['node(1). node(2). edge(1,2).'])
     assert str(model) == '[node(1), node(2), edge(1,2)]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(['node(1). node(2). edge(2,1).'])
+        context.run_solver(['node(1). node(2). edge(2,1).'])
 
 
 def test_underscore_in_annotations():
@@ -134,10 +134,10 @@ def test_auto_blacklist():
         source: int
         dest: int
 
-    assert str(context.run_clingo(["edge(1,2)."])) == '[edge(1,2)]'
+    assert str(context.run_solver(["edge(1,2)."])) == '[edge(1,2)]'
 
     with pytest.raises(RuntimeError):
-        context.run_clingo(["edge(1,2). edge((1,2))."])
+        context.run_solver(["edge(1,2). edge((1,2))."])
 
 
 def test_disable_auto_blacklist():
@@ -148,7 +148,7 @@ def test_disable_auto_blacklist():
         source: int
         dest: int
 
-    assert str(context.run_clingo(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'
+    assert str(context.run_solver(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'
 
 
 def test_class_can_have_attributes():
@@ -193,3 +193,33 @@ def test_any_type():
     Weak(String('abc'))
     Weak(Function('abc'))
     Weak(Function('abc', [Number(1)]))
+
+
+def test_class_checks():
+    context = Context()
+
+    @validate(context=context)
+    class Node:
+        value: int
+
+        @classmethod
+        def check_exactly_two_instances(cls):
+            if Node.instances != 2:
+                raise ValueError(f"expecting 2 instances of Node, but found {Node.instances} of them")
+
+        def __post_init__(self):
+            if self.value <= 0:
+                raise ValueError("must be positive")
+            Node.instances += 1
+    Node.instances = 0
+
+    context.run_grounder(["node(1)."])
+    with pytest.raises(ValueError):
+        context.run_class_checks()
+
+    context.run_grounder(["node(2)."])
+    context.run_class_checks()
+
+    context.run_grounder(["node(3)."])
+    with pytest.raises(ValueError):
+        context.run_class_checks()

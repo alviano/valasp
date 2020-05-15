@@ -1,3 +1,4 @@
+import inspect
 from typing import ClassVar, Callable, List, Optional, Any
 
 from valasp.context import Context, ClassName
