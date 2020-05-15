@@ -131,8 +131,10 @@ class Context:
         control.solve(on_model=on_model)
         return res
 
-    def run(self, control: clingo.Control) -> None:
-        control.add("valasp", [], self.validators())
+    def run(self, control: clingo.Control, with_validators: bool = True, with_solve: bool = True) -> None:
+        control.add("valasp", [], self.validators() if with_validators else '')
         control.ground([("base", []), ("valasp", [])], context=self)
-        self.run_class_checks()
-        control.solve()
+        if with_validators:
+            self.run_class_checks()
+        if with_solve:
+            control.solve()

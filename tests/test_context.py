@@ -1,5 +1,5 @@
 import pytest
-from clingo import Number, Symbol
+from clingo import Number, Symbol, Control
 
 from valasp import Context
 from valasp.context import ClassName, PredicateName
@@ -100,7 +100,7 @@ def test_register_class():
     assert sum_first(10) == sum(range(10))
 
 
-def test_run_clingo():
+def test_run_solver():
     context = Context()
     assert str(context.run_solver(["hello_world."])) == "[hello_world]"
 
@@ -181,3 +181,21 @@ def test_class_checks_must_have_no_arguments():
 
     with pytest.raises(TypeError):
         context.run_class_checks()
+
+
+def test_run():
+    context = Context()
+
+    class Foo:
+        @classmethod
+        def check_fail(cls):
+            raise ValueError('so nice')
+
+    context.register_class(Foo)
+
+    context.run(Control(), with_validators=False)
+    context.run(Control(), with_validators=False, with_solve=False)
+
+    with pytest.raises(ValueError):
+        context.run(Control(), with_validators=True)
+        context.run(Control(), with_validators=True, with_solve=True)
