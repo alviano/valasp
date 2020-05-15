@@ -1,7 +1,6 @@
 import pytest
 from clingo import Number, Symbol
 
-from tests.utils import run_clingo
 from valasp import Context
 from valasp.context import ClassName, PredicateName
 
@@ -9,6 +8,7 @@ from valasp.context import ClassName, PredicateName
 def test_class_name_upper_case():
     with pytest.raises(ValueError):
         ClassName('invalid')
+
 
 def test_class_name_to_predicate():
     pred: PredicateName = ClassName('ValidClassName').to_predicate()
@@ -100,10 +100,15 @@ def test_register_class():
     assert sum_first(10) == sum(range(10))
 
 
+def test_run_clingo():
+    context = Context()
+    assert str(context.run_clingo(["hello_world."])) == "[hello_world]"
+
+
 def test_register_term():
     context = Context()
     context.register_term(PredicateName('successor'), ['x'], ['return x.number + 1'])
-    model = run_clingo(context, ["one(@successor(0))."])
+    model = context.run_clingo(["one(@successor(0))."])
     assert str(model) == '[one(1)]'
 
 
@@ -117,19 +122,19 @@ def test_add_validator():
     context = Context()
     context.register_class(PositiveNumber)
     context.add_validator(PredicateName('positiveNumber'), 1)
-    model = run_clingo(context, ["positiveNumber(1)."])
+    model = context.run_clingo(["positiveNumber(1)."])
     assert str(model) == '[positiveNumber(1)]'
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["positiveNumber(0)."])
+        context.run_clingo(["positiveNumber(0)."])
 
 
 def test_blacklist():
     context = Context()
     context.blacklist(PredicateName('number'), [2])
 
-    model = run_clingo(context, ["number(1)."])
+    model = context.run_clingo(["number(1)."])
     assert str(model) == "[number(1)]"
 
     with pytest.raises(RuntimeError):
-        run_clingo(context, ["number(1,2)."])
+        context.run_clingo(["number(1,2)."])

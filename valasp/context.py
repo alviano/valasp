@@ -102,6 +102,17 @@ class Context:
     def all_arities_but(self, excluded: int) -> List[int]:
         return [x+1 for x in range(self.__max_arity) if x+1 != excluded]
 
-    @classmethod
-    def __ensure_clingo_is_imported(cls):
-        clingo.SymbolType.Number(0)
+    def run_clingo(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
+        control = clingo.Control()
+        control.add("base", [], '\n'.join(base_program + [self.validators()]))
+        control.ground([("base", [])], context=self)
+
+        res = []
+
+        def on_model(model):
+            nonlocal res
+            for atom in model.symbols(atoms=True):
+                res.append(atom)
+
+        control.solve(on_model=on_model)
+        return res
