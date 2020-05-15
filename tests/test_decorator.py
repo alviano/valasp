@@ -1,5 +1,7 @@
+from typing import Any
+
 import pytest
-from clingo import Number
+from clingo import Number, String, Function
 
 from valasp import Context, validate
 
@@ -147,3 +149,47 @@ def test_disable_auto_blacklist():
         dest: int
 
     assert str(context.run_clingo(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'
+
+
+def test_class_can_have_attributes():
+    context = Context()
+
+    @validate(context=context)
+    class Node:
+        value: int
+
+        count = [0, 1, 2]   # a way to track the number of instances, and check they are in 1..2
+
+        @classmethod
+        def all_instances_known(cls):
+            if not (cls.count[1] <= cls.count[0] <= cls.count[2]):
+                raise ValueError(f"expecting {cls.count[1]}..{cls.count[2]} instances of {cls.__name__}, "
+                                 "but found {cls.count[0]} of them")
+
+        def __post_init__(self):
+            self.__class__.count[0] += 1
+
+    with pytest.raises(ValueError):
+        Node.all_instances_known()
+
+    Node(Number(1))
+    Node.all_instances_known()
+    Node(Number(2))
+    Node.all_instances_known()
+
+    Node(Number(3))
+    with pytest.raises(ValueError):
+        Node.all_instances_known()
+
+
+def test_any_type():
+    context = Context()
+
+    @validate(context=context)
+    class Weak:
+        mystery: Any
+
+    Weak(Number(1))
+    Weak(String('abc'))
+    Weak(Function('abc'))
+    Weak(Function('abc', [Number(1)]))

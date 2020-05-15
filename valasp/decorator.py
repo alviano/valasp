@@ -1,4 +1,4 @@
-from typing import ClassVar, Callable, List, Optional
+from typing import ClassVar, Callable, List, Optional, Any
 
 from valasp.context import Context, ClassName
 
@@ -48,6 +48,17 @@ class ValAsp:
                     f'if {arg}.type != {typ}:',
                     f'    raise TypeError(f"expecting {typ}, but received {{{arg}}}")',
                     f'self.{arg} = {arg}{extract}',
+                ]
+            if typ == Any:
+                return [
+                    f'if {arg}.type == clingo.SymbolType.Number:',
+                    f'    self.{arg} = {arg}.number',
+                    f'elif {arg}.type == clingo.SymbolType.String:',
+                    f'    self.{arg} = {arg}.string',
+                    f'elif {arg}.type == clingo.SymbolType.Function:',
+                    f'    self.{arg} = {arg}',
+                    f'else:'
+                    f'    raise ValueError("expecting Number, String or Function, received {typ}")'
                 ]
             return [f'self.{arg} = {typ.__name__}({arg})']
 
