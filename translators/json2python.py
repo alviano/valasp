@@ -259,18 +259,18 @@ class Atom:
             for j in self.__all_sums_positive:
                 (t_name, name, min_value, max_value) = j
                 if min_value > INT_MIN:
-                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s cannot reach %s\')' % (name, min_value, t_name, min_value))
-                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s may exceed %s\')' % (name, max_value, t_name, max_value))
+                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s of predicate %s cannot reach %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
+                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s of predicate %s may exceed %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
             for j in self.__all_sums_negative:
                 (t_name, name, min_value, max_value) = j
-                self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s may exceed %s\')' % (name, min_value, t_name, min_value))
+                self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s of predicate %s may exceed %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
                 if max_value < INT_MAX:
-                    self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s cannot reach %s\')' % (name, max_value, t_name, max_value))
+                    self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s of predicate %s cannot reach %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
             for j in self.__all_counts:
                 (t_name, name, min_value, max_value) = j
                 if min_value > INT_MIN:
-                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'count of %s cannot reach than %s\')' % (name, min_value, t_name, min_value))
-                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'count of %s may exceed than %s\')' % (name, max_value, t_name, max_value))
+                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'count of %s of predicate %s cannot reach than %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
+                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'count of %s of predicate %s may exceed than %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
         else:
             self.__output.append('\t\tpass')
 
