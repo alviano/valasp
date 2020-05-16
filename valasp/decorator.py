@@ -5,7 +5,9 @@ import inspect
 import warnings
 from typing import ClassVar, Callable, List, Any
 
-from valasp.context import Context, ClassName, ValAspWarning
+from valasp.context import Context
+from valasp.domain.name import ClassName
+from valasp.domain.raisers import ValAspWarning
 
 
 class ValAsp:

@@ -272,7 +272,8 @@ class Output:
         self.__template = f'#script(python).\n\n' \
                           f'import clingo\n' \
                           f'import re\n' \
-                          f'from valasp import Context, validate\n' \
+                          f'from valasp.context import Context\n' \
+                          f'from valasp.decorator import validate\n' \
                           f'from typing import Callable\n\n\n' \
                           f'context = Context()\n' \
                           f'{output}\n\n' \

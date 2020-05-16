@@ -3,8 +3,8 @@ from typing import Any
 import pytest
 from clingo import Number, String, Function
 
-from valasp import Context, validate
-from valasp.context import ValAspWarning
+from valasp.context import ValAspWarning, Context
+from valasp.decorator import validate
 
 
 def test_must_have_annotations():
@@ -14,6 +14,7 @@ def test_must_have_annotations():
         @validate(context=context)
         class OK:
             pass
+        OK()
 
 
 def test_define_str_and_cmp():
@@ -40,6 +41,7 @@ def test_int():
     @validate(context=context)
     class Node:
         value: int
+    Node(Number(0))
 
     model = context.run_solver(["node(0)."])
     assert str(model) == '[node(0)]'
@@ -56,6 +58,7 @@ def test_cannot_have_init():
 
             def __init__(self):
                 self.value = 0
+        Node()
 
 
 def test_check_method():
@@ -68,6 +71,7 @@ def test_check_method():
         def check(self):
             if not(1 <= self.value <= 10):
                 raise ValueError("must be in 1..10")
+    Node(Number(1))
 
     model = context.run_solver(["node(10)."])
     assert str(model) == '[node(10)]'
@@ -85,6 +89,7 @@ def test_string():
     @validate(context=context)
     class Name:
         value: str
+    Name(String('mario'))
 
     model = context.run_solver(['name("mario").'])
     assert str(model) == '[name("mario")]'
@@ -111,6 +116,7 @@ def test_complex_type():
         def check_ordered(self):
             if not(self.from_ < self.to):
                 raise ValueError("nodes must be ordered")
+    Edge(Number(1), Number(2))
 
     model = context.run_solver(['node(1). node(2). edge(1,2).'])
     assert str(model) == '[node(1), node(2), edge(1,2)]'
@@ -144,6 +150,7 @@ def test_auto_blacklist():
     class Edge:
         source: int
         dest: int
+    Edge(Number(1), Number(2))
 
     assert str(context.run_solver(["edge(1,2)."])) == '[edge(1,2)]'
 
@@ -158,6 +165,7 @@ def test_disable_auto_blacklist():
     class Edge:
         source: int
         dest: int
+    Edge(Number(1), Number(2))
 
     assert str(context.run_solver(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'
 
@@ -202,7 +210,7 @@ def test_any_type():
 
     Weak(Number(1))
     Weak(String('abc'))
-    Weak(Function('abc'))
+    Weak(Function('abc', []))
     Weak(Function('abc', [Number(1)]))
 
 
