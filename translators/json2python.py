@@ -26,6 +26,8 @@ OTHER DEALINGS IN THE SOFTWARE.
 
 supported_types = ['int', 'str', 'Any']
 __all_types__ = {}
+INT_MIN = int(-pow(2, 31))
+INT_MAX = int(pow(2, 31)-1)
 
 class ErrorMessages:
     def __init__(self):
@@ -100,8 +102,8 @@ class Term:
             raise ValueError("Type not supported")
 
     def __process_int__(self):
-        min_value = int(-pow(2, 31))
-        max_value = int(pow(2, 31) - 1)
+        min_value = INT_MIN
+        max_value = INT_MAX
         if 'min_value' in self.__term:
             if __is_integer__(self.__term['min_value']):
                 min_value = max(int(self.__term['min_value']), min_value)
@@ -164,38 +166,65 @@ class Atom:
         self.__output.append('class %s:' % self.__predicate)
         self.__sums = atom['sums']
         self.__counts = atom['counts']
-        self.__all_sums = []
+        self.__all_sums_positive = []
+        self.__all_sums_negative = []
         self.__all_counts = []
+        self.__post_terms = []
 
     def get_output(self):
         return self.__output
 
-    def __process_sums_count__(self, my_list, validation, elem):
-        for i in my_list:
+    def __process_count__(self, validation):
+        for i in self.__counts:
             if 'term' in i:
-                min_value = -pow(2, 31)
-                max_value = pow(2, 31) - 1
+                min_value = INT_MIN
+                max_value = INT_MAX
                 if 'min' in i:
                     if __is_integer__(i['min']):
                         min_value = max(min_value, int(i['min']))
                 if 'max' in i:
                     if __is_integer__(i['max']):
                         max_value = min(max_value, int(i['max']))
-                aggregate_name = '%s_of_%s' % (elem, i['term'])
-                if elem == 'sum':
-                    self.__output.append('\t%s = [0, 0, %s, %s]' % (aggregate_name, min_value, max_value))
-                    self.__all_sums.append(aggregate_name)
-                else:
-                    self.__output.append('\t%s = [0, %s, %s]' % (aggregate_name, min_value, max_value))
-                    self.__all_counts.append(aggregate_name)
-                if elem == 'sum':
-                    validation.append(
-                        'self.%s_of_%s[1 if self._%s_ >= 0 else 0] += abs(self._%s_)' % (elem, i['term'], i['term'], i['term']))
-                else:
-                    validation.append(
-                        'self.%s_of_%s[0] += 1' % (elem, i['term']))
+                aggregate_name = 'count_of_%s' % (i['term'])
+                self.__post_terms.append('%s.%s = 0' % (self.__predicate, aggregate_name))
+                self.__all_counts.append((i['term'], aggregate_name, min_value, max_value))
+                validation.append('%s.count_of_%s += 1' % (self.__predicate, i['term']))
             else:
-                print('Warning: missing term in %s' % elem)
+                print('Warning: missing term in count')
+
+    def __process_sums__(self, validation):
+        for i in self.__sums:
+            if 'term' in i:
+                min_positive = INT_MIN
+                max_positive = INT_MAX
+                min_negative = INT_MIN
+                max_negative = INT_MAX
+                if 'min_positive' in i:
+                    if __is_integer__(i['min_positive']):
+                        min_positive = max(min_positive, int(i['min_positive']))
+                if 'max_positive' in i:
+                    if __is_integer__(i['max_positive']):
+                        max_positive = min(max_positive, int(i['max_positive']))
+                if 'min_negative' in i:
+                    if __is_integer__(i['min_negative']):
+                        min_negative = max(min_negative, int(i['min_negative']))
+                if 'max_negative' in i:
+                    if __is_integer__(i['max_negative']):
+                        max_negative = min(max_negative, int(i['max_negative']))
+
+                aggregate_name = 'sum_of_%s_pos' % (i['term'])
+                self.__post_terms.append('%s.%s = 0' % (self.__predicate, aggregate_name))
+                self.__all_sums_positive.append((i['term'], aggregate_name, min_positive, max_positive))
+                aggregate_name = 'sum_of_%s_neg' % (i['term'])
+                self.__post_terms.append('%s.%s = 0' % (self.__predicate, aggregate_name))
+                self.__all_sums_negative.append((i['term'], aggregate_name, min_negative, max_negative))
+
+                validation.append('if self._%s_ >= 0:' % i['term'])
+                validation.append('\t%s.sum_of_%s_pos += self._%s_' % (self.__predicate, i['term'], i['term']))
+                validation.append('else:')
+                validation.append('\t%s.sum_of_%s_neg += self._%s_' % (self.__predicate, i['term'], i['term']))
+            else:
+                print('Warning: missing term in sum')
 
     def process(self):
         validation = []
@@ -221,18 +250,27 @@ class Atom:
             if 'le' in check:
                 __compute_constraints__(check, validation, 'le', params, '>')
 
-        self.__process_sums_count__(self.__sums, validation, 'sum')
-        self.__process_sums_count__(self.__counts, validation, 'count')
+        self.__process_sums__(validation)
+        self.__process_count__(validation)
 
         self.__output.append('\t@classmethod')
         self.__output.append('\tdef check(cls):')
-        if len(self.__all_sums) + len(self.__all_counts) > 0:
-            for j in self.__all_sums:
-                self.__output.append('\t\tif cls.%s[0] < cls.%s[3]: raise ValueError(f\'sum of %s cannot be less than {cls.%s[3]}\')' % (j, j, j.replace('sum_of_',''), j))
-                self.__output.append('\t\tif cls.%s[1] > cls.%s[2]: raise ValueError(f\'sum of %s cannot be greater than {cls.%s[2]}\')' % (j, j, j.replace('sum_of_', ''), j))
+        if len(self.__all_sums_positive) + len(self.__all_sums_negative) + len(self.__all_counts) > 0:
+            for j in self.__all_sums_positive:
+                (t_name, name, min_value, max_value) = j
+                if min_value > INT_MIN:
+                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s of predicate %s cannot reach %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
+                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s of predicate %s may exceed %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
+            for j in self.__all_sums_negative:
+                (t_name, name, min_value, max_value) = j
+                self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'sum of %s of predicate %s may exceed %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
+                if max_value < INT_MAX:
+                    self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'sum of %s of predicate %s cannot reach %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
             for j in self.__all_counts:
-                self.__output.append('\t\tif cls.%s[0] < cls.%s[1]: raise ValueError(f\'count of %s cannot be less than {cls.%s[1]}\')' % (j, j, j.replace('count_of_',''), j))
-                self.__output.append('\t\tif cls.%s[0] > cls.%s[2]: raise ValueError(f\'count of %s cannot be greater than {cls.%s[2]}\')' % (j, j, j.replace('count_of_', ''), j))
+                (t_name, name, min_value, max_value) = j
+                if min_value > INT_MIN:
+                    self.__output.append('\t\tif cls.%s < %s: raise ValueError(f\'count of %s of predicate %s cannot reach than %s\')' % (name, min_value, t_name, self.__atom['predicate'], min_value))
+                self.__output.append('\t\tif cls.%s > %s: raise ValueError(f\'count of %s of predicate %s may exceed than %s\')' % (name, max_value, t_name, self.__atom['predicate'], max_value))
         else:
             self.__output.append('\t\tpass')
 
@@ -243,7 +281,7 @@ class Atom:
             for v in validation:
                 self.__output.append('\t\t%s' % v)
         self.__output.append('')
-
+        self.__output.extend(self.__post_terms)
 
 class Output:
 
@@ -256,12 +294,7 @@ class Output:
                           f'context = Context()\n' \
                           f'{output}\n\n' \
                           f'def main(prg):\n' \
-                          f'\tprg.add("validators", [], context.validators())\n' \
-                          f'\tprg.ground([\n' \
-                          f'\t("base", []),\n' \
-                          f'\t("validators", []),\n' \
-                          f'\t], context=context)\n' \
-                          f'\tprg.solve()\n' \
+                          f'\tcontext.run(prg)\n' \
                           f'#end.\n' \
                           f'{rules}\n'
 
