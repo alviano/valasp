@@ -1,2 +1,4 @@
 clingo~=5.4.0
 pytest~=5.4.1
+yaml~=0.1.7
+pyyaml~=5.3.1
