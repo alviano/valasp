@@ -29,6 +29,7 @@ __all_types__ = {}
 INT_MIN = int(-pow(2, 31))
 INT_MAX = int(pow(2, 31)-1)
 
+
 class ErrorMessages:
     def __init__(self):
         pass
@@ -123,7 +124,7 @@ class Term:
             to_add = []
             for i in enum:
                 if __is_integer__(i):
-                    to_add.append(i)
+                    to_add.append(str(i))
                 else:
                     print('Warning: expected int type in enum of integers. Ignored.')
             enum_name = '__enum%s_' % self.__term_name
@@ -283,9 +284,14 @@ class Atom:
         self.__output.append('')
         self.__output.extend(self.__post_terms)
 
+
 class Output:
 
-    def __init__(self, output, rules):
+    def __init__(self, output, rules, inclusions):
+        self.__inclusion = ""
+        for i in inclusions:
+            self.__inclusion += f'#include \"{i}\".\n'
+
         self.__template = f'#script(python).\n\n' \
                           f'import clingo\n' \
                           f'import re\n' \
@@ -299,7 +305,7 @@ class Output:
                           f'{rules}\n'
 
     def get_output(self):
-        return self.__template
+        return self.__inclusion + self.__template
 
 
 class Validation:
@@ -307,11 +313,13 @@ class Validation:
         self.__output = []
         self.__atoms = None
         self.__rules = []
+        self.__inclusions = []
 
-    def start_validation(self, atoms, rules):
-        self.__atoms = atoms
-        self.__rules = rules
-        for atom in atoms:
+    def start_validation(self, values):
+        self.__atoms = values['atoms']
+        self.__rules = values['rules']
+        self.__inclusions = values['include']
+        for atom in self.__atoms:
             for term in atom['terms']:
                 if 'type' not in term:
                     term['type'] = 'Any'
@@ -331,5 +339,5 @@ class Validation:
             self.__output += a.get_output()
 
     def end_validation(self):
-        output = Output('\n'.join(self.__output), '\n'.join(self.__rules))
+        output = Output('\n'.join(self.__output), '\n'.join(self.__rules), self.__inclusions)
         return output.get_output()

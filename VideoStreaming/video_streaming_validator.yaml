@@ -1,0 +1,32 @@
+user:
+    userid: int
+    videotype:
+        type: str
+        enum: ["Documentary", "Video", "Cartoon", "Sport"]
+    resolution: int
+    bandwidth: int
+    maxsat: int
+    maxbit: int
+        
+assign:
+    userid: int
+    videotype:
+        type: str
+        enum: ["Documentary", "Video", "Cartoon", "Sport"]
+    resolution: int
+    bitrate: int
+    sat: int
+
+obj:
+    value:
+        type: int
+        min: 0
+        sum+: int        
+    userid: int
+    asp:
+        obj(BEST_SAT-SAT_VALUE,USER_ID) :- assign(USER_ID, _, _, BITRATE, SAT_VALUE), user(USER_ID, _, _,_, BEST_SAT, _).    
+
+ValAsp:
+    include:
+        - VideoStreaming/encoding.asp
+        - VideoStreaming/0-multimedia-0-0.asp
