@@ -36,6 +36,14 @@ def test_underscore_prefix_in_class_names():
         ClassName('__')
 
 
+def test_underscore_prefix_in_class_name_to_predicate():
+    assert str(ClassName('_Abc').to_predicate()) == '_abc'
+
+
+def test_underscore_prefix_in_predicate_name_to_class():
+    assert str(PredicateName('_abc').to_class()) == '_Abc'
+
+
 def test_predicate_name_no_blank():
     with pytest.raises(ValueError):
         PredicateName('')
@@ -67,3 +75,12 @@ def test_underscore_prefix_in_predicate_names():
 
     with pytest.raises(ValueError):
         PredicateName('__')
+
+
+def test_single_quotes():
+    for name in ["a'", "'a", "'a'", "_'_a'", "'''''a'''''"]:
+        assert str(PredicateName(name)) == name
+        assert PredicateName(name).to_class().to_predicate() == PredicateName(name)
+        name = name.upper()
+        assert str(ClassName(name)) == name
+        assert ClassName(name).to_predicate().to_class() == ClassName(name)

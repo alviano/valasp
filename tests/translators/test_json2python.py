@@ -50,7 +50,7 @@ def run_main_on_yaml(tmp_path, yaml_content) -> str:
     dest = tmp_path / "output.yaml"
     sys.argv = [sys.argv[0], inp, dest]
     main()
-    print (dest.read_text())
+    print(dest.read_text())
     return str(dest)
 
 
