@@ -6,7 +6,7 @@ import warnings
 
 import clingo
 from types import FunctionType
-from typing import ClassVar, List, Callable
+from typing import ClassVar, List, Callable, Optional
 
 from valasp.domain.name import PredicateName, ClassName
 from valasp.domain.raisers import ValAspWarning
@@ -49,12 +49,19 @@ class Context:
     def is_reserved(self, key: str) -> bool:
         return key in self.__reserved
 
-    def add_validator(self, predicate: PredicateName, arity: int) -> None:
+    def add_validator(self, predicate: PredicateName, arity: int, fun: Optional[str] = None) -> None:
         args_as_vars = ','.join(f'X{i}' for i in range(arity))
         at_term = f'valasp_validate_{predicate}'
-        self.__validators.append(f':- {predicate}({args_as_vars}); @{at_term}({args_as_vars}) != 1.')
-        self.register_term(PredicateName(at_term), [args_as_vars], [
-            f'{predicate.to_class()}({args_as_vars})',
+        constraint = f':- {predicate}({args_as_vars});'
+        if fun is None:
+            constraint += f'@{at_term}({args_as_vars}) != 1.'
+        elif fun is '':
+            constraint += f'@{at_term}(({args_as_vars},)) != 1.'
+        else:
+            constraint += f'@{at_term}({fun}({args_as_vars})) != 1.'
+        self.__validators.append(constraint)
+        self.register_term(PredicateName(at_term), ['value'], [
+            f'{predicate.to_class()}(value)',
             f'return 1'
         ])
 

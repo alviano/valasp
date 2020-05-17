@@ -4,7 +4,7 @@ from clingo import Number, String, Function, Tuple
 from typing import Any
 
 from valasp.context import ValAspWarning, Context
-from valasp.decorator import validate, Use
+from valasp.decorator import validate, Fun
 
 
 def test_must_have_annotations():
@@ -25,11 +25,11 @@ def test_define_str_and_cmp():
         first: int
         second: int
 
-    p12 = Pair(Number(1), Number(2))
+    p12 = Pair(Function('pair', [Number(1), Number(2)]))
     assert str(p12) == 'Pair(1,2)'
 
-    p13 = Pair(Number(1), Number(3))
-    p12_ = Pair(Number(1), Number(2))
+    p13 = Pair(Function('pair', [Number(1), Number(3)]))
+    p12_ = Pair(Function('pair', [Number(1), Number(2)]))
     assert p12 < p13
     assert p13 > p12
     assert p12 == p12_
@@ -108,7 +108,7 @@ def test_complex_type():
     class Node:
         value: int
 
-    @validate(context=context)
+    @validate(context=context, with_fun=Fun.TUPLE)
     class Edge:
         from_: Node
         to: Node
@@ -116,7 +116,7 @@ def test_complex_type():
         def check_ordered(self):
             if not(self.from_ < self.to):
                 raise ValueError("nodes must be ordered")
-    Edge(Number(1), Number(2))
+    Edge(Tuple([Number(1), Number(2)]))
 
     model = context.run_solver(['node(1). node(2). edge(1,2).'])
     assert str(model) == '[node(1), node(2), edge(1,2)]'
@@ -146,11 +146,11 @@ def test_underscore_in_annotations():
 def test_auto_blacklist():
     context = Context()
 
-    @validate(context=context)
+    @validate(context=context, with_fun=Fun.TUPLE)
     class Edge:
         source: int
         dest: int
-    Edge(Number(1), Number(2))
+    Edge(Tuple([Number(1), Number(2)]))
 
     assert str(context.run_solver(["edge(1,2)."])) == '[edge(1,2)]'
 
@@ -165,7 +165,7 @@ def test_disable_auto_blacklist():
     class Edge:
         source: int
         dest: int
-    Edge(Number(1), Number(2))
+    Edge(Function('edge', [Number(1), Number(2)]))
 
     assert str(context.run_solver(["edge(1,2). edge((1,2))."])) == '[edge(1,2), edge((1,2))]'
 
@@ -255,10 +255,10 @@ def test_checks_must_have_no_arguments():
             Foo(Number(0)).check_fail(0)
 
 
-def test_use_as_value():
+def test_is_not_predicate():
     context = Context()
 
-    @validate(context=context, use_as=Use.Value)
+    @validate(context=context, is_predicate=False)
     class Month:
         value: int
 
@@ -272,22 +272,22 @@ def test_use_as_value():
     with pytest.raises(TypeError):
         Month(String('Sep'))
 
-    @validate(context=context)
+    @validate(context=context, with_fun=Fun.TUPLE)
     class Salary:
         amount: int
         month: Month
 
-    assert str(Salary(Number(1000), Number(1))) == 'Salary(1000,Month(1))'
+    assert str(Salary(Tuple([Number(1000), Number(1)]))) == 'Salary(1000,Month(1))'
     with pytest.raises(ValueError):
-        Salary(Number(1000), Number(13))
+        Salary(Tuple([Number(1000), Number(13)]))
     with pytest.raises(TypeError):
-        Salary(Number(1000), String('Jan'))
+        Salary(Tuple([Number(1000), String('Jan')]))
 
 
-def test_use_as_value_has_no_constraint():
+def test_no_predicate_no_constraint():
     context = Context()
 
-    @validate(context=context, use_as=Use.Value)
+    @validate(context=context, is_predicate=False)
     class Integer:
         value: int
     Integer(Number(1))
@@ -295,21 +295,21 @@ def test_use_as_value_has_no_constraint():
     context.run_grounder(['integer(a).'])
 
 
-def test_use_as_value_must_have_arity_one():
+def test_with_fun_forward_must_have_arity_one():
     context = Context()
 
     with pytest.raises(TypeError):
-        @validate(context=context, use_as=Use.Value)
+        @validate(context=context, with_fun=Fun.FORWARD)
         class Pair:
             a: int
             b: int
         Pair(Number(1), Number(2))
 
 
-def test_use_as_function():
+def test_complex_implicit_no_predicate():
     context = Context()
 
-    @validate(context=context, use_as=Use.Function)
+    @validate(context=context, is_predicate=False)
     class Date:
         year: int
         month: int
@@ -318,7 +318,7 @@ def test_use_as_function():
         def __post_init__(self):
             datetime.datetime(self.year, self.month, self.day)
 
-    @validate(context=context)
+    @validate(context=context, with_fun=Fun.TUPLE)
     class Birthday:
         name: str
         date: Date
@@ -334,15 +334,15 @@ def test_use_as_function():
         Date(Function('data', [Number(1983), Number(9), Number(12)]))
 
     date = Function('date', [Number(1983), Number(9), Number(12)])
-    assert str(Birthday(String('mario'), date)) == 'Birthday(mario,Date(1983,9,12))'
+    assert str(Birthday(Tuple([String('mario'), date]))) == 'Birthday(mario,Date(1983,9,12))'
     with pytest.raises(TypeError):
         Birthday(String('mario'), Number(0))
 
 
-def test_use_as_function_has_no_constraint():
+def test_no_predicate_with_fun_implicit_no_constraint():
     context = Context()
 
-    @validate(context=context, use_as=Use.Function)
+    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
     class Integer:
         value: int
     Integer(Function('integer', [Number(1)]))
@@ -351,53 +351,10 @@ def test_use_as_function_has_no_constraint():
     context.run_grounder(['integer(a).'])
 
 
-def test_use_as_tuple():
-    context = Context()
-
-    @validate(context=context, use_as=Use.Tuple)
-    class Date:
-        year: int
-        month: int
-        day: int
-
-        def __post_init__(self):
-            datetime.datetime(self.year, self.month, self.day)
-
-    @validate(context=context)
-    class Birthday:
-        name: str
-        date: Date
-
-    assert str(Date(Tuple([Number(1983), Number(9), Number(12)]))) == 'Date(1983,9,12)'
-    with pytest.raises(TypeError):
-        Date(Number(1982), Number(9), Number(12))
-    with pytest.raises(ValueError):
-        Date(Tuple([Number(1983), Number(9)]))
-    with pytest.raises(ValueError):
-        Date(Function('date', [Number(1983), Number(9), Number(12)]))
-
-    date = Tuple([Number(1983), Number(9), Number(12)])
-    assert str(Birthday(String('mario'), date)) == 'Birthday(mario,Date(1983,9,12))'
-    with pytest.raises(TypeError):
-        Birthday(String('mario'), Number(0))
-
-
-def test_use_as_tuple_has_no_constraint():
-    context = Context()
-
-    @validate(context=context, use_as=Use.Tuple)
-    class Integer:
-        value: int
-    Integer(Tuple([Number(1)]))
-
-    context.run_grounder(['integer((a,)).'])
-    context.run_grounder(['integer(a).'])
-
-
 def test_date_as_tuple():
     context = Context()
 
-    @validate(context=context, use_as=Use.Tuple)
+    @validate(context=context, is_predicate=False, with_fun=Fun.TUPLE)
     class Date:
         year: int
         month: int
@@ -410,7 +367,7 @@ def test_date_as_tuple():
     class Birthday:
         name: str
         date: Date
-    Birthday(String('mario'), Tuple([Number(1983), Number(9), Number(12)]))
+    Birthday(Function('birthday', [String('mario'), Tuple([Number(1983), Number(9), Number(12)])]))
 
     model = context.run_solver(['birthday("sofia", (2019,6,25)).'])
     assert str(model) == '[birthday("sofia",(2019,6,25))]'
@@ -429,7 +386,7 @@ def test_date_as_tuple():
 def test_date_as_fun():
     context = Context()
 
-    @validate(context=context, use_as=Use.Function)
+    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
     class Date:
         year: int
         month: int
@@ -442,7 +399,7 @@ def test_date_as_fun():
     class Birthday:
         name: str
         date: Date
-    Birthday(String('mario'), Function('date', [Number(1983), Number(9), Number(12)]))
+    Birthday(Function('birthday', [String('mario'), Function('date', [Number(1983), Number(9), Number(12)])]))
 
     model = context.run_solver(['birthday("sofia", date(2019,6,25)).'])
     assert str(model) == '[birthday("sofia",date(2019,6,25))]'
@@ -456,3 +413,18 @@ def test_date_as_fun():
         context.run_solver(['birthday("no one", date(2019,2,29)).'])
     with pytest.raises(RuntimeError):
         context.run_solver(['birthday("sofia", (2019,6,25)).'])
+
+
+def test_with_fun_forward_of_pair():
+    context = Context()
+
+    @validate(context=context)
+    class Pair:
+        a: int
+        b: int
+
+    @validate(context=context)
+    class Foo:
+        x: Pair
+
+    Foo(Function('pair', [Number(0), Number(1)]))

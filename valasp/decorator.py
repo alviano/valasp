@@ -4,38 +4,52 @@
 import inspect
 import warnings
 from enum import Enum
-from typing import ClassVar, Callable, List, Any
+from typing import ClassVar, Callable, List, Any, Optional
 
 from valasp.context import Context
-from valasp.domain.name import ClassName
+from valasp.domain.name import ClassName, PredicateName
 from valasp.domain.raisers import ValAspWarning
 
 
-class Use(Enum):
-    Predicate = 0
-    Value = 1
-    Function = 2
-    Tuple = 3
+class Fun(Enum):
+    FORWARD_IMPLICIT = 0
+    FORWARD = 1
+    IMPLICIT = 2
+    TUPLE = 3
 
 
 class ValAsp:
-    def __init__(self, cls: ClassVar, context: Context, use_as: Use, auto_blacklist: bool):
+    def __init__(self, cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun, auto_blacklist: bool):
         self.cls = cls
         self.context = context
 
         self.name = ClassName(cls.__name__)
         self.annotations = getattr(self.cls, '__annotations__', {})
-
         if not self.annotations:
             raise TypeError('cannot process classes with no annotations')
-        if use_as == Use.Value and len(self.annotations) != 1:
-            raise TypeError(f'Use.Value needs arity 1, not {len(self.annotations)}')
+
+        if with_fun == Fun.FORWARD_IMPLICIT:
+            if len(self.annotations) == 1:
+                with_fun = Fun.FORWARD
+            else:
+                with_fun = Fun.IMPLICIT
+        if with_fun == Fun.IMPLICIT:
+            self.with_fun = self.name.to_predicate().value
+        elif with_fun == Fun.FORWARD:
+            if len(self.annotations) != 1:
+                raise TypeError('FORWARD requires exactly one annotation')
+            self.with_fun = None
+        elif with_fun == Fun.TUPLE:
+            self.with_fun = ''
+        else:
+            # self.with_fun = PredicateName(with_fun).value
+            raise ValueError('unexpected value for with_fun:', with_fun)
 
         args = list(f'{a}' for a in self.annotations)
-        self.__add_init(use_as, args)
+        self.__add_init(args)
         self.__add_str(args)
         self.__add_cmp(args)
-        if use_as == Use.Predicate:
+        if is_predicate:
             self.__add_validator(args)
         if auto_blacklist:
             self.__add_blacklist(args)
@@ -49,7 +63,7 @@ class ValAsp:
         fun = self.context.make_fun(f'{self.name}.{method}', args, body_lines, with_self=True)
         setattr(self.cls, method, fun)
 
-    def __add_init(self, use_as: Use, args: List[str]) -> None:
+    def __add_init(self, args: List[str]) -> None:
         if self.has_method('__init__'):
             raise ValueError("cannot process classes with __init__() constructor")
 
@@ -60,15 +74,17 @@ class ValAsp:
         }
 
         def unpack(fun_name: str) -> List[str]:
+            if self.with_fun is None:
+                return [f'{args[0]} = value']
             return [
-                f'if fun.type != clingo.SymbolType.Function:',
-                f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{fun.type}}")',
-                f'if fun.name != "{fun_name}":',
-                f'    raise ValueError(f"expecting function \\"{fun_name}\\", but found \\"{{fun.name}}\\"")',
-                f'if len(fun.arguments) != {len(args)}:',
+                f'if value.type != clingo.SymbolType.Function:',
+                f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{value.type}}")',
+                f'if value.name != "{fun_name}":',
+                f'    raise ValueError(f"expecting function \\"{fun_name}\\", but found \\"{{value.name}}\\"")',
+                f'if len(value.arguments) != {len(args)}:',
                 f'    raise ValueError(f"expecting arity {len(args)} for {fun_name}, '
-                + f'but found {{len(fun.arguments)}}")',
-                f'{", ".join(args)}, = fun.arguments',
+                + f'but found {{len(value.arguments)}}")',
+                f'{", ".join(args)}, = value.arguments',
             ]
 
         def init_arg(arg: str, typ) -> List[str]:
@@ -92,11 +108,7 @@ class ValAsp:
                 ]
             return [f'self.{arg} = {typ.__name__}({arg})']
 
-        body = []
-        if use_as == Use.Function:
-            body += unpack(self.name.to_predicate().value)
-        elif use_as == Use.Tuple:
-            body += unpack('')
+        body = unpack(self.with_fun)
         for k, v in self.annotations.items():
             body.extend(init_arg(k, v))
 
@@ -112,10 +124,7 @@ class ValAsp:
         if getattr(self.cls, '__post_init__', None):
             body.append('self.__post_init__()')
 
-        if use_as in [Use.Function, Use.Tuple]:
-            self.__set_method('__init__', ['fun'], body)
-        else:
-            self.__set_method('__init__', args, body)
+        self.__set_method('__init__', ['value'], body)
 
     def __add_str(self, args: List[str]) -> None:
         if not self.has_method('__str__'):
@@ -131,14 +140,14 @@ class ValAsp:
                 self.__set_method(f'__{m[0]}__', ['other'], [f"return {self_tuple} {m[1]} {other_tuple}"])
 
     def __add_validator(self, args: List[str]) -> None:
-        self.context.add_validator(self.name.to_predicate(), len(args))
+        self.context.add_validator(self.name.to_predicate(), len(args), self.with_fun)
 
     def __add_blacklist(self, args: List[str]) -> None:
         self.context.blacklist(self.name.to_predicate(), self.context.all_arities_but(len(args)))
 
 
-def validate(context: Context, use_as: Use = Use.Predicate, auto_blacklist: bool = True):
+def validate(context: Context, is_predicate: bool = True, with_fun: Fun = Fun.FORWARD_IMPLICIT, auto_blacklist: bool = True):
     def decorator(cls: ClassVar):
-        ValAsp(cls, context, use_as, auto_blacklist)
+        ValAsp(cls, context, is_predicate, with_fun, auto_blacklist)
         return cls
     return decorator
