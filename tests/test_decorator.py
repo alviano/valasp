@@ -1,10 +1,10 @@
+import datetime
+import pytest
+from clingo import Number, String, Function, Tuple
 from typing import Any
 
-import pytest
-from clingo import Number, String, Function
-
 from valasp.context import ValAspWarning, Context
-from valasp.decorator import validate
+from valasp.decorator import validate, Use
 
 
 def test_must_have_annotations():
@@ -253,3 +253,206 @@ def test_checks_must_have_no_arguments():
 
         with pytest.raises(TypeError):
             Foo(Number(0)).check_fail(0)
+
+
+def test_use_as_value():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Value)
+    class Month:
+        value: int
+
+        def __post_init__(self):
+            if not(1 <= self.value <= 12):
+                raise ValueError('month not in 1..12')
+
+    assert str(Month(Number(1))) == 'Month(1)'
+    with pytest.raises(ValueError):
+        Month(Number(0))
+    with pytest.raises(TypeError):
+        Month(String('Sep'))
+
+    @validate(context=context)
+    class Salary:
+        amount: int
+        month: Month
+
+    assert str(Salary(Number(1000), Number(1))) == 'Salary(1000,Month(1))'
+    with pytest.raises(ValueError):
+        Salary(Number(1000), Number(13))
+    with pytest.raises(TypeError):
+        Salary(Number(1000), String('Jan'))
+
+
+def test_use_as_value_has_no_constraint():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Value)
+    class Integer:
+        value: int
+    Integer(Number(1))
+
+    context.run_grounder(['integer(a).'])
+
+
+def test_use_as_value_must_have_arity_one():
+    context = Context()
+
+    with pytest.raises(TypeError):
+        @validate(context=context, use_as=Use.Value)
+        class Pair:
+            a: int
+            b: int
+        Pair(Number(1), Number(2))
+
+
+def test_use_as_function():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Function)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: str
+        date: Date
+
+    assert str(Date(Function('date', [Number(1983), Number(9), Number(12)]))) == 'Date(1983,9,12)'
+    with pytest.raises(TypeError):
+        Date(Number(1983), Number(9), Number(12))
+    with pytest.raises(ValueError):
+        Date(Tuple([Number(1983), Number(9), Number(12)]))
+    with pytest.raises(ValueError):
+        Date(Function('date', [Number(1983), Number(9)]))
+    with pytest.raises(ValueError):
+        Date(Function('data', [Number(1983), Number(9), Number(12)]))
+
+    date = Function('date', [Number(1983), Number(9), Number(12)])
+    assert str(Birthday(String('mario'), date)) == 'Birthday(mario,Date(1983,9,12))'
+    with pytest.raises(TypeError):
+        Birthday(String('mario'), Number(0))
+
+
+def test_use_as_function_has_no_constraint():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Function)
+    class Integer:
+        value: int
+    Integer(Function('integer', [Number(1)]))
+
+    context.run_grounder(['integer(integer(a)).'])
+    context.run_grounder(['integer(a).'])
+
+
+def test_use_as_tuple():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Tuple)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: str
+        date: Date
+
+    assert str(Date(Tuple([Number(1983), Number(9), Number(12)]))) == 'Date(1983,9,12)'
+    with pytest.raises(TypeError):
+        Date(Number(1982), Number(9), Number(12))
+    with pytest.raises(ValueError):
+        Date(Tuple([Number(1983), Number(9)]))
+    with pytest.raises(ValueError):
+        Date(Function('date', [Number(1983), Number(9), Number(12)]))
+
+    date = Tuple([Number(1983), Number(9), Number(12)])
+    assert str(Birthday(String('mario'), date)) == 'Birthday(mario,Date(1983,9,12))'
+    with pytest.raises(TypeError):
+        Birthday(String('mario'), Number(0))
+
+
+def test_use_as_tuple_has_no_constraint():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Tuple)
+    class Integer:
+        value: int
+    Integer(Tuple([Number(1)]))
+
+    context.run_grounder(['integer((a,)).'])
+    context.run_grounder(['integer(a).'])
+
+
+def test_date_as_tuple():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Tuple)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: str
+        date: Date
+    Birthday(String('mario'), Tuple([Number(1983), Number(9), Number(12)]))
+
+    model = context.run_solver(['birthday("sofia", (2019,6,25)).'])
+    assert str(model) == '[birthday("sofia",(2019,6,25))]'
+
+    model = context.run_solver(['birthday("sofia", (2019,6,25)).', 'birthday("leonardo", (2018,2,1)).'])
+    assert str(model) == '[birthday("sofia",(2019,6,25)), birthday("leonardo",(2018,2,1))]'
+
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("bigel", (1982,123)).'])
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("no one", (2019,2,29)).'])
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("sofia", date(2019,6,25)).'])
+
+
+def test_date_as_fun():
+    context = Context()
+
+    @validate(context=context, use_as=Use.Function)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: str
+        date: Date
+    Birthday(String('mario'), Function('date', [Number(1983), Number(9), Number(12)]))
+
+    model = context.run_solver(['birthday("sofia", date(2019,6,25)).'])
+    assert str(model) == '[birthday("sofia",date(2019,6,25))]'
+
+    model = context.run_solver(['birthday("sofia", date(2019,6,25)).', 'birthday("leonardo", date(2018,2,1)).'])
+    assert str(model) == '[birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]'
+
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("bigel", date(1982,123)).'])
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("no one", date(2019,2,29)).'])
+    with pytest.raises(RuntimeError):
+        context.run_solver(['birthday("sofia", (2019,6,25)).'])

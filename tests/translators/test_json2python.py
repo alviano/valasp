@@ -1,4 +1,3 @@
-import subprocess
 import sys
 from subprocess import Popen, PIPE
 from typing import Tuple, List
@@ -95,7 +94,7 @@ def test_main_on_yaml_valasp_is_not_reserved(tmp_path):
     ])
     assert exit_code not in [10, 20, 30]
     assert 'TypeError: expecting clingo.SymbolType.Number, but received' in err
-    
+
 
 def test_main_on_yaml_file_with_one_atom(tmp_path):
     asp_file = run_main_on_yaml(tmp_path, """
