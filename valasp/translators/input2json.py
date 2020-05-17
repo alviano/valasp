@@ -189,13 +189,16 @@ def create_json_file(filename, output, file_format):
         json.dump(my_json, f, ensure_ascii=False, indent=4)
 
 
-def __count_to_dict__(local_term, atom_name):
+def __count_to_dict__(error_message, local_term, atom_name):
     if 'count' in local_term:
         if isinstance(local_term['count'], dict):
+            for j in local_term['count']:
+                if j != 'min' and j != 'max':
+                    raise ValueError("%s Unexpected value for count. Expected min or max" % error_message)
             my = local_term['count']
             my['term'] = atom_name
         elif local_term['count'] != 'int':
-            raise ValueError("Unexpected value for sum+")
+            raise ValueError("%s Unexpected value for count. Expected int." % error_message)
         else:
             my = {'term': atom_name}
         return my
@@ -203,7 +206,7 @@ def __count_to_dict__(local_term, atom_name):
         return None
 
 
-def __sum_to_dict__(local_term, atom_name):
+def __sum_to_dict__(error_message, local_term, atom_name):
     my = {'term': atom_name}
     if 'sum+' in local_term:
         if isinstance(local_term['sum+'], dict):
@@ -212,8 +215,10 @@ def __sum_to_dict__(local_term, atom_name):
                     my['min_positive'] = local_term['sum+'][j]
                 elif j == 'max':
                     my['max_positive'] = local_term['sum+'][j]
+                else:
+                    raise ValueError("%s Unexpected value for sum+. Expected min or max" % error_message)
         elif local_term['sum+'] != 'int':
-            raise ValueError("Unexpected value for sum+")
+            raise ValueError("%s Unexpected value for sum+. Expected int" % error_message)
     if 'sum-' in local_term:
         if isinstance(local_term['sum-'], dict):
             for j in local_term['sum-']:
@@ -221,8 +226,10 @@ def __sum_to_dict__(local_term, atom_name):
                     my['min_negative'] = local_term['sum-'][j]
                 elif j == 'max':
                     my['max_negative'] = local_term['sum-'][j]
+                else:
+                    raise ValueError("%s Unexpected value for sum-. Expected min or max" % error_message)
         elif local_term['sum-'] != 'int':
-            raise ValueError("Unexpected value for sum-")
+            raise ValueError("%s Unexpected value for sum-. Expected int" % error_message)
     if 'sum+' not in local_term and 'sum-' not in local_term:
         return None
     return my
@@ -247,32 +254,66 @@ def __create_json_from_yaml(filename):
             local_sums = []
             local_counts = []
             local = {'predicate': j, 'terms': local_terms, "checks": local_checks, "sums": local_sums, "counts": local_counts}
+            supported_types = {'int', 'str', 'function'}
             local_check = {}
             for i in yaml_input[j]:
                 elem = yaml_input[j][i]
+                error_message = '[Predicate: %s, Term: %s]' % (j, i)
                 if i.lower() != 'asp':
+                    local_term = {'name': i}
                     if isinstance(elem, dict):
-                        local_term = {'name': i}
+                        current_type = 'Any'
+                        if 'type' in elem:
+                            if elem['type'].lower() in supported_types:
+                                elem['type'] = elem['type'].lower()
+                            current_type = elem['type']
+                            if current_type == 'int':
+                                supported_elements_int = {'type', 'enum', 'min', 'max', 'sum+', 'sum-', 'count'}
+                            elif current_type == 'str' or current_type == 'function':
+                                supported_elements_str = {'type', 'enum', 'min_length', 'max_length', 'pattern'}
+                            else:
+                                current_type = 'custom'
                         for k in elem:
                             if k not in ['sum+', 'sum-', 'count']:
+                                if current_type == 'int' and k not in supported_elements_int:
+                                    raise ValueError('%s Unexpected keyword %s. Expected one of %s' % (error_message, k, supported_elements_int))
+                                elif (current_type == 'str' or current_type == 'function') and k not in supported_elements_str:
+                                    raise ValueError('%s Unexpected keyword %s. Expected one of %s' % (error_message, k, supported_elements_str))
+                                elif current_type == 'custom' and k != 'type':
+                                    raise ValueError('%s Unexpected keyword %s for custom types' % (error_message, k))
+                                elif current_type == 'Any' and k != 'type':
+                                    raise ValueError('%s Unexpected keyword %s for Any type' % (error_message, k))
                                 local_term[k] = elem[k]
+                            elif current_type != 'int':
+                                raise ValueError('%s Keyword %s is supported only for int' % (error_message, k))
                         local_terms.append(local_term)
-                        my_sum = __sum_to_dict__(elem, i)
+                        my_sum = __sum_to_dict__(error_message, elem, i)
                         if my_sum is not None:
                             local_sums.append(my_sum)
-                        my_count = __count_to_dict__(elem, i)
+                        my_count = __count_to_dict__(error_message, elem, i)
                         if my_count is not None:
                             local_counts.append(my_count)
                     elif isinstance(elem, list):
-                        if i == 'check':
+                        if i.lower() == 'check':
                             for check in elem:
                                 for c in check:
-                                    if c in {'different', 'equals', 'ge', 'gt', 'le', 'lt'} and isinstance(check[c], list) and len(check[c]) == 2:
+                                    my_supported = {'different', 'equals', 'ge', 'gt', 'le', 'lt'}
+                                    if c in my_supported and isinstance(check[c], list) and len(check[c]) == 2:
                                         if c not in local_check:
                                             local_check[c] = []
                                         local_check[c].append({'first': check[c][0], 'second': check[c][1]})
-                        pass
+                                    else:
+                                        if c not in my_supported:
+                                            raise ValueError("%s Expected one of: %s" % (error_message, my_supported))
+                                        elif not isinstance(check[c], list):
+                                            raise ValueError("%s Expected %s to be a list of elements" % (error_message, check[c]))
+                                        elif len(check[c]) != 2:
+                                            raise ValueError("%s Expected %s to contains two arguments" % (error_message, check[c]))
+                        else:
+                            raise ValueError("%s Expected keyword check" % error_message)
                     else:
+                        if elem.lower() in supported_types:
+                            elem = elem.lower()
                         local_term = {'name': i, 'type': elem}
                         local_terms.append(local_term)
                 else:
@@ -286,6 +327,8 @@ def __create_json_from_yaml(filename):
                     asp_rules.append(yaml_input[j][element])
                 elif element == 'include':
                     inclusions = yaml_input[j][element]
+                else:
+                    raise ValueError("[ValASP] Unexpected keyword %s. Expected asp or include" % element)
 
     my_json = {'atoms': my_locals, 'rules': asp_rules, 'include': inclusions}
     return my_json

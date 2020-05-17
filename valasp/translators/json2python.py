@@ -38,6 +38,7 @@ def __compute_constraints__(check_, validation, mess, received, comparison):
 def __my_capitalize__(my_str):
     if len(my_str) == 0:
         return ''
+    my_str = my_str.lower()
     return f'{my_str[0].upper()}{my_str[1:]}'
 
 
@@ -77,7 +78,7 @@ class Term:
         elif self.__term['type'] in __all_types__:
             pass
         else:
-            raise ValueError("Type not supported")
+            raise ValueError("Type %s not supported" % self.__term['type'])
 
     def __process_int__(self):
         min_value = INT_MIN
@@ -301,10 +302,13 @@ class Validation:
             for term in atom['terms']:
                 if 'type' not in term:
                     term['type'] = 'Any'
-                if term['type'] not in supported_types:
-                    term['type'] = __my_capitalize__(term['type'])
-                    term['type'] = '%s' % term['type']
-                    __all_types__[term['type']] = 1
+                elif term['type'] not in supported_types:
+                    term['type'] = '%s' % __my_capitalize__(term['type'])
+            if 'predicate' in atom:
+                atom['predicate'] = __my_capitalize__(atom['predicate'])
+                __all_types__[atom['predicate']] = 1
+            else:
+                raise ValueError("Missing predicate")
 
     def validate(self):
         if self.__atoms is None:
