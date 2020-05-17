@@ -52,7 +52,7 @@ class Context:
     def add_validator(self, predicate: PredicateName, arity: int, fun: Optional[str] = None) -> None:
         args_as_vars = ','.join(f'X{i}' for i in range(arity))
         at_term = f'valasp_validate_{predicate}'
-        constraint = f':- {predicate}({args_as_vars});'
+        constraint = f':- {predicate}({args_as_vars}); '
         if fun is None:
             constraint += f'@{at_term}({args_as_vars}) != 1.'
         elif fun is '':

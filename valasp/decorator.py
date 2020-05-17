@@ -28,22 +28,7 @@ class ValAsp:
         if not self.annotations:
             raise TypeError('cannot process classes with no annotations')
 
-        if with_fun == Fun.FORWARD_IMPLICIT:
-            if len(self.annotations) == 1:
-                with_fun = Fun.FORWARD
-            else:
-                with_fun = Fun.IMPLICIT
-        if with_fun == Fun.IMPLICIT:
-            self.with_fun = self.name.to_predicate().value
-        elif with_fun == Fun.FORWARD:
-            if len(self.annotations) != 1:
-                raise TypeError('FORWARD requires exactly one annotation')
-            self.with_fun = None
-        elif with_fun == Fun.TUPLE:
-            self.with_fun = ''
-        else:
-            # self.with_fun = PredicateName(with_fun).value
-            raise ValueError('unexpected value for with_fun:', with_fun)
+        self.with_fun = self.__with_fun(with_fun)
 
         args = list(f'{a}' for a in self.annotations)
         self.__add_init(args)
@@ -55,6 +40,23 @@ class ValAsp:
             self.__add_blacklist(args)
 
         self.context.register_class(self.cls)
+
+    def __with_fun(self, with_fun) -> Optional[str]:
+        if with_fun == Fun.FORWARD_IMPLICIT:
+            if len(self.annotations) == 1:
+                with_fun = Fun.FORWARD
+            else:
+                with_fun = Fun.IMPLICIT
+        if with_fun == Fun.IMPLICIT:
+            return self.name.to_predicate().value
+        if with_fun == Fun.FORWARD:
+            if len(self.annotations) != 1:
+                raise TypeError('FORWARD requires exactly one annotation')
+            return None
+        if with_fun == Fun.TUPLE:
+            return ''
+        # self.with_fun = PredicateName(with_fun).value
+        raise ValueError('unexpected value for with_fun:', with_fun)
 
     def has_method(self, method: str) -> bool:
         return getattr(self.cls, method, None) != getattr(object, method, None)
