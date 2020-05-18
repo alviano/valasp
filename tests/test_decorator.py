@@ -429,3 +429,23 @@ def test_with_fun_forward_of_pair():
         x: Pair
 
     Foo(Function('pair', [Number(0), Number(1)]))
+
+
+def test_alpha():
+    context = Context()
+
+    @validate(context=context)
+    class Id:
+        value: Alpha
+
+        def __post_init__(self):
+            value = str(self.value)  # not really needed, just to avoid complains from the type hint system
+            if not value.islower():
+                raise ValueError("I like only lower ids!")
+
+    assert str(Id(Function('ok', []))) == 'Id(ok)'
+
+    with pytest.raises(ValueError):
+        Id(Function('Wrong', []))
+    with pytest.raises(TypeError):
+        Id(QString('wrong'))

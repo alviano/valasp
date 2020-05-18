@@ -4,11 +4,11 @@
 import inspect
 import warnings
 from enum import Enum
-from typing import ClassVar, Callable, List, Any, Optional
+from typing import ClassVar, List, Optional
 
 from valasp.context import Context
-from valasp.domain.name import ClassName, PredicateName
-from valasp.domain.primitives import Integer, String, Alpha, Any, primitive_types
+from valasp.domain.name import ClassName
+from valasp.domain.primitives import primitive_types
 from valasp.domain.raisers import ValAspWarning
 
 
@@ -56,7 +56,6 @@ class ValAsp:
             return None
         if with_fun == Fun.TUPLE:
             return ''
-        # self.with_fun = PredicateName(with_fun).value
         raise ValueError('unexpected value for with_fun:', with_fun)
 
     def has_method(self, method: str) -> bool:
