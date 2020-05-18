@@ -136,14 +136,14 @@ def test_run_class_checks():
 
     with pytest.raises(ValueError):
         Foo(Number(1))
-        context.run_class_checks()
+        context.run_class_methods()
 
     Foo(Number(2))
-    context.run_class_checks()
+    context.run_class_methods()
 
     with pytest.raises(ValueError):
         Foo(Number(3))
-        context.run_class_checks()
+        context.run_class_methods()
 
 
 def test_class_checks_must_have_no_arguments():
@@ -159,7 +159,7 @@ def test_class_checks_must_have_no_arguments():
         Foo.check_fail(0)
 
     with pytest.warns(ValAspWarning):
-        context.run_class_checks()
+        context.run_class_methods()
 
 
 def test_fail_after_grounding():

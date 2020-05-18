@@ -233,14 +233,14 @@ def test_class_checks():
 
     context.run_grounder(["node(1)."])
     with pytest.raises(ValueError):
-        context.run_class_checks()
+        context.run_class_methods()
 
     context.run_grounder(["node(2)."])
-    context.run_class_checks()
+    context.run_class_methods()
 
     context.run_grounder(["node(3)."])
     with pytest.raises(ValueError):
-        context.run_class_checks()
+        context.run_class_methods()
 
 
 def test_checks_must_have_no_arguments():

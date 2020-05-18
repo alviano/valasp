@@ -91,7 +91,7 @@ class Context:
         control.ground([("base", [])], context=self)
         return control
 
-    def run_class_checks(self, prefix: str = 'check') -> None:
+    def run_class_methods(self, prefix: str = 'check') -> None:
         for cls in self.__classes:
             for method in inspect.getmembers(cls, predicate=inspect.ismethod):
                 if method[0].startswith(f'{prefix}'):
@@ -104,7 +104,7 @@ class Context:
 
     def run_solver(self, base_program: List[str]) -> List[clingo.SymbolicAtom]:
         control = self.run_grounder(base_program)
-        self.run_class_checks()
+        self.run_class_methods()
         res = []
 
         def on_model(model):
@@ -118,9 +118,9 @@ class Context:
     def run(self, control: clingo.Control, with_validators: bool = True, with_solve: bool = True) -> None:
         control.add("valasp", [], self.validators() if with_validators else '')
         if with_validators:
-            self.run_class_checks('before_grounding')
+            self.run_class_methods('before_grounding')
         control.ground([("base", []), ("valasp", [])], context=self)
         if with_validators:
-            self.run_class_checks('after_grounding')
+            self.run_class_methods('after_grounding')
         if with_solve:
             control.solve()
