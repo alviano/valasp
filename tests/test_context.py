@@ -162,12 +162,12 @@ def test_class_checks_must_have_no_arguments():
         context.run_class_checks()
 
 
-def test_run():
+def test_fail_after_grounding():
     context = Context()
 
     class Foo:
         @classmethod
-        def check_fail(cls):
+        def after_grounding(cls):
             raise ValueError('so nice')
 
     context.register_class(Foo)

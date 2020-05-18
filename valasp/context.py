@@ -91,10 +91,10 @@ class Context:
         control.ground([("base", [])], context=self)
         return control
 
-    def run_class_checks(self) -> None:
+    def run_class_checks(self, prefix: str = 'check') -> None:
         for cls in self.__classes:
             for method in inspect.getmembers(cls, predicate=inspect.ismethod):
-                if method[0].startswith('check'):
+                if method[0].startswith(f'{prefix}'):
                     m = getattr(cls, method[0])
                     if len(inspect.signature(m).parameters) != 0:
                         warnings.warn(f"ignore method {m.__name__} of class {cls.__name__} because it has parameters",
@@ -117,8 +117,10 @@ class Context:
 
     def run(self, control: clingo.Control, with_validators: bool = True, with_solve: bool = True) -> None:
         control.add("valasp", [], self.validators() if with_validators else '')
+        if with_validators:
+            self.run_class_checks('before_grounding')
         control.ground([("base", []), ("valasp", [])], context=self)
         if with_validators:
-            self.run_class_checks()
+            self.run_class_checks('after_grounding')
         if with_solve:
             control.solve()

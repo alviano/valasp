@@ -8,6 +8,7 @@ from typing import ClassVar, Callable, List, Any, Optional
 
 from valasp.context import Context
 from valasp.domain.name import ClassName, PredicateName
+from valasp.domain.primitives import Integer, String, Alpha, Any, primitive_types
 from valasp.domain.raisers import ValAspWarning
 
 
@@ -69,12 +70,6 @@ class ValAsp:
         if self.has_method('__init__'):
             raise ValueError("cannot process classes with __init__() constructor")
 
-        types = {
-            int: ('clingo.SymbolType.Number', '.number'),
-            str: ('clingo.SymbolType.String', '.string'),
-            Callable: ('clingo.SymbolType.Function', ''),
-        }
-
         def unpack(fun_name: str) -> List[str]:
             if self.with_fun is None:
                 return [f'{args[0]} = value']
@@ -89,25 +84,9 @@ class ValAsp:
                 f'{", ".join(args)}, = value.arguments',
             ]
 
-        def init_arg(arg: str, typ) -> List[str]:
-            if typ in types:
-                typ, extract = types[typ]
-                return [
-                    f'if {arg}.type != {typ}:',
-                    f'    raise TypeError(f"expecting {typ}, but received {{{arg}}}")',
-                    f'self.{arg} = {arg}{extract}',
-                ]
-            if typ == Any:
-                return [
-                    f'if {arg}.type == clingo.SymbolType.Number:',
-                    f'    self.{arg} = {arg}.number',
-                    f'elif {arg}.type == clingo.SymbolType.String:',
-                    f'    self.{arg} = {arg}.string',
-                    f'elif {arg}.type == clingo.SymbolType.Function:',
-                    f'    self.{arg} = {arg}',
-                    f'else:'
-                    f'    raise ValueError("expecting Number, String or Function, received {typ}")'
-                ]
+        def init_arg(arg: str, typ: ClassName) -> List[str]:
+            if typ in primitive_types:
+                return primitive_types[typ].init_code(arg)
             return [f'self.{arg} = {typ.__name__}({arg})']
 
         body = unpack(self.with_fun)
