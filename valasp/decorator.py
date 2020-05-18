@@ -8,7 +8,7 @@ from typing import ClassVar, List, Optional
 
 from valasp.context import Context
 from valasp.domain.name import ClassName
-from valasp.domain.primitives import primitive_types
+from valasp.domain.primitives import Type
 from valasp.domain.raisers import ValAspWarning
 
 
@@ -84,8 +84,8 @@ class ValAsp:
             ]
 
         def init_arg(arg: str, typ: ClassName) -> List[str]:
-            if typ in primitive_types:
-                return primitive_types[typ].init_code(arg)
+            if Type.is_primitive(typ):
+                return Type.get_primitive(typ).init_code(arg)
             return [f'self.{arg} = {typ.__name__}({arg})']
 
         body = unpack(self.with_fun)

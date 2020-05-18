@@ -1,6 +1,6 @@
 import datetime
 import pytest
-from clingo import Number, Function, Tuple
+from clingo import Number, Function, Tuple, Control
 from clingo import String as QString
 
 from valasp.context import ValAspWarning, Context
@@ -449,3 +449,39 @@ def test_alpha():
         Id(Function('Wrong', []))
     with pytest.raises(TypeError):
         Id(QString('wrong'))
+
+
+def test_sum_of_salaries():
+    context = Context()
+
+    @validate(context=context)
+    class Income:
+        company: str  # String
+        amount: int  # Integer
+
+        def __post_init__(self):
+            if not(self.amount > 0):
+                raise ValueError("amount must be positive")
+            self.__class__.amount_sum += self.amount
+            if self.__class__.amount_sum > Integer.max():
+                raise OverflowError(f"sum of amount may exceed {Integer.max()}")
+
+        @classmethod
+        def before_grounding_init_amount_sum(cls):
+            cls.amount_sum = 0
+
+        @classmethod
+        def after_grounding_check_amount_sum(cls):
+            if cls.amount_sum < 10000:
+                raise ValueError(f"sum of amount cannot reach 10000")
+            if cls.amount_sum == 3000000000:
+                raise OverflowError(f"catch this!")
+
+    control = Control()
+    control.add("base", [], 'income("Acme ASP",1500000000). income("Yoyodyne YAML",1500000000).')
+    control.add("valasp", [], context.validators())
+    context.run_class_methods('before_grounding')
+    with pytest.raises(RuntimeError):
+        control.ground([("base", []), ("valasp", [])], context=context)
+    with pytest.raises(OverflowError):
+        context.run_class_methods('after_grounding')

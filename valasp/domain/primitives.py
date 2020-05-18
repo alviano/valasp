@@ -2,34 +2,73 @@
 # See file README.md for full license details.
 
 from dataclasses import dataclass
-from typing import List
+from typing import List, ClassVar
 
 import clingo
 import typing
 
 
 @dataclass(frozen=True)
-class Integer:
+class Type:
+    __primitives = None
+
     def __init__(self):
         raise TypeError('this class must be used only as a marker')
 
     @staticmethod
-    def init_code(arg: str) -> List[str]:
+    def _init_code(arg: str) -> List[str]:
         return [
-            f'if {arg}.type != clingo.SymbolType.Number:',
-            f'    raise TypeError(f"expecting clingo.SymbolType.Number, but received {{{arg}}}")',
-            f'self.{arg} = {arg}.number',
+            f'if not isinstance({arg}, clingo.Symbol):',
+            f'    raise TypeError(f"expecting clingo.Symbol, but received type({{{arg}}})")',
         ]
+
+    @classmethod
+    def is_primitive(cls, typ: ClassVar) -> bool:
+        return typ in cls.__primitives
+
+    @classmethod
+    def get_primitive(cls, typ: ClassVar) -> ClassVar:
+        return cls.__primitives[typ]
+
+    @classmethod
+    def set_primitives(cls, value) -> None:
+        if cls.__primitives:
+            raise PermissionError(f'attempt to call set_primitives of {cls} from outside its module')
+        cls.__primitives = value
 
 
 @dataclass(frozen=True)
-class String:
+class Integer(Type):
     def __init__(self):
-        raise TypeError('this class must be used only as a marker')
+        super().__init__()
 
-    @staticmethod
-    def init_code(arg: str) -> List[str]:
-        return [
+    @classmethod
+    def init_code(cls, arg: str) -> List[str]:
+        return super()._init_code(arg) + [
+            f'if {arg}.type != clingo.SymbolType.Number:',
+            f'    raise TypeError(f"expecting clingo.SymbolType.Number, but received {{{arg}}}")',
+            f'self.{arg} = {arg}.number',
+            f'if not({cls.min()} <= self.{arg} <= {cls.max()}):',
+            f'    raise OverflowError(f"argument {arg} will overflow with value {{{arg}}}")',
+        ]
+
+    @classmethod
+    def max(cls) -> int:
+        return 2**31 - 1
+
+    @classmethod
+    def min(cls) -> int:
+        return -2**31
+
+
+@dataclass(frozen=True)
+class String(Type):
+    def __init__(self):
+        super().__init__()
+
+    @classmethod
+    def init_code(cls, arg: str) -> List[str]:
+        return super()._init_code(arg) + [
             f'if {arg}.type != clingo.SymbolType.String:',
             f'    raise TypeError(f"expecting clingo.SymbolType.String, but received {{{arg}}}")',
             f'self.{arg} = {arg}.string',
@@ -37,16 +76,13 @@ class String:
 
 
 @dataclass(frozen=True)
-class Alpha:
-    type = 'clingo.SymbolType.Function'
-    value = ''
-
+class Alpha(Type):
     def __init__(self):
-        raise TypeError('this class must be used only as a marker')
+        super().__init__()
 
-    @staticmethod
-    def init_code(arg: str) -> List[str]:
-        return [
+    @classmethod
+    def init_code(cls, arg: str) -> List[str]:
+        return super()._init_code(arg) + [
             f'if {arg}.type != clingo.SymbolType.Function:',
             f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{{arg}}}")',
             f'if {arg}.arguments:',
@@ -56,13 +92,13 @@ class Alpha:
 
 
 @dataclass(frozen=True)
-class Any:
+class Any(Type):
     def __init__(self):
-        raise TypeError('this class must be used only as a marker')
+        super().__init__()
 
-    @staticmethod
-    def init_code(arg: str) -> List[str]:
-        return [
+    @classmethod
+    def init_code(cls, arg: str) -> List[str]:
+        return super()._init_code(arg) + [
             f'if {arg}.type == clingo.SymbolType.Number:',
             f'    self.{arg} = {arg}.number',
             f'elif {arg}.type == clingo.SymbolType.String:',
@@ -74,7 +110,7 @@ class Any:
         ]
 
 
-primitive_types = {
+Type.set_primitives({
     Integer: Integer,
     int: Integer,
     clingo.Number: Integer,
@@ -87,4 +123,4 @@ primitive_types = {
 
     Any: Any,
     typing.Any: Any,
-}
+})
