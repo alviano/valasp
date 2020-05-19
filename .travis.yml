@@ -8,8 +8,9 @@ before_install:
     - conda update --yes conda
 
 install:
-    - conda install --yes python="3.7" sphinx
+    - conda install --yes python=3.7
     - conda install --yes -c potassco clingo
+    - conda install --yes sphinx
     - conda install --yes pyyaml
     - pip install --user travis-sphinx
 
