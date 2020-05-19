@@ -7,6 +7,8 @@ from typing import List, ClassVar
 import clingo
 import typing
 
+from valasp.domain.name import PredicateName
+
 
 @dataclass(frozen=True)
 class Type:
@@ -157,6 +159,15 @@ class Alpha(Type):
             f'self.{arg} = {arg}.name',
         ]
 
+    @classmethod
+    def parse(cls, value: str) -> str:
+        """Return value, as any string is valid
+
+        :param value: a string to be parsed
+        :return: value
+        """
+        return value
+
 
 @dataclass(frozen=True)
 class Any(Type):
@@ -180,6 +191,16 @@ class Any(Type):
             f'else:'
             f'    raise ValueError("expecting Number, String or Function, received {{{arg}.type}}")'
         ]
+
+    @classmethod
+    def parse(cls, value: str) -> str:
+        """Return value, or raise an exception if value is not valid
+
+        :param value: a string to be parsed
+        :raise: ValueError if value is not a valid function name
+        :return: value
+        """
+        return PredicateName(value).value
 
 
 Type.set_primitives({
