@@ -3,7 +3,8 @@
 import clingo
 import re
 
-from valasp import Context, validate
+from valasp.decorator import validate
+from valasp.context import Context
 from typing import Callable
 
 
