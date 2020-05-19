@@ -45,3 +45,8 @@ def test_integer_validate():
         Integer.parse(str(Integer.max() + 1))
     with pytest.raises(OverflowError):
         Integer.parse(str(Integer.min() - 1))
+
+
+def test_key_error():
+    with pytest.raises(KeyError):
+        Type.get_primitive(bool)

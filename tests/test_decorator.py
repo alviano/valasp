@@ -3,9 +3,10 @@ import pytest
 from clingo import Number, Function, Tuple, Control
 from clingo import String as QString
 
-from valasp.context import ValAspWarning, Context
+from valasp.context import Context
 from valasp.decorator import validate, Fun
 from valasp.domain.primitives import Integer, String, Alpha, Any
+from valasp.domain.raisers import ValAspWarning
 
 
 def test_must_have_annotations():
@@ -485,3 +486,35 @@ def test_sum_of_salaries():
         control.ground([("base", []), ("valasp", [])], context=context)
     with pytest.raises(OverflowError):
         context.run_class_methods('after_grounding')
+
+
+def test_doc_example():
+    context = Context()
+
+    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: String
+        date: Date
+
+    res = None
+
+    def on_model(model):
+        nonlocal res
+        res = []
+        for atom in model.symbols(atoms=True):
+            res.append(atom)
+
+    context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
+    assert str(res) == '[birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]'
+
+    with pytest.raises(RuntimeError):
+        context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])

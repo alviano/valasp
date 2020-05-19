@@ -13,64 +13,59 @@ from valasp.domain.raisers import ValAspWarning
 
 
 class Fun(Enum):
+    """Modalities for the ``validate`` decorator."""
     FORWARD_IMPLICIT = 0
     FORWARD = 1
     IMPLICIT = 2
     TUPLE = 3
 
 
-class ValAsp:
-    def __init__(self, cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun, auto_blacklist: bool):
-        self.cls = cls
-        self.context = context
+def _decorate(cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun, auto_blacklist: bool):
+    """Class to apply the ``validate`` decorator. Not intended to be used otherwise.
 
-        self.name = ClassName(cls.__name__)
-        self.annotations = getattr(self.cls, '__annotations__', {})
-        if not self.annotations:
-            raise TypeError('cannot process classes with no annotations')
+    :param cls: the class subject of decoration
+    :param context: the context where the class must be registered
+    :param is_predicate: True if the class is associated with a predicate in the ASP program
+    :param with_fun: modality of initialization for instances of the class
+    :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted
+    """
 
-        self.with_fun = self.__with_fun(with_fun)
+    class_name = ClassName(cls.__name__)
+    annotations = getattr(cls, '__annotations__', {})
+    if not annotations:
+        raise TypeError('cannot process classes with no annotations')
+    args = list(f'{a}' for a in annotations)
 
-        args = list(f'{a}' for a in self.annotations)
-        self.__add_init(args)
-        self.__add_str(args)
-        self.__add_cmp(args)
-        if is_predicate:
-            self.__add_validator(args)
-        if auto_blacklist:
-            self.__add_blacklist(args)
-
-        self.context.register_class(self.cls)
-
-    def __with_fun(self, with_fun) -> Optional[str]:
+    def process_with_fun() -> Optional[str]:
+        nonlocal with_fun
         if with_fun == Fun.FORWARD_IMPLICIT:
-            if len(self.annotations) == 1:
+            if len(annotations) == 1:
                 with_fun = Fun.FORWARD
             else:
                 with_fun = Fun.IMPLICIT
         if with_fun == Fun.IMPLICIT:
-            return self.name.to_predicate().value
+            return class_name.to_predicate().value
         if with_fun == Fun.FORWARD:
-            if len(self.annotations) != 1:
+            if len(annotations) != 1:
                 raise TypeError('FORWARD requires exactly one annotation')
             return None
         if with_fun == Fun.TUPLE:
             return ''
         raise ValueError('unexpected value for with_fun:', with_fun)
 
-    def has_method(self, method: str) -> bool:
-        return getattr(self.cls, method, None) != getattr(object, method, None)
+    def has_method(method: str) -> bool:
+        return getattr(cls, method, None) != getattr(object, method, None)
 
-    def __set_method(self, method: str, args: List[str], body_lines: List[str]) -> None:
-        fun = self.context.make_fun(f'{self.name}.{method}', args, body_lines, with_self=True)
-        setattr(self.cls, method, fun)
+    def set_method(method: str, args: List[str], body_lines: List[str]) -> None:
+        fun = context.make_fun(f'{class_name}.{method}', args, body_lines, with_self=True)
+        setattr(cls, method, fun)
 
-    def __add_init(self, args: List[str]) -> None:
-        if self.has_method('__init__'):
+    def add_init() -> None:
+        if has_method('__init__'):
             raise ValueError("cannot process classes with __init__() constructor")
 
         def unpack(fun_name: str) -> List[str]:
-            if self.with_fun is None:
+            if with_fun_string is None:
                 return [f'{args[0]} = value']
             return [
                 f'if value.type != clingo.SymbolType.Function:',
@@ -88,46 +83,99 @@ class ValAsp:
                 return Type.get_primitive(typ).init_code(arg)
             return [f'self.{arg} = {typ.__name__}({arg})']
 
-        body = unpack(self.with_fun)
-        for k, v in self.annotations.items():
+        body = unpack(with_fun_string)
+        for k, v in annotations.items():
             body.extend(init_arg(k, v))
 
-        for method in inspect.getmembers(self.cls, predicate=inspect.isfunction):
+        for method in inspect.getmembers(cls, predicate=inspect.isfunction):
             if method[0].startswith('check'):
-                m = getattr(self.cls, method[0])
+                m = getattr(cls, method[0])
                 if len(inspect.signature(m).parameters) != 1:
-                    warnings.warn(f"ignore method {m.__name__} of class {self.cls.__name__} because it has parameters",
+                    warnings.warn(f"ignore method {m.__name__} of class {cls.__name__} because it has parameters",
                                   ValAspWarning)
                 else:
                     body.append(f'self.{m.__name__}()')
 
-        if getattr(self.cls, '__post_init__', None):
+        if getattr(cls, '__post_init__', None):
             body.append('self.__post_init__()')
 
-        self.__set_method('__init__', ['value'], body)
+        set_method('__init__', ['value'], body)
 
-    def __add_str(self, args: List[str]) -> None:
-        if not self.has_method('__str__'):
-            body = [f"return '{self.name}(' + " + " + ',' + ".join(f'str(self.{a})' for a in args) + " + ')'"]
-            self.__set_method('__str__', [], body)
+    def add_str() -> None:
+        if not has_method('__str__'):
+            body = [f"return '{class_name}(' + " + " + ',' + ".join(f'str(self.{a})' for a in args) + " + ')'"]
+            set_method('__str__', [], body)
 
-    def __add_cmp(self, args: List[str]) -> None:
+    def add_cmp() -> None:
         self_tuple = "(" + ','.join(f'self.{a}' for a in args) + ")"
         other_tuple = "(" + ','.join(f'other.{a}' for a in args) + ")"
         methods = [('eq', '=='), ('ne', '!='), ('lt', '<'), ('le', '<='), ('ge', '>='), ('gt', '>')]
         for m in methods:
-            if not self.has_method(f'__{m[0]}__'):
-                self.__set_method(f'__{m[0]}__', ['other'], [f"return {self_tuple} {m[1]} {other_tuple}"])
+            if not has_method(f'__{m[0]}__'):
+                set_method(f'__{m[0]}__', ['other'], [f"return {self_tuple} {m[1]} {other_tuple}"])
 
-    def __add_validator(self, args: List[str]) -> None:
-        self.context.add_validator(self.name.to_predicate(), len(args), self.with_fun)
+    with_fun_string = process_with_fun()
+    add_init()
+    add_str()
+    add_cmp()
+    if is_predicate:
+        context.add_validator(class_name.to_predicate(), len(args), with_fun_string)
+    if auto_blacklist:
+        context.blacklist(class_name.to_predicate(), context.all_arities_but(len(args)))
 
-    def __add_blacklist(self, args: List[str]) -> None:
-        self.context.blacklist(self.name.to_predicate(), self.context.all_arities_but(len(args)))
+    context.register_class(cls)
 
 
 def validate(context: Context, is_predicate: bool = True, with_fun: Fun = Fun.FORWARD_IMPLICIT, auto_blacklist: bool = True):
+    """Decorator to process classes for ASP validation.
+
+    Annotations on a decorated class are used to define attributes and to inject an ``__init__()`` method.
+    If the class defines a ``__post_init__()`` method, it is called at the end of the ``__init__()`` method.
+    Other common magic methods are also injected, unless already defined in the class.
+
+    :param context: the context where the class must be registered
+    :param is_predicate: True if the class is associated with a predicate in the ASP program
+    :param with_fun: modality of initialization for instances of the class
+    :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted
+    :return: a decorator
+
+    :Example:
+    .. highlight:: python
+        from clingo import Control
+        from valasp.context import Context
+        from valasp.decorator import validate, Fun
+
+        context = Context()
+
+        @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
+        class Date:
+            year: int
+            month: int
+            day: int
+
+            def __post_init__(self):
+                datetime.datetime(self.year, self.month, self.day)
+
+        @validate(context=context)
+        class Birthday:
+            name: String
+            date: Date
+
+        res = None
+
+        def on_model(model):
+            nonlocal res
+            res = []
+            for atom in model.symbols(atoms=True):
+                res.append(atom)
+
+        context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
+        # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
+
+        context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
+        # a RuntimeException is raised because the date is not valid
+    """
     def decorator(cls: ClassVar):
-        ValAsp(cls, context, is_predicate, with_fun, auto_blacklist)
+        _decorate(cls, context, is_predicate, with_fun, auto_blacklist)
         return cls
     return decorator

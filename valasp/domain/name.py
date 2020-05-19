@@ -7,6 +7,7 @@ from dataclasses import dataclass
 
 @dataclass(frozen=True)
 class ClassName:
+    """A domain primitive for names of classes."""
     value: str
 
     def __post_init__(self):
@@ -19,6 +20,10 @@ class ClassName:
         return self.value
 
     def to_predicate(self) -> 'PredicateName':
+        """Return the predicate name associated with this class name.
+
+        :return: a predicate name
+        """
         for i in range(len(self.value)):
             if self.value[i].isalpha():
                 return PredicateName(self.value[:i] + self.value[i].lower() + self.value[i+1:])
@@ -27,6 +32,7 @@ class ClassName:
 
 @dataclass(frozen=True)
 class PredicateName:
+    """A domain primitive for names of predicates."""
     value: str
 
     def __post_init__(self):
@@ -39,6 +45,10 @@ class PredicateName:
         return self.value
 
     def to_class(self) -> ClassName:
+        """Return the class name associated with this predicate name.
+
+        :return: a class name
+        """
         for i in range(len(self.value)):
             if self.value[i].isalpha():
                 return ClassName(self.value[:i] + self.value[i].upper() + self.value[i+1:])

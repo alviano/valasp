@@ -10,13 +10,24 @@ import typing
 
 @dataclass(frozen=True)
 class Type:
+    """Base class for type annotations.
+
+    This class cannot be instantiated, and its subclasses are expected to satisfy this invariant.
+    """
     __primitives = None
 
     def __init__(self):
         raise TypeError('this class must be used only as a marker')
 
     @staticmethod
-    def _init_code(arg: str) -> List[str]:
+    def init_code(arg: str) -> List[str]:
+        """Return code to validate the type of the given argument name.
+
+        Subclasses are expected to call this method in their init_code() method.
+
+        :param arg: the name of the argument
+        :return: validation code
+        """
         return [
             f'if not isinstance({arg}, clingo.Symbol):',
             f'    raise TypeError(f"expecting clingo.Symbol, but received type({{{arg}}})")',
@@ -24,14 +35,32 @@ class Type:
 
     @classmethod
     def is_primitive(cls, typ: ClassVar) -> bool:
+        """Return true if typ is considered a primitive type.
+
+        :param typ: a type
+        :return: true if typ is a primitive type
+        """
         return typ in cls.__primitives
 
     @classmethod
-    def get_primitive(cls, typ: ClassVar) -> ClassVar:
+    def get_primitive(cls, typ: ClassVar) -> 'Type':
+        """Return a subclass of Type associated with typ.
+
+        :param typ: a type for which Type.is_primitive(typ) == True
+        :raise: KeyError if Type.is_primitive(typ) != True
+        :return: a subclass of Type associated with typ
+        """
         return cls.__primitives[typ]
 
     @classmethod
     def set_primitives(cls, value) -> None:
+        """Init the Type class with primitive types.
+
+        This method is called at the end of this file, and cannot be called a second time.
+
+        :param value: a dictionary (see the bottom of this file)
+        :raise: PermissionError if called a second time
+        """
         if cls.__primitives:
             raise PermissionError(f'attempt to call set_primitives of {cls} from outside its module')
         cls.__primitives = value
@@ -39,12 +68,17 @@ class Type:
 
 @dataclass(frozen=True)
 class Integer(Type):
+    """Primitive type representing integers.
+
+    This class cannot be instantiated.
+    """
+
     def __init__(self):
         super().__init__()
 
     @classmethod
     def init_code(cls, arg: str) -> List[str]:
-        return super()._init_code(arg) + [
+        return super().init_code(arg) + [
             f'if {arg}.type != clingo.SymbolType.Number:',
             f'    raise TypeError(f"expecting clingo.SymbolType.Number, but received {{{arg}}}")',
             f'self.{arg} = {arg}.number',
@@ -54,14 +88,29 @@ class Integer(Type):
 
     @classmethod
     def max(cls) -> int:
+        """Return the greatest integer for the ASP system.
+
+        :return: the greatest integer
+        """
         return 2**31 - 1
 
     @classmethod
     def min(cls) -> int:
+        """Return the smallest integer for the ASP system.
+
+        :return: the smallest integer
+        """
         return -2**31
 
     @classmethod
     def parse(cls, value: str) -> int:
+        """Return the integer represented in value.
+
+        :param value: a string to be parsed
+        :raise: TypeError if value is not an integer
+        :raise: OverflowError if value does not fit into a 32-bit signed integer
+        :return: the integer in value
+        """
         res = int(value)
         if not(cls.min() <= res <= cls.max()):
             raise OverflowError(f"{value} will overflow")
@@ -70,12 +119,18 @@ class Integer(Type):
 
 @dataclass(frozen=True)
 class String(Type):
+    """
+    Primitive type representing strings.
+
+    This class cannot be instantiated.
+    """
+
     def __init__(self):
         super().__init__()
 
     @classmethod
     def init_code(cls, arg: str) -> List[str]:
-        return super()._init_code(arg) + [
+        return super().init_code(arg) + [
             f'if {arg}.type != clingo.SymbolType.String:',
             f'    raise TypeError(f"expecting clingo.SymbolType.String, but received {{{arg}}}")',
             f'self.{arg} = {arg}.string',
@@ -84,12 +139,17 @@ class String(Type):
 
 @dataclass(frozen=True)
 class Alpha(Type):
+    """Primitive type representing named constants.
+
+    This class cannot be instantiated.
+    """
+
     def __init__(self):
         super().__init__()
 
     @classmethod
     def init_code(cls, arg: str) -> List[str]:
-        return super()._init_code(arg) + [
+        return super().init_code(arg) + [
             f'if {arg}.type != clingo.SymbolType.Function:',
             f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{{arg}}}")',
             f'if {arg}.arguments:',
@@ -100,12 +160,17 @@ class Alpha(Type):
 
 @dataclass(frozen=True)
 class Any(Type):
+    """Primitive type representing wildcards.
+
+        This class cannot be instantiated.
+        """
+
     def __init__(self):
         super().__init__()
 
     @classmethod
     def init_code(cls, arg: str) -> List[str]:
-        return super()._init_code(arg) + [
+        return super().init_code(arg) + [
             f'if {arg}.type == clingo.SymbolType.Number:',
             f'    self.{arg} = {arg}.number',
             f'elif {arg}.type == clingo.SymbolType.String:',
