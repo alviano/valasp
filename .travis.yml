@@ -21,9 +21,9 @@ script:
 deploy:
     provider: pages
     skip_cleanup: true
-    api_key: $GITHUB_TOKEN
+    github-token: $GITHUB_TOKEN
     on:
-        branch: gh-pages
+        branch: master
 
 after_success:
     - travis-sphinx deploy
