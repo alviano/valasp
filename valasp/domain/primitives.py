@@ -60,6 +60,13 @@ class Integer(Type):
     def min(cls) -> int:
         return -2**31
 
+    @classmethod
+    def parse(cls, value: str) -> int:
+        res = int(value)
+        if not(cls.min() <= res <= cls.max()):
+            raise OverflowError(f"{value} will overflow")
+        return res
+
 
 @dataclass(frozen=True)
 class String(Type):

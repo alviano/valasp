@@ -32,3 +32,16 @@ def test_set_primitives_is_not_accessible():
     with pytest.raises(PermissionError):
         Type.set_primitives({})
 
+
+def test_integer_validate():
+    assert Integer.parse('0') == 0
+    assert Integer.parse('1') == 1
+    assert Integer.parse('-1') == -1
+    assert Integer.parse(str(Integer.max())) == Integer.max()
+    assert Integer.parse(str(Integer.min())) == Integer.min()
+    with pytest.raises(ValueError):
+        Integer.parse('a')
+    with pytest.raises(OverflowError):
+        Integer.parse(str(Integer.max() + 1))
+    with pytest.raises(OverflowError):
+        Integer.parse(str(Integer.min() - 1))
