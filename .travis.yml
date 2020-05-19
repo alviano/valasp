@@ -18,5 +18,13 @@ install:
 script:
     - travis-sphinx build
 
+deploy:
+    provider: pages
+    skip_cleanup: true
+    github_token: $GITHUB_TOKEN
+    on:
+        branch: gh-pages
+
 after_success:
     - travis-sphinx deploy
+
