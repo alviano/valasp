@@ -1,6 +1,47 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
+"""This module define the decorator :meth:`validate` and the enum :class:`Fun`.
+
+:Example:
+
+.. code-block:: python
+
+    from clingo import Control
+    from valasp.context import Context
+    from valasp.decorator import validate, Fun
+
+    context = Context()
+
+    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
+    class Date:
+        year: int
+        month: int
+        day: int
+
+        def __post_init__(self):
+            datetime.datetime(self.year, self.month, self.day)
+
+    @validate(context=context)
+    class Birthday:
+        name: String
+        date: Date
+
+    res = None
+
+    def on_model(model):
+        nonlocal res
+        res = []
+        for atom in model.symbols(atoms=True):
+            res.append(atom)
+
+    context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
+    # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
+
+    context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
+    # a RuntimeException is raised because the date is not valid
+"""
+
 import inspect
 import warnings
 from enum import Enum
@@ -21,7 +62,7 @@ class Fun(Enum):
 
 
 def _decorate(cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun, auto_blacklist: bool):
-    """Class to apply the ``validate`` decorator. Not intended to be used otherwise.
+    """Utility function to apply the ``validate`` decorator. Not intended to be used otherwise.
 
     :param cls: the class subject of decoration
     :param context: the context where the class must be registered
@@ -138,42 +179,6 @@ def validate(context: Context, is_predicate: bool = True, with_fun: Fun = Fun.FO
     :param with_fun: modality of initialization for instances of the class
     :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted
     :return: a decorator
-
-    :Example:
-    .. highlight:: python
-        from clingo import Control
-        from valasp.context import Context
-        from valasp.decorator import validate, Fun
-
-        context = Context()
-
-        @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
-        class Date:
-            year: int
-            month: int
-            day: int
-
-            def __post_init__(self):
-                datetime.datetime(self.year, self.month, self.day)
-
-        @validate(context=context)
-        class Birthday:
-            name: String
-            date: Date
-
-        res = None
-
-        def on_model(model):
-            nonlocal res
-            res = []
-            for atom in model.symbols(atoms=True):
-                res.append(atom)
-
-        context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
-        # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
-
-        context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
-        # a RuntimeException is raised because the date is not valid
     """
     def decorator(cls: ClassVar):
         _decorate(cls, context, is_predicate, with_fun, auto_blacklist)
