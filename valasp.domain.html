@@ -1,0 +1,419 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>valasp.domain package &#8212; ValAsp 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="valasp.translators package" href="valasp.translators.html" />
+    <link rel="prev" title="valasp package" href="valasp.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.translators.html" title="valasp.translators package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="valasp.html" title="valasp package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="valasp.html" accesskey="U">valasp package</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="valasp-domain-package">
+<h1>valasp.domain package<a class="headerlink" href="#valasp-domain-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-valasp.domain.name">
+<span id="valasp-domain-name-module"></span><h2>valasp.domain.name module<a class="headerlink" href="#module-valasp.domain.name" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="valasp.domain.name.ClassName">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.name.</code><code class="sig-name descname">ClassName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/domain/name.html#ClassName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.name.ClassName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A domain primitive for names of classes.</p>
+<dl class="py method">
+<dt id="valasp.domain.name.ClassName.to_predicate">
+<code class="sig-name descname">to_predicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#valasp.domain.name.PredicateName" title="valasp.domain.name.PredicateName">valasp.domain.name.PredicateName</a><a class="reference internal" href="_modules/valasp/domain/name.html#ClassName.to_predicate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.name.ClassName.to_predicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the predicate name associated with this class name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a predicate name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="valasp.domain.name.ClassName.value">
+<code class="sig-name descname">value</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#valasp.domain.name.ClassName.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.domain.name.PredicateName">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.name.</code><code class="sig-name descname">PredicateName</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/domain/name.html#PredicateName"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.name.PredicateName" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>A domain primitive for names of predicates.</p>
+<dl class="py method">
+<dt id="valasp.domain.name.PredicateName.to_class">
+<code class="sig-name descname">to_class</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#valasp.domain.name.ClassName" title="valasp.domain.name.ClassName">valasp.domain.name.ClassName</a><a class="reference internal" href="_modules/valasp/domain/name.html#PredicateName.to_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.name.PredicateName.to_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the class name associated with this predicate name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a class name</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="valasp.domain.name.PredicateName.value">
+<code class="sig-name descname">value</code><em class="property">: str</em><em class="property"> = None</em><a class="headerlink" href="#valasp.domain.name.PredicateName.value" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-valasp.domain.primitives">
+<span id="valasp-domain-primitives-module"></span><h2>valasp.domain.primitives module<a class="headerlink" href="#module-valasp.domain.primitives" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="valasp.domain.primitives.Alpha">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.primitives.</code><code class="sig-name descname">Alpha</code><a class="reference internal" href="_modules/valasp/domain/primitives.html#Alpha"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Alpha" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.domain.primitives.Type" title="valasp.domain.primitives.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.domain.primitives.Type</span></code></a></p>
+<p>Primitive type representing named constants.</p>
+<p>This class cannot be instantiated.</p>
+<dl class="py method">
+<dt id="valasp.domain.primitives.Alpha.init_code">
+<em class="property">classmethod </em><code class="sig-name descname">init_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/domain/primitives.html#Alpha.init_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Alpha.init_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code to validate the type of the given argument name.</p>
+<p>Subclasses are expected to call this method in their init_code() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg</strong> – the name of the argument</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>validation code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Alpha.parse">
+<em class="property">classmethod </em><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Alpha.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Alpha.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return value, as any string is valid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.domain.primitives.Any">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.primitives.</code><code class="sig-name descname">Any</code><a class="reference internal" href="_modules/valasp/domain/primitives.html#Any"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Any" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.domain.primitives.Type" title="valasp.domain.primitives.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.domain.primitives.Type</span></code></a></p>
+<p>Primitive type representing wildcards.</p>
+<p>This class cannot be instantiated.</p>
+<dl class="py method">
+<dt id="valasp.domain.primitives.Any.init_code">
+<em class="property">classmethod </em><code class="sig-name descname">init_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/domain/primitives.html#Any.init_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Any.init_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code to validate the type of the given argument name.</p>
+<p>Subclasses are expected to call this method in their init_code() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg</strong> – the name of the argument</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>validation code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Any.parse">
+<em class="property">classmethod </em><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Any.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Any.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return value, or raise an exception if value is not valid</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>ValueError if value is not a valid function name</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.domain.primitives.Integer">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.primitives.</code><code class="sig-name descname">Integer</code><a class="reference internal" href="_modules/valasp/domain/primitives.html#Integer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Integer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.domain.primitives.Type" title="valasp.domain.primitives.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.domain.primitives.Type</span></code></a></p>
+<p>Primitive type representing integers.</p>
+<p>This class cannot be instantiated.</p>
+<dl class="py method">
+<dt id="valasp.domain.primitives.Integer.init_code">
+<em class="property">classmethod </em><code class="sig-name descname">init_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/domain/primitives.html#Integer.init_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Integer.init_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code to validate the type of the given argument name.</p>
+<p>Subclasses are expected to call this method in their init_code() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg</strong> – the name of the argument</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>validation code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Integer.max">
+<em class="property">classmethod </em><code class="sig-name descname">max</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Integer.max"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Integer.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the greatest integer for the ASP system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the greatest integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Integer.min">
+<em class="property">classmethod </em><code class="sig-name descname">min</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Integer.min"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Integer.min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the smallest integer for the ASP system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>the smallest integer</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Integer.parse">
+<em class="property">classmethod </em><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Integer.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Integer.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the integer represented in value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>TypeError if value is not an integer</p>
+</dd>
+<dt class="field-odd">Raise</dt>
+<dd class="field-odd"><p>OverflowError if value does not fit into a 32-bit signed integer</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the integer in value</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.domain.primitives.String">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.primitives.</code><code class="sig-name descname">String</code><a class="reference internal" href="_modules/valasp/domain/primitives.html#String"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.String" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.domain.primitives.Type" title="valasp.domain.primitives.Type"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.domain.primitives.Type</span></code></a></p>
+<p>Primitive type representing strings.</p>
+<p>This class cannot be instantiated.</p>
+<dl class="py method">
+<dt id="valasp.domain.primitives.String.init_code">
+<em class="property">classmethod </em><code class="sig-name descname">init_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/domain/primitives.html#String.init_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.String.init_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code to validate the type of the given argument name.</p>
+<p>Subclasses are expected to call this method in their init_code() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg</strong> – the name of the argument</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>validation code</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.domain.primitives.Type">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.domain.primitives.</code><code class="sig-name descname">Type</code><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>Base class for type annotations.</p>
+<p>This class cannot be instantiated, and its subclasses are expected to satisfy this invariant.</p>
+<dl class="py method">
+<dt id="valasp.domain.primitives.Type.get_primitive">
+<em class="property">classmethod </em><code class="sig-name descname">get_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">typ</span><span class="p">:</span> <span class="n">ClassVar</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference internal" href="#valasp.domain.primitives.Type" title="valasp.domain.primitives.Type">valasp.domain.primitives.Type</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type.get_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type.get_primitive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a subclass of Type associated with typ.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>typ</strong> – a type for which Type.is_primitive(typ) == True</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>KeyError if Type.is_primitive(typ) != True</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>a subclass of Type associated with typ</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Type.init_code">
+<em class="property">static </em><code class="sig-name descname">init_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">arg</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type.init_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type.init_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return code to validate the type of the given argument name.</p>
+<p>Subclasses are expected to call this method in their init_code() method.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>arg</strong> – the name of the argument</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>validation code</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Type.is_primitive">
+<em class="property">classmethod </em><code class="sig-name descname">is_primitive</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">typ</span><span class="p">:</span> <span class="n">ClassVar</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type.is_primitive"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type.is_primitive" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return true if typ is considered a primitive type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>typ</strong> – a type</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>true if typ is a primitive type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Type.set_primitives">
+<em class="property">classmethod </em><code class="sig-name descname">set_primitives</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type.set_primitives"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type.set_primitives" title="Permalink to this definition">¶</a></dt>
+<dd><p>Init the Type class with primitive types.</p>
+<p>This method is called at the end of this file, and cannot be called a second time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – a dictionary (see the bottom of this file)</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>PermissionError if called a second time</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-valasp.domain.raisers">
+<span id="valasp-domain-raisers-module"></span><h2>valasp.domain.raisers module<a class="headerlink" href="#module-valasp.domain.raisers" title="Permalink to this headline">¶</a></h2>
+<dl class="py exception">
+<dt id="valasp.domain.raisers.ValAspWarning">
+<em class="property">exception </em><code class="sig-prename descclassname">valasp.domain.raisers.</code><code class="sig-name descname">ValAspWarning</code><a class="reference internal" href="_modules/valasp/domain/raisers.html#ValAspWarning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.raisers.ValAspWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#UserWarning" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">UserWarning</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-valasp.domain">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-valasp.domain" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">valasp.domain package</a><ul>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-valasp.domain.name">valasp.domain.name module</a></li>
+<li><a class="reference internal" href="#module-valasp.domain.primitives">valasp.domain.primitives module</a></li>
+<li><a class="reference internal" href="#module-valasp.domain.raisers">valasp.domain.raisers module</a></li>
+<li><a class="reference internal" href="#module-valasp.domain">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="valasp.html"
+                        title="previous chapter">valasp package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="valasp.translators.html"
+                        title="next chapter">valasp.translators package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/valasp.domain.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.translators.html" title="valasp.translators package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="valasp.html" title="valasp package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="valasp.html" >valasp package</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

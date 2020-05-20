@@ -1,0 +1,431 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>valasp package &#8212; ValAsp 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="valasp.domain package" href="valasp.domain.html" />
+    <link rel="prev" title="Welcome to ValAsp’s documentation!" href="index.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.domain.html" title="valasp.domain package"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to ValAsp’s documentation!"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="valasp-package">
+<h1>valasp package<a class="headerlink" href="#valasp-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="valasp.domain.html">valasp.domain package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="valasp.domain.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.name">valasp.domain.name module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.primitives">valasp.domain.primitives module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.raisers">valasp.domain.raisers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.domain.html#module-valasp.domain">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="valasp.translators.html">valasp.translators package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="valasp.translators.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.translators.html#module-valasp.translators.input2json">valasp.translators.input2json module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.translators.html#module-valasp.translators.json2python">valasp.translators.json2python module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.translators.html#module-valasp.translators">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-valasp.context">
+<span id="valasp-context-module"></span><h2>valasp.context module<a class="headerlink" href="#module-valasp.context" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="valasp.context.Context">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.context.</code><code class="sig-name descname">Context</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">max_arity</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span> <span class="o">=</span> <span class="default_value">16</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/context.html#Context"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The place where classes and &#64;-terms can be registered to make them available for the ASP system.</p>
+<p>Typical usage just amount to create an instance and pass it to all applications of the <code class="docutils literal notranslate"><span class="pre">validate</span></code> decorator, and
+at the end call the method <code class="docutils literal notranslate"><span class="pre">run()</span></code> to execute the ASP system.</p>
+<dl class="py method">
+<dt id="valasp.context.Context.add_validator">
+<code class="sig-name descname">add_validator</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">predicate</span><span class="p">:</span> <span class="n"><a class="reference internal" href="valasp.domain.html#valasp.domain.name.PredicateName" title="valasp.domain.name.PredicateName">valasp.domain.name.PredicateName</a></span></em>, <em class="sig-param"><span class="n">arity</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span></em>, <em class="sig-param"><span class="n">fun</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.add_validator"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.add_validator" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a constraint validator for the given predicate name.</p>
+<p>The constraint validator is paired with an &#64;-term, which in turn calls the constructor of the associated class name.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predicate</strong> – a predicate name to be validated</p></li>
+<li><p><strong>arity</strong> – the arity of the predicate</p></li>
+<li><p><strong>fun</strong> – the function name expected by the constructor of the associated class name, or None if the constructor expects a single value</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.all_arities_but">
+<code class="sig-name descname">all_arities_but</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">excluded</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/context.html#Context.all_arities_but"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.all_arities_but" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of all arities but <code class="docutils literal notranslate"><span class="pre">excluded</span></code>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>excluded</strong> – an arity to exclude</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a list of arities</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.blacklist">
+<code class="sig-name descname">blacklist</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">predicate</span><span class="p">:</span> <span class="n"><a class="reference internal" href="valasp.domain.html#valasp.domain.name.PredicateName" title="valasp.domain.name.PredicateName">valasp.domain.name.PredicateName</a></span></em>, <em class="sig-param"><span class="n">arities</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)">int</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.blacklist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.blacklist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the given predicate name to the blacklist, for all provided arities.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>predicate</strong> – the predicate name to blacklist</p></li>
+<li><p><strong>arities</strong> – a list of arities, or None for blacklisting all arities</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.is_reserved">
+<code class="sig-name descname">is_reserved</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a><a class="reference internal" href="_modules/valasp/context.html#Context.is_reserved"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.is_reserved" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the given key is reserved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>key</strong> – a string</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>True if reserved</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.make_fun">
+<code class="sig-name descname">make_fun</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em>, <em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">body_lines</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">with_self</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">False</span></em><span class="sig-paren">)</span> &#x2192; Callable<a class="reference internal" href="_modules/valasp/context.html#Context.make_fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.make_fun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a function obtained by compiling the given code.</p>
+<p>The provided code can refer classes and &#64;-terms registered in the context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – the name of the function to create (for reference in errors)</p></li>
+<li><p><strong>args</strong> – the argument names of the function</p></li>
+<li><p><strong>body_lines</strong> – the actual code</p></li>
+<li><p><strong>with_self</strong> – True if <code class="docutils literal notranslate"><span class="pre">self</span></code> must be included in the arguments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a function</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.register_class">
+<code class="sig-name descname">register_class</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other</span><span class="p">:</span> <span class="n">ClassVar</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.register_class"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.register_class" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the given class to the context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>other</strong> – a class</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>KeyError if the name of the class is already used</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.register_term">
+<code class="sig-name descname">register_term</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">name</span><span class="p">:</span> <span class="n"><a class="reference internal" href="valasp.domain.html#valasp.domain.name.PredicateName" title="valasp.domain.name.PredicateName">valasp.domain.name.PredicateName</a></span></em>, <em class="sig-param"><span class="n">args</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em>, <em class="sig-param"><span class="n">body_lines</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.register_term"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.register_term" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add the given &#64;-term to the context.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – the name of the &#64;-term</p></li>
+<li><p><strong>args</strong> – the argument names</p></li>
+<li><p><strong>body_lines</strong> – the code to be associated with the &#64;-term</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.run">
+<code class="sig-name descname">run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">control</span><span class="p">:</span> <span class="n">clingo.Control</span></em>, <em class="sig-param"><span class="n">on_model</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aux_program</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">with_validators</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">with_solve</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.run" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run grounder on the given controller, possibly performing validation and searching for a model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>control</strong> – a controller</p></li>
+<li><p><strong>on_model</strong> – a callback function to process a model</p></li>
+<li><p><strong>aux_program</strong> – more ASP code to add to the program</p></li>
+<li><p><strong>with_validators</strong> – if True, validator constraints are added, and <code class="docutils literal notranslate"><span class="pre">before_grounding*</span></code> and <code class="docutils literal notranslate"><span class="pre">after_grounding*</span></code> class methods are called</p></li>
+<li><p><strong>with_solve</strong> – if True, a model is searched</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.run_class_methods">
+<code class="sig-name descname">run_class_methods</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span> <span class="o">=</span> <span class="default_value">'check'</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/context.html#Context.run_class_methods"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.run_class_methods" title="Permalink to this definition">¶</a></dt>
+<dd><p>Crawl all class methods with a given prefix, and a call them.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – a string</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.run_grounder">
+<code class="sig-name descname">run_grounder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_program</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; clingo.Control<a class="reference internal" href="_modules/valasp/context.html#Context.run_grounder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.run_grounder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run grounder for the given ASP code, including all validators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base_program</strong> – ASP code</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>the resulting controller</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.run_solver">
+<code class="sig-name descname">run_solver</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">base_program</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span></em><span class="sig-paren">)</span> &#x2192; Optional<span class="p">[</span>List<span class="p">[</span>clingo.SymbolicAtom<span class="p">]</span><span class="p">]</span><a class="reference internal" href="_modules/valasp/context.html#Context.run_solver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.run_solver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run solver on the given ASP program, including all validators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>base_program</strong> – ASP code</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a model, or None if the program is inconsistent</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.context.Context.validators">
+<code class="sig-name descname">validators</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><a class="reference internal" href="_modules/valasp/context.html#Context.validators"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.context.Context.validators" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string with all constraint validators.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>constraints in a string</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-valasp.decorator">
+<span id="valasp-decorator-module"></span><h2>valasp.decorator module<a class="headerlink" href="#module-valasp.decorator" title="Permalink to this headline">¶</a></h2>
+<p>This module define the decorator <a class="reference internal" href="#valasp.decorator.validate" title="valasp.decorator.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a> and the enum <a class="reference internal" href="#valasp.decorator.Fun" title="valasp.decorator.Fun"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fun</span></code></a>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Example</dt>
+<dd class="field-odd"><p></p></dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">valasp.context</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">valasp.decorator</span> <span class="kn">import</span> <span class="n">validate</span><span class="p">,</span> <span class="n">Fun</span>
+
+<span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+
+<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">is_predicate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_fun</span><span class="o">=</span><span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Date</span><span class="p">:</span>
+    <span class="n">year</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">month</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">day</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Birthday</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">String</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">Date</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">nonlocal</span> <span class="n">res</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;</span><span class="p">])</span>
+<span class="c1"># res will be [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
+
+<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">aux_program</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;</span><span class="p">])</span>
+<span class="c1"># a RuntimeException is raised because the date is not valid</span>
+</pre></div>
+</div>
+<dl class="py class">
+<dt id="valasp.decorator.Fun">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.decorator.</code><code class="sig-name descname">Fun</code><a class="reference internal" href="_modules/valasp/decorator.html#Fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.decorator.Fun" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
+<p>Modalities for the <code class="docutils literal notranslate"><span class="pre">validate</span></code> decorator.</p>
+<dl class="py attribute">
+<dt id="valasp.decorator.Fun.FORWARD">
+<code class="sig-name descname">FORWARD</code><em class="property"> = 1</em><a class="headerlink" href="#valasp.decorator.Fun.FORWARD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="valasp.decorator.Fun.FORWARD_IMPLICIT">
+<code class="sig-name descname">FORWARD_IMPLICIT</code><em class="property"> = 0</em><a class="headerlink" href="#valasp.decorator.Fun.FORWARD_IMPLICIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="valasp.decorator.Fun.IMPLICIT">
+<code class="sig-name descname">IMPLICIT</code><em class="property"> = 2</em><a class="headerlink" href="#valasp.decorator.Fun.IMPLICIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="valasp.decorator.Fun.TUPLE">
+<code class="sig-name descname">TUPLE</code><em class="property"> = 3</em><a class="headerlink" href="#valasp.decorator.Fun.TUPLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt id="valasp.decorator.validate">
+<code class="sig-prename descclassname">valasp.decorator.</code><code class="sig-name descname">validate</code><span class="sig-paren">(</span><em class="sig-param">context: valasp.context.Context</em>, <em class="sig-param">is_predicate: bool = True</em>, <em class="sig-param">with_fun: valasp.decorator.Fun = &lt;Fun.FORWARD_IMPLICIT: 0&gt;</em>, <em class="sig-param">auto_blacklist: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/decorator.html#validate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.decorator.validate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator to process classes for ASP validation.</p>
+<p>Annotations on a decorated class are used to define attributes and to inject an <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method.
+If the class defines a <code class="docutils literal notranslate"><span class="pre">__post_init__()</span></code> method, it is called at the end of the <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method.
+Other common magic methods are also injected, unless already defined in the class.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context</strong> – the context where the class must be registered</p></li>
+<li><p><strong>is_predicate</strong> – True if the class is associated with a predicate in the ASP program</p></li>
+<li><p><strong>with_fun</strong> – modality of initialization for instances of the class</p></li>
+<li><p><strong>auto_blacklist</strong> – if True, predicates with the same name but different arities are blacklisted</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>a decorator</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-valasp.main">
+<span id="valasp-main-module"></span><h2>valasp.main module<a class="headerlink" href="#module-valasp.main" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="valasp.main.main">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-valasp">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-valasp" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">valasp package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#submodules">Submodules</a></li>
+<li><a class="reference internal" href="#module-valasp.context">valasp.context module</a></li>
+<li><a class="reference internal" href="#module-valasp.decorator">valasp.decorator module</a></li>
+<li><a class="reference internal" href="#module-valasp.main">valasp.main module</a></li>
+<li><a class="reference internal" href="#module-valasp">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="index.html"
+                        title="previous chapter">Welcome to ValAsp’s documentation!</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="valasp.domain.html"
+                        title="next chapter">valasp.domain package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/valasp.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.domain.html" title="valasp.domain package"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="index.html" title="Welcome to ValAsp’s documentation!"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

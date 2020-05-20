@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Welcome to ValAsp’s documentation! &#8212; ValAsp 0.0.1 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/language_data.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="valasp package" href="valasp.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.html" title="valasp package"
+             accesskey="N">next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ValAsp 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-valasp-s-documentation">
+<h1>Welcome to ValAsp’s documentation!<a class="headerlink" href="#welcome-to-valasp-s-documentation" title="Permalink to this headline">¶</a></h1>
+<p>ValAsp is validation framework for Answer Set Programming developed by Mario Alviano and Carmine Dodaro.</p>
+<p>The idea of ValAsp is to inject validation without cluttering the ASP encoding.
+It can be done by decorating Python classes, or by processing a YAML file.
+Below are two examples of usage.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">valasp.context</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">valasp.decorator</span> <span class="kn">import</span> <span class="n">validate</span><span class="p">,</span> <span class="n">Fun</span>
+
+<span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
+
+<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">is_predicate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_fun</span><span class="o">=</span><span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Date</span><span class="p">:</span>
+    <span class="n">year</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">month</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">day</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
+
+<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+<span class="k">class</span> <span class="nc">Birthday</span><span class="p">:</span>
+    <span class="n">name</span><span class="p">:</span> <span class="n">String</span>
+    <span class="n">date</span><span class="p">:</span> <span class="n">Date</span>
+
+<span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+    <span class="k">nonlocal</span> <span class="n">res</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;</span><span class="p">])</span>
+<span class="c1"># res will be [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
+
+<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">aux_program</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;</span><span class="p">])</span>
+<span class="c1"># a RuntimeException is raised because the date is not valid</span>
+</pre></div>
+</div>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+<div class="section" id="valasp">
+<h1>valasp<a class="headerlink" href="#valasp" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="valasp.html">valasp package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="valasp.domain.html">valasp.domain package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="valasp.domain.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.name">valasp.domain.name module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.primitives">valasp.domain.primitives module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.domain.html#module-valasp.domain.raisers">valasp.domain.raisers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.domain.html#module-valasp.domain">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="valasp.translators.html">valasp.translators package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="valasp.translators.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.translators.html#module-valasp.translators.input2json">valasp.translators.input2json module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.translators.html#module-valasp.translators.json2python">valasp.translators.json2python module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="valasp.translators.html#module-valasp.translators">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#module-valasp.context">valasp.context module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#module-valasp.decorator">valasp.decorator module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#module-valasp.main">valasp.main module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="valasp.html#module-valasp">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Welcome to ValAsp’s documentation!</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#valasp">valasp</a></li>
+</ul>
+
+  <h4>Next topic</h4>
+  <p class="topless"><a href="valasp.html"
+                        title="next chapter">valasp package</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="valasp.html" title="valasp package"
+             >next</a> |</li>
+        <li class="nav-item nav-item-0"><a href="#">ValAsp 0.0.1 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
