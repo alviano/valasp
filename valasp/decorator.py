@@ -1,46 +1,7 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
-"""This module define the decorator :meth:`validate` and the enum :class:`Fun`.
-
-:Example:
-
-.. code-block:: python
-
-    from clingo import Control
-    from valasp.context import Context
-    from valasp.decorator import validate, Fun
-
-    context = Context()
-
-    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
-    class Date:
-        year: int
-        month: int
-        day: int
-
-        def __post_init__(self):
-            datetime.datetime(self.year, self.month, self.day)
-
-    @validate(context=context)
-    class Birthday:
-        name: String
-        date: Date
-
-    res = None
-
-    def on_model(model):
-        nonlocal res
-        res = []
-        for atom in model.symbols(atoms=True):
-            res.append(atom)
-
-    context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
-    # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
-
-    context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
-    # a RuntimeException is raised because the date is not valid
-"""
+"""This module define the decorator :meth:`validate` and the enum :class:`Fun`."""
 
 import inspect
 import warnings
@@ -54,7 +15,17 @@ from valasp.domain.raisers import ValAspWarning
 
 
 class Fun(Enum):
-    """Modalities for the ``validate`` decorator."""
+    """Modalities for the :meth:`validate` decorator.
+
+    FORWARD_IMPLICIT means FORWARD for symbols of arity 1, and IMPLICIT otherwise.
+
+    FORWARD can be used with symbols of arity 1 and essentially means to leave the init argument as it is.
+
+    IMPLICIT must be used if the init argument is expected to be a function with the same name of the symbol.
+    The arguments of the function are unpacked.
+
+    TUPLE is like IMPLICIT, but the function is expected to have emtpy name.
+    """
     FORWARD_IMPLICIT = 0
     FORWARD = 1
     IMPLICIT = 2
@@ -62,14 +33,7 @@ class Fun(Enum):
 
 
 def _decorate(cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun, auto_blacklist: bool):
-    """Utility function to apply the ``validate`` decorator. Not intended to be used otherwise.
-
-    :param cls: the class subject of decoration
-    :param context: the context where the class must be registered
-    :param is_predicate: True if the class is associated with a predicate in the ASP program
-    :param with_fun: modality of initialization for instances of the class
-    :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted
-    """
+    """Utility function to apply the :meth:`validate` decorator. Not intended to be used otherwise."""
 
     class_name = ClassName(cls.__name__)
     annotations = getattr(cls, '__annotations__', {})

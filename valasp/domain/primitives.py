@@ -202,7 +202,6 @@ class Any(Type):
         ]
 
 
-
 Type.set_primitives({
     Integer: Integer,
     int: Integer,
