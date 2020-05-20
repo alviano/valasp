@@ -262,11 +262,13 @@ at the end call the method <code class="docutils literal notranslate"><span clas
 <em class="property">class </em><code class="sig-prename descclassname">valasp.decorator.</code><code class="sig-name descname">Fun</code><a class="reference internal" href="_modules/valasp/decorator.html#Fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.decorator.Fun" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
 <p>Modalities for the <a class="reference internal" href="#valasp.decorator.validate" title="valasp.decorator.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a> decorator.</p>
-<p>FORWARD_IMPLICIT means FORWARD for symbols of arity 1, and IMPLICIT otherwise.</p>
-<p>FORWARD can be used with symbols of arity 1 and essentially means to leave the init argument as it is.</p>
-<p>IMPLICIT must be used if the init argument is expected to be a function with the same name of the symbol.
-The arguments of the function are unpacked.</p>
-<p>TUPLE is like IMPLICIT, but the function is expected to have emtpy name.</p>
+<ul class="simple">
+<li><p><strong>FORWARD_IMPLICIT</strong> means FORWARD for symbols of arity 1, and IMPLICIT otherwise.</p></li>
+<li><p><strong>FORWARD</strong> can be used with symbols of arity 1 and essentially means to leave the init argument as it is.</p></li>
+<li><p><strong>IMPLICIT</strong> must be used if the init argument is expected to be a function with the same name of the symbol.
+The arguments of the function are unpacked.</p></li>
+<li><p><strong>TUPLE</strong> is like IMPLICIT, but the function is expected to have emtpy name.</p></li>
+</ul>
 <dl class="py attribute">
 <dt id="valasp.decorator.Fun.FORWARD">
 <code class="sig-name descname">FORWARD</code><em class="property"> = 1</em><a class="headerlink" href="#valasp.decorator.Fun.FORWARD" title="Permalink to this definition">¶</a></dt>

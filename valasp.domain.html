@@ -128,7 +128,7 @@
 <dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
 </dd>
 <dt class="field-even">Raise</dt>
-<dd class="field-even"><p>ValueError if value is not a valid function name</p>
+<dd class="field-even"><p>ValueError if value is not a valid function name, or TypeError if the type of value is not str</p>
 </dd>
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p>value</p>
@@ -213,7 +213,7 @@
 <dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
 </dd>
 <dt class="field-even">Raise</dt>
-<dd class="field-even"><p>TypeError if value is not an integer</p>
+<dd class="field-even"><p>TypeError if value is not an integer, or if its type is not str</p>
 </dd>
 <dt class="field-odd">Raise</dt>
 <dd class="field-odd"><p>OverflowError if value does not fit into a 32-bit signed integer</p>
@@ -311,6 +311,23 @@
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p>true if typ is a primitive type</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="valasp.domain.primitives.Type.parse">
+<em class="property">classmethod </em><code class="sig-name descname">parse</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">value</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><a class="reference internal" href="_modules/valasp/domain/primitives.html#Type.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.domain.primitives.Type.parse" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return value, or raises an exception if value is not a string.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>value</strong> – a string to be parsed</p>
+</dd>
+<dt class="field-even">Raise</dt>
+<dd class="field-even"><p>TypeError if value is not str</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>value</p>
 </dd>
 </dl>
 </dd></dl>

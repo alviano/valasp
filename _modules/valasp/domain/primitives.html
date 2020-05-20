@@ -102,7 +102,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attempt to call set_primitives of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1"> from outside its module&#39;</span><span class="p">)</span>
-        <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span> <span class="o">=</span> <span class="n">value</span></div></div>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="Type.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.parse">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return value, or raises an exception if value is not a string.</span>
+
+<span class="sd">        :param value: a string to be parsed</span>
+<span class="sd">        :raise: TypeError if value is not str</span>
+<span class="sd">        :return: value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;expecting str, but found </span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">value</span></div></div>
 
 
 <div class="viewcode-block" id="Integer"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -146,11 +158,11 @@
         <span class="sd">&quot;&quot;&quot;Return the integer represented in value.</span>
 
 <span class="sd">        :param value: a string to be parsed</span>
-<span class="sd">        :raise: TypeError if value is not an integer</span>
+<span class="sd">        :raise: TypeError if value is not an integer, or if its type is not str</span>
 <span class="sd">        :raise: OverflowError if value does not fit into a 32-bit signed integer</span>
 <span class="sd">        :return: the integer in value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">res</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
         <span class="k">if</span> <span class="ow">not</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;=</span> <span class="n">res</span> <span class="o">&lt;=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">max</span><span class="p">()):</span>
             <span class="k">raise</span> <span class="ne">OverflowError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">value</span><span class="si">}</span><span class="s2"> will overflow&quot;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">res</span></div></div>
@@ -182,7 +194,7 @@
 <span class="sd">        :param value: a string to be parsed</span>
 <span class="sd">        :return: value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">value</span></div></div>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="Alpha"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Alpha">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -210,10 +222,12 @@
         <span class="sd">&quot;&quot;&quot;Return value, or raise an exception if value is not valid</span>
 
 <span class="sd">        :param value: a string to be parsed</span>
-<span class="sd">        :raise: ValueError if value is not a valid function name</span>
+<span class="sd">        :raise: ValueError if value is not a valid function name, or TypeError if the type of value is not str</span>
 <span class="sd">        :return: value</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">value</span></div></div>
+
 
 <div class="viewcode-block" id="Any"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Any">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Any</span><span class="p">(</span><span class="n">Type</span><span class="p">):</span>
