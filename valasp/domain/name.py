@@ -2,7 +2,7 @@
 # See file README.md for full license details.
 
 """This module defines domain primitives for class names and predicate names."""
-
+import keyword
 import re
 from dataclasses import dataclass
 
@@ -38,6 +38,7 @@ class PredicateName:
     value: str
 
     def __post_init__(self):
+        print("pred post")
         if not(1 <= len(self.value) <= 256):
             raise ValueError("the length of the given value is not in the range 1..256")
         if not re.fullmatch(r"_*[a-z][A-Za-z0-9_]*", self.value):
@@ -55,3 +56,12 @@ class PredicateName:
             if self.value[i].isalpha():
                 return ClassName(self.value[:i] + self.value[i].upper() + self.value[i+1:])
         raise ValueError('cannot find an alpha character')
+
+
+@dataclass(frozen=True)
+class AttributeName(PredicateName):
+    """A domain primitive for names of attributes."""
+    def __post_init__(self):
+        super().__post_init__()
+        if keyword.iskeyword(self.value):
+            raise ValueError(f"{self.value} is a Python keyword")

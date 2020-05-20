@@ -1,6 +1,8 @@
+import keyword
+
 import pytest
 
-from valasp.domain.name import ClassName, PredicateName
+from valasp.domain.name import ClassName, PredicateName, AttributeName
 
 
 def test_class_name_no_blank():
@@ -83,3 +85,14 @@ def test_single_quotes_are_not_supported():
             PredicateName(name)
         with pytest.raises(ValueError):
             ClassName(name)
+
+
+def test_attribute_name():
+    for name in ["att", "aTt", "aaT", "aTT", "_aT", "__a_T", "a_"]:
+        assert AttributeName(name).value == name
+    for name in ["Att", "ATt", "AaT", "ATT", "_AT", "__A_T", "A_"]:
+        with pytest.raises(ValueError):
+            AttributeName(name)
+    for name in keyword.kwlist:
+        with pytest.raises(ValueError):
+            AttributeName(name)
