@@ -38,46 +38,7 @@
 <span></span><span class="c1"># This file is part of ValAsp which is released under the Apache License, Version 2.0.</span>
 <span class="c1"># See file README.md for full license details.</span>
 
-<span class="sd">&quot;&quot;&quot;This module define the decorator :meth:`validate` and the enum :class:`Fun`.</span>
-
-<span class="sd">:Example:</span>
-
-<span class="sd">.. code-block:: python</span>
-
-<span class="sd">    from clingo import Control</span>
-<span class="sd">    from valasp.context import Context</span>
-<span class="sd">    from valasp.decorator import validate, Fun</span>
-
-<span class="sd">    context = Context()</span>
-
-<span class="sd">    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)</span>
-<span class="sd">    class Date:</span>
-<span class="sd">        year: int</span>
-<span class="sd">        month: int</span>
-<span class="sd">        day: int</span>
-
-<span class="sd">        def __post_init__(self):</span>
-<span class="sd">            datetime.datetime(self.year, self.month, self.day)</span>
-
-<span class="sd">    @validate(context=context)</span>
-<span class="sd">    class Birthday:</span>
-<span class="sd">        name: String</span>
-<span class="sd">        date: Date</span>
-
-<span class="sd">    res = None</span>
-
-<span class="sd">    def on_model(model):</span>
-<span class="sd">        nonlocal res</span>
-<span class="sd">        res = []</span>
-<span class="sd">        for atom in model.symbols(atoms=True):</span>
-<span class="sd">            res.append(atom)</span>
-
-<span class="sd">    context.run(Control(), on_model, [&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;])</span>
-<span class="sd">    # res will be [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
-
-<span class="sd">    context.run(Control(), aux_program=[&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;])</span>
-<span class="sd">    # a RuntimeException is raised because the date is not valid</span>
-<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;This module define the decorator :meth:`validate` and the enum :class:`Fun`.&quot;&quot;&quot;</span>
 
 <span class="kn">import</span> <span class="nn">inspect</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
@@ -91,7 +52,17 @@
 
 
 <div class="viewcode-block" id="Fun"><a class="viewcode-back" href="../../valasp.html#valasp.decorator.Fun">[docs]</a><span class="k">class</span> <span class="nc">Fun</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Modalities for the ``validate`` decorator.&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Modalities for the :meth:`validate` decorator.</span>
+
+<span class="sd">    FORWARD_IMPLICIT means FORWARD for symbols of arity 1, and IMPLICIT otherwise.</span>
+
+<span class="sd">    FORWARD can be used with symbols of arity 1 and essentially means to leave the init argument as it is.</span>
+
+<span class="sd">    IMPLICIT must be used if the init argument is expected to be a function with the same name of the symbol.</span>
+<span class="sd">    The arguments of the function are unpacked.</span>
+
+<span class="sd">    TUPLE is like IMPLICIT, but the function is expected to have emtpy name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">FORWARD_IMPLICIT</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">FORWARD</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">IMPLICIT</span> <span class="o">=</span> <span class="mi">2</span>
@@ -99,14 +70,7 @@
 
 
 <span class="k">def</span> <span class="nf">_decorate</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">context</span><span class="p">:</span> <span class="n">Context</span><span class="p">,</span> <span class="n">is_predicate</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">with_fun</span><span class="p">:</span> <span class="n">Fun</span><span class="p">,</span> <span class="n">auto_blacklist</span><span class="p">:</span> <span class="nb">bool</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Utility function to apply the ``validate`` decorator. Not intended to be used otherwise.</span>
-
-<span class="sd">    :param cls: the class subject of decoration</span>
-<span class="sd">    :param context: the context where the class must be registered</span>
-<span class="sd">    :param is_predicate: True if the class is associated with a predicate in the ASP program</span>
-<span class="sd">    :param with_fun: modality of initialization for instances of the class</span>
-<span class="sd">    :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Utility function to apply the :meth:`validate` decorator. Not intended to be used otherwise.&quot;&quot;&quot;</span>
 
     <span class="n">class_name</span> <span class="o">=</span> <span class="n">ClassName</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
     <span class="n">annotations</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;__annotations__&#39;</span><span class="p">,</span> <span class="p">{})</span>

@@ -257,50 +257,16 @@ at the end call the method <code class="docutils literal notranslate"><span clas
 <div class="section" id="module-valasp.decorator">
 <span id="valasp-decorator-module"></span><h2>valasp.decorator module<a class="headerlink" href="#module-valasp.decorator" title="Permalink to this headline">¶</a></h2>
 <p>This module define the decorator <a class="reference internal" href="#valasp.decorator.validate" title="valasp.decorator.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a> and the enum <a class="reference internal" href="#valasp.decorator.Fun" title="valasp.decorator.Fun"><code class="xref py py-class docutils literal notranslate"><span class="pre">Fun</span></code></a>.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Example</dt>
-<dd class="field-odd"><p></p></dd>
-</dl>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
-<span class="kn">from</span> <span class="nn">valasp.context</span> <span class="kn">import</span> <span class="n">Context</span>
-<span class="kn">from</span> <span class="nn">valasp.decorator</span> <span class="kn">import</span> <span class="n">validate</span><span class="p">,</span> <span class="n">Fun</span>
-
-<span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
-
-<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">is_predicate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_fun</span><span class="o">=</span><span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Date</span><span class="p">:</span>
-    <span class="n">year</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">month</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">day</span><span class="p">:</span> <span class="nb">int</span>
-
-    <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
-
-<span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
-<span class="k">class</span> <span class="nc">Birthday</span><span class="p">:</span>
-    <span class="n">name</span><span class="p">:</span> <span class="n">String</span>
-    <span class="n">date</span><span class="p">:</span> <span class="n">Date</span>
-
-<span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
-
-<span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
-    <span class="k">nonlocal</span> <span class="n">res</span>
-    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
-    <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
-
-<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;</span><span class="p">])</span>
-<span class="c1"># res will be [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
-
-<span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">aux_program</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;</span><span class="p">])</span>
-<span class="c1"># a RuntimeException is raised because the date is not valid</span>
-</pre></div>
-</div>
 <dl class="py class">
 <dt id="valasp.decorator.Fun">
 <em class="property">class </em><code class="sig-prename descclassname">valasp.decorator.</code><code class="sig-name descname">Fun</code><a class="reference internal" href="_modules/valasp/decorator.html#Fun"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.decorator.Fun" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/enum.html#enum.Enum" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">enum.Enum</span></code></a></p>
-<p>Modalities for the <code class="docutils literal notranslate"><span class="pre">validate</span></code> decorator.</p>
+<p>Modalities for the <a class="reference internal" href="#valasp.decorator.validate" title="valasp.decorator.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a> decorator.</p>
+<p>FORWARD_IMPLICIT means FORWARD for symbols of arity 1, and IMPLICIT otherwise.</p>
+<p>FORWARD can be used with symbols of arity 1 and essentially means to leave the init argument as it is.</p>
+<p>IMPLICIT must be used if the init argument is expected to be a function with the same name of the symbol.
+The arguments of the function are unpacked.</p>
+<p>TUPLE is like IMPLICIT, but the function is expected to have emtpy name.</p>
 <dl class="py attribute">
 <dt id="valasp.decorator.Fun.FORWARD">
 <code class="sig-name descname">FORWARD</code><em class="property"> = 1</em><a class="headerlink" href="#valasp.decorator.Fun.FORWARD" title="Permalink to this definition">¶</a></dt>
