@@ -38,7 +38,6 @@ class PredicateName:
     value: str
 
     def __post_init__(self):
-        print("pred post")
         if not(1 <= len(self.value) <= 256):
             raise ValueError("the length of the given value is not in the range 1..256")
         if not re.fullmatch(r"_*[a-z][A-Za-z0-9_]*", self.value):
