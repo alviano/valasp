@@ -138,6 +138,15 @@ class String(Type):
             f'self.{arg} = {arg}.string',
         ]
 
+    @classmethod
+    def parse(cls, value: str) -> str:
+        """Return value, as any string is valid
+
+        :param value: a string to be parsed
+        :return: value
+        """
+        return value
+
 
 @dataclass(frozen=True)
 class Alpha(Type):
@@ -161,13 +170,13 @@ class Alpha(Type):
 
     @classmethod
     def parse(cls, value: str) -> str:
-        """Return value, as any string is valid
+        """Return value, or raise an exception if value is not valid
 
         :param value: a string to be parsed
+        :raise: ValueError if value is not a valid function name
         :return: value
         """
-        return value
-
+        return PredicateName(value).value
 
 @dataclass(frozen=True)
 class Any(Type):
@@ -192,15 +201,6 @@ class Any(Type):
             f'    raise ValueError("expecting Number, String or Function, received {{{arg}.type}}")'
         ]
 
-    @classmethod
-    def parse(cls, value: str) -> str:
-        """Return value, or raise an exception if value is not valid
-
-        :param value: a string to be parsed
-        :raise: ValueError if value is not a valid function name
-        :return: value
-        """
-        return PredicateName(value).value
 
 
 Type.set_primitives({
