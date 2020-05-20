@@ -1,6 +1,8 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
+"""This module defines the :class:`Context` class, a convenient place where classes and @-terms are registered."""
+
 import inspect
 import warnings
 

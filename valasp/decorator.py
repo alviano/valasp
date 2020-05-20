@@ -1,7 +1,7 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
-"""This module define the decorator :meth:`validate` and the enum :class:`Fun`."""
+"""This module define the decorator :meth:`validate` and the associated enum :class:`Fun`."""
 
 import inspect
 import warnings

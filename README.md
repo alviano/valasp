@@ -18,7 +18,7 @@ $ ./bin/create-environemnt.sh
 ```
 
 
-Install it as pip module with
+Install it as a pip module with
 
 ```shell script
 pip install -e .
