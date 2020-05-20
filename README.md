@@ -1,7 +1,59 @@
 # ValAsp
 Validation for Answer Set Programming
 
-# Copyright
+
+## Setup
+
+Obtain a local copy of the repository:
+
+```shell script
+$ git clone git@github.com:alviano/valasp.git
+``` 
+
+
+Execute the following script to create a conda environment with all dependencies:
+
+```shell script
+$ ./bin/create-environemnt.sh
+```
+
+
+Install it as pip module with
+
+```shell script
+pip install -e .
+```
+
+
+Run all tests with
+
+```shell script
+$ pytest
+```
+
+
+## Documentation
+
+The documentation is available online at https://alviano.github.io/valasp.
+
+The documentation is produced with `sphinx`, which can be added to the virtual environment with the following command:
+
+```shell script
+$ conda install sphinx
+```
+
+To produce a local copy of the documentation, run the following commands:
+
+```shell script
+$ cd docs
+$ make generate
+$ make html
+```
+
+The HTML documentation can then be found in `docs/builds/html/index.html`.
+
+
+## Copyright
 
 Copyright 2020 Mario Alviano and Carmine Dodaro
 

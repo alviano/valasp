@@ -6,36 +6,43 @@ Below are two examples of usage.
 
 .. code-block:: python
 
+    import datetime
+
     from clingo import Control
     from valasp.context import Context
     from valasp.decorator import validate, Fun
+    from valasp.domain.primitives import String
 
-    context = Context()
+    def main():
+        context = Context()
 
-    @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
-    class Date:
-        year: int
-        month: int
-        day: int
+        @validate(context=context, is_predicate=False, with_fun=Fun.IMPLICIT)
+        class Date:
+            year: int
+            month: int
+            day: int
 
-        def __post_init__(self):
-            datetime.datetime(self.year, self.month, self.day)
+            def __post_init__(self):
+                datetime.datetime(self.year, self.month, self.day)
 
-    @validate(context=context)
-    class Birthday:
-        name: String
-        date: Date
+        @validate(context=context)
+        class Birthday:
+            name: String
+            date: Date
 
-    res = None
+        res = None
 
-    def on_model(model):
-        nonlocal res
-        res = []
-        for atom in model.symbols(atoms=True):
-            res.append(atom)
+        def on_model(model):
+            nonlocal res
+            res = []
+            for atom in model.symbols(atoms=True):
+                res.append(atom)
 
-    context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
-    # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
+        context.run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
+        # res will be [birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]
 
-    context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
-    # a RuntimeException is raised because the date is not valid
+        context.run(Control(), aux_program=['birthday("no one",date(2019,2,29)).'])
+        # a RuntimeException is raised because the date is not valid
+
+    if __name__ == '__main__':
+        main()
