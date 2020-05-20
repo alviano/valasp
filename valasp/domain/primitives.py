@@ -67,6 +67,18 @@ class Type:
             raise PermissionError(f'attempt to call set_primitives of {cls} from outside its module')
         cls.__primitives = value
 
+    @classmethod
+    def parse(cls, value: str) -> str:
+        """Return value, or raises an exception if value is not a string.
+
+        :param value: a string to be parsed
+        :raise: TypeError if value is not str
+        :return: value
+        """
+        if not isinstance(value, str):
+            raise TypeError(f"expecting str, but found {type(value)}")
+        return value
+
 
 @dataclass(frozen=True)
 class Integer(Type):
@@ -109,11 +121,11 @@ class Integer(Type):
         """Return the integer represented in value.
 
         :param value: a string to be parsed
-        :raise: TypeError if value is not an integer
+        :raise: TypeError if value is not an integer, or if its type is not str
         :raise: OverflowError if value does not fit into a 32-bit signed integer
         :return: the integer in value
         """
-        res = int(value)
+        res = int(super().parse(value))
         if not(cls.min() <= res <= cls.max()):
             raise OverflowError(f"{value} will overflow")
         return res
@@ -145,7 +157,7 @@ class String(Type):
         :param value: a string to be parsed
         :return: value
         """
-        return value
+        return super().parse(value)
 
 
 @dataclass(frozen=True)
@@ -173,10 +185,12 @@ class Alpha(Type):
         """Return value, or raise an exception if value is not valid
 
         :param value: a string to be parsed
-        :raise: ValueError if value is not a valid function name
+        :raise: ValueError if value is not a valid function name, or TypeError if the type of value is not str
         :return: value
         """
+        value = super().parse(value)
         return PredicateName(value).value
+
 
 @dataclass(frozen=True)
 class Any(Type):

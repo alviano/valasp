@@ -1,4 +1,7 @@
 .idea/
+docs/source/modules.rst
+docs/source/valasp.rst
+docs/source/valasp.*.rst
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

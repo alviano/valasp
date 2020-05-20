@@ -17,14 +17,11 @@ from valasp.domain.raisers import ValAspWarning
 class Fun(Enum):
     """Modalities for the :meth:`validate` decorator.
 
-    FORWARD_IMPLICIT means FORWARD for symbols of arity 1, and IMPLICIT otherwise.
-
-    FORWARD can be used with symbols of arity 1 and essentially means to leave the init argument as it is.
-
-    IMPLICIT must be used if the init argument is expected to be a function with the same name of the symbol.
-    The arguments of the function are unpacked.
-
-    TUPLE is like IMPLICIT, but the function is expected to have emtpy name.
+    * **FORWARD_IMPLICIT** means FORWARD for symbols of arity 1, and IMPLICIT otherwise.
+    * **FORWARD** can be used with symbols of arity 1 and essentially means to leave the init argument as it is.
+    * **IMPLICIT** must be used if the init argument is expected to be a function with the same name of the symbol.
+      The arguments of the function are unpacked.
+    * **TUPLE** is like IMPLICIT, but the function is expected to have emtpy name.
     """
     FORWARD_IMPLICIT = 0
     FORWARD = 1
