@@ -20,10 +20,11 @@ script:
     - travis-sphinx build
 
 deploy:
-    strategy: git
     provider: pages
+    strategy: git
     token: $GITHUB_TOKEN
     local_dir: doc/build
     on:
         branch: master
+    edge: true
 
