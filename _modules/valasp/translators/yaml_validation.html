@@ -1,0 +1,431 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>valasp.translators.yaml_validation &#8212; ValAsp 0.0.1 documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for valasp.translators.yaml_validation</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">valasp.domain.name</span> <span class="kn">import</span> <span class="n">PredicateName</span><span class="p">,</span> <span class="n">AttributeName</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.primitives</span> <span class="kn">import</span> <span class="n">Integer</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.primitives</span> <span class="kn">import</span> <span class="n">String</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.primitives</span> <span class="kn">import</span> <span class="n">Alpha</span>
+
+
+<div class="viewcode-block" id="YamlValidation"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation">[docs]</a><span class="k">class</span> <span class="nc">YamlValidation</span><span class="p">:</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_keywords</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected </span><span class="si">%s</span><span class="s1"> in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">message</span><span class="p">))</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_predicate_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_term_name</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">AttributeName</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_str</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">String</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_alpha</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">Alpha</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_bool</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected </span><span class="si">%s</span><span class="s1">. Expected True or False&#39;</span> <span class="o">%</span> <span class="n">content</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="n">Integer</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">content</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;expected int, but found </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">(</span><span class="n">content</span><span class="p">))</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">ValueError</span><span class="p">,</span> <span class="ne">TypeError</span><span class="p">,</span> <span class="ne">OverflowError</span><span class="p">)</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_positive_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected 0 or a positive integer&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_negative_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">c</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">c</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected 0 or a negative integer&#39;</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_enum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected list&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;String&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;Alpha&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_alpha</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected type </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="nb">type</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid value in enum: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__validate_pattern</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">re</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected regular expression </span><span class="si">%s</span><span class="s1"> &#39;</span> <span class="o">%</span> <span class="n">re</span><span class="o">.</span><span class="n">error</span><span class="p">)</span>
+
+<div class="viewcode-block" id="YamlValidation.validate_aggregate_sum_pos"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_aggregate_sum_pos">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_aggregate_sum_pos</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">}</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;sum+&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_positive_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content</span> <span class="o">!=</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected keyword Integer&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_aggregate_sum_neg"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_aggregate_sum_neg">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_aggregate_sum_neg</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">}</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;sum-&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_negative_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content</span> <span class="o">!=</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected keyword Integer&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_aggregate_count"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_aggregate_count">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_aggregate_count</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_positive_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_complex_term_int"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_complex_term_int">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_complex_term_int</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;sum+&#39;</span><span class="p">,</span> <span class="s1">&#39;sum-&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;enum&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;Integer type&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;sum+&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_sum_pos</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;sum-&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_sum_neg</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_count</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;enum&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_enum</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_complex_term_string"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_complex_term_string">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_complex_term_string</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;pattern&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;enum&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;String type&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_count</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;enum&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_enum</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="s1">&#39;String&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;pattern&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_pattern</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_complex_term_alpha"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_complex_term_alpha">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_complex_term_alpha</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;min&#39;</span><span class="p">,</span> <span class="s1">&#39;max&#39;</span><span class="p">,</span> <span class="s1">&#39;pattern&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">,</span> <span class="s1">&#39;enum&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;Alpha type&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;min&#39;</span> <span class="ow">or</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;max&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_count</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;enum&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_enum</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">],</span> <span class="s1">&#39;Alpha&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;pattern&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_pattern</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_complex_term_any"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_complex_term_any">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_complex_term_any</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;Any type&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_count</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_complex_term_user_defined"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_complex_term_user_defined">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_complex_term_user_defined</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">,</span> <span class="s1">&#39;count&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;user defined symbol&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;count&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_aggregate_count</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_term_type"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_term_type">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_term_type</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;Alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;Any&#39;</span><span class="p">,</span> <span class="s1">&#39;Integer&#39;</span><span class="p">,</span> <span class="s1">&#39;String&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">content</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_term_name</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected one of </span><span class="si">%s</span><span class="s1"> or user defined symbol: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_term"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_term">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_term</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">required</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">r</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected keyword </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">r</span><span class="p">)</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">type_</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                <span class="bp">cls</span><span class="o">.</span><span class="n">validate_term_type</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_complex_term_int</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;String&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_complex_term_string</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;Alpha&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_complex_term_alpha</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;Any&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_complex_term_any</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_complex_term_user_defined</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">validate_term_type</span><span class="p">(</span><span class="n">content</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_with_fun"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_with_fun">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_with_fun</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;FORWARD_IMPLICIT&#39;</span><span class="p">,</span> <span class="s1">&#39;FORWARD&#39;</span><span class="p">,</span> <span class="s1">&#39;IMPLICIT&#39;</span><span class="p">,</span> <span class="s1">&#39;TUPLE&#39;</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">content</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">keywords</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unexpected value </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">content</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_having"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_having">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_having</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;equals&#39;</span><span class="p">,</span> <span class="s1">&#39;different&#39;</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="s1">&#39;ge&#39;</span><span class="p">,</span> <span class="s1">&#39;lt&#39;</span><span class="p">,</span> <span class="s1">&#39;le&#39;</span><span class="p">}</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;having&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="n">element</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected exactly two arguments of the list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">l</span><span class="p">)))</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">l</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;expected structure&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_valasp_in_symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_valasp_in_symbol">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_valasp_in_symbol</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;having&#39;</span><span class="p">,</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">,</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">,</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">,</span> <span class="s1">&#39;after_init&#39;</span><span class="p">,</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">,</span> <span class="s1">&#39;after_grounding&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;valasp of symbol&#39;</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;having&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_having</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_bool</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_with_fun</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_bool</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_init&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_grounding&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_symbol">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_symbol</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">validate_valasp_in_symbol</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_predicate_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">validate_term</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected structure for symbol definition&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_python">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_python</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_asp"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_asp">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_asp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate_valasp"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_valasp">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate_valasp</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;python&#39;</span><span class="p">,</span> <span class="s1">&#39;asp&#39;</span><span class="p">}</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;valasp&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;python&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_python</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;asp&#39;</span><span class="p">:</span>
+                    <span class="bp">cls</span><span class="o">.</span><span class="n">validate_asp</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="YamlValidation.validate"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">validate_valasp</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_predicate_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
+                        <span class="bp">cls</span><span class="o">.</span><span class="n">validate_symbol</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="kn">from</span> <span class="bp">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected structure&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

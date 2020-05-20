@@ -20,6 +20,14 @@ valasp.translators.json2python module
    :undoc-members:
    :show-inheritance:
 
+valasp.translators.yaml\_validation module
+------------------------------------------
+
+.. automodule:: valasp.translators.yaml_validation
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 
 Module contents
 ---------------
