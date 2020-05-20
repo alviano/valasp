@@ -1,4 +1,5 @@
 # ValAsp
+
 Validation for Answer Set Programming
 
 
@@ -8,24 +9,34 @@ Obtain a local copy of the repository:
 
 ```shell script
 $ git clone git@github.com:alviano/valasp.git
+$ cd valasp
 ``` 
 
 
 Execute the following script to create a conda environment with all dependencies:
 
 ```shell script
-$ ./bin/create-environemnt.sh
+$ ./bin/create-environment.sh
 ```
 
 
-Install it as a pip module with
+Don't forget to activate the environment with
 
 ```shell script
-pip install -e .
+$ conda activate valasp
+``` 
+
+where `valasp` is the name given to the virtual environment.
+
+
+To install `valasp` as a pip module, use the following command:
+
+```shell script
+$ pip install -e .
 ```
 
 
-Run all tests with
+To run all tests, use the following command:
 
 ```shell script
 $ pytest
