@@ -4,18 +4,18 @@ valasp.domain package
 Submodules
 ----------
 
-valasp.domain.name module
--------------------------
+valasp.domain.names module
+--------------------------
 
-.. automodule:: valasp.domain.name
+.. automodule:: valasp.domain.names
    :members:
    :undoc-members:
    :show-inheritance:
 
-valasp.domain.primitives module
--------------------------------
+valasp.domain.primitive\_types module
+-------------------------------------
 
-.. automodule:: valasp.domain.primitives
+.. automodule:: valasp.domain.primitive_types
    :members:
    :undoc-members:
    :show-inheritance:

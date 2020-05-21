@@ -13,18 +13,10 @@ Subpackages
 Submodules
 ----------
 
-valasp.context module
----------------------
+valasp.core module
+------------------
 
-.. automodule:: valasp.context
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-valasp.decorator module
------------------------
-
-.. automodule:: valasp.decorator
+.. automodule:: valasp.core
    :members:
    :undoc-members:
    :show-inheritance:

@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>valasp.domain.primitives &#8212; ValAsp 0.0.1 documentation</title>
+    <title>valasp.domain.primitive_types &#8212; ValAsp 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -34,20 +34,41 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for valasp.domain.primitives</h1><div class="highlight"><pre>
+  <h1>Source code for valasp.domain.primitive_types</h1><div class="highlight"><pre>
 <span></span><span class="c1"># This file is part of ValAsp which is released under the Apache License, Version 2.0.</span>
 <span class="c1"># See file README.md for full license details.</span>
 
+<span class="sd">&quot;&quot;&quot;The enum :class:`Fun` and the primitive types are defined in this module.</span>
+
+<span class="sd">The primitive types are markers to be used in annotations. They cannot be instantiated, and offer a very limited set of utility function.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
+<span class="kn">from</span> <span class="nn">enum</span> <span class="kn">import</span> <span class="n">Enum</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">ClassVar</span>
 
 <span class="kn">import</span> <span class="nn">clingo</span>
 <span class="kn">import</span> <span class="nn">typing</span>
 
-<span class="kn">from</span> <span class="nn">valasp.domain.name</span> <span class="kn">import</span> <span class="n">PredicateName</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.names</span> <span class="kn">import</span> <span class="n">PredicateName</span>
 
 
-<div class="viewcode-block" id="Type"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Fun"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Fun">[docs]</a><span class="k">class</span> <span class="nc">Fun</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Modalities for the :meth:`validate` decorator.</span>
+
+<span class="sd">    * **FORWARD_IMPLICIT** means FORWARD for symbols of arity 1, and IMPLICIT otherwise.</span>
+<span class="sd">    * **FORWARD** can be used with symbols of arity 1 and essentially means to leave the init argument as it is.</span>
+<span class="sd">    * **IMPLICIT** must be used if the init argument is expected to be a function with the same name of the symbol.</span>
+<span class="sd">      The arguments of the function are unpacked.</span>
+<span class="sd">    * **TUPLE** is like IMPLICIT, but the function is expected to have emtpy name.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">FORWARD_IMPLICIT</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">FORWARD</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">IMPLICIT</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">TUPLE</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+
+<div class="viewcode-block" id="Type"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Type</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;Base class for type annotations.</span>
 
@@ -56,9 +77,9 @@
     <span class="n">__primitives</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;this class must be used only as a marker&#39;</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span><span class="p">(</span><span class="s1">&#39;this class must be used only as a marker&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Type.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.init_code">[docs]</a>    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="Type.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type.init_code">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="sd">&quot;&quot;&quot;Return code to validate the type of the given argument name.</span>
 
@@ -72,7 +93,7 @@
             <span class="sa">f</span><span class="s1">&#39;    raise TypeError(f&quot;expecting clingo.Symbol, but received type(</span><span class="se">{{</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="se">}}</span><span class="s1">)&quot;)&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="Type.is_primitive"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.is_primitive">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Type.is_primitive"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type.is_primitive">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">is_primitive</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return true if typ is considered a primitive type.</span>
 
@@ -81,7 +102,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">typ</span> <span class="ow">in</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span></div>
 
-<div class="viewcode-block" id="Type.get_primitive"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.get_primitive">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Type.get_primitive"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type.get_primitive">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">get_primitive</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;Type&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return a subclass of Type associated with typ.</span>
 
@@ -91,7 +112,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span><span class="p">[</span><span class="n">typ</span><span class="p">]</span></div>
 
-<div class="viewcode-block" id="Type.set_primitives"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.set_primitives">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Type.set_primitives"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type.set_primitives">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">set_primitives</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Init the Type class with primitive types.</span>
 
@@ -104,7 +125,7 @@
             <span class="k">raise</span> <span class="ne">PermissionError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;attempt to call set_primitives of </span><span class="si">{</span><span class="bp">cls</span><span class="si">}</span><span class="s1"> from outside its module&#39;</span><span class="p">)</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">__primitives</span> <span class="o">=</span> <span class="n">value</span></div>
 
-<div class="viewcode-block" id="Type.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Type.parse">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Type.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Type.parse">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return value, or raises an exception if value is not a string.</span>
 
@@ -117,7 +138,7 @@
         <span class="k">return</span> <span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="Integer"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Integer"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Integer">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Integer</span><span class="p">(</span><span class="n">Type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Primitive type representing integers.</span>
 
@@ -127,7 +148,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Integer.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer.init_code">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Integer.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Integer.init_code">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">init_code</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
             <span class="sa">f</span><span class="s1">&#39;if </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.type != clingo.SymbolType.Number:&#39;</span><span class="p">,</span>
@@ -137,7 +158,7 @@
             <span class="sa">f</span><span class="s1">&#39;    raise OverflowError(f&quot;argument </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1"> will overflow with value </span><span class="se">{{</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="se">}}</span><span class="s1">&quot;)&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="Integer.max"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer.max">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Integer.max"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Integer.max">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the greatest integer for the ASP system.</span>
 
@@ -145,7 +166,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mi">2</span><span class="o">**</span><span class="mi">31</span> <span class="o">-</span> <span class="mi">1</span></div>
 
-<div class="viewcode-block" id="Integer.min"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer.min">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Integer.min"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Integer.min">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the smallest integer for the ASP system.</span>
 
@@ -153,7 +174,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="o">-</span><span class="mi">2</span><span class="o">**</span><span class="mi">31</span></div>
 
-<div class="viewcode-block" id="Integer.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Integer.parse">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Integer.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Integer.parse">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the integer represented in value.</span>
 
@@ -168,7 +189,7 @@
         <span class="k">return</span> <span class="n">res</span></div></div>
 
 
-<div class="viewcode-block" id="String"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.String">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="String"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.String">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">String</span><span class="p">(</span><span class="n">Type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Primitive type representing strings.</span>
@@ -179,7 +200,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="String.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.String.init_code">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="String.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.String.init_code">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">init_code</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
             <span class="sa">f</span><span class="s1">&#39;if </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.type != clingo.SymbolType.String:&#39;</span><span class="p">,</span>
@@ -187,7 +208,7 @@
             <span class="sa">f</span><span class="s1">&#39;self.</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.string&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="String.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.String.parse">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="String.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.String.parse">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return value, as any string is valid</span>
 
@@ -197,7 +218,7 @@
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div></div>
 
 
-<div class="viewcode-block" id="Alpha"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Alpha">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Alpha"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Alpha">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Alpha</span><span class="p">(</span><span class="n">Type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Primitive type representing named constants.</span>
 
@@ -207,7 +228,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Alpha.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Alpha.init_code">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Alpha.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Alpha.init_code">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">init_code</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
             <span class="sa">f</span><span class="s1">&#39;if </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.type != clingo.SymbolType.Function:&#39;</span><span class="p">,</span>
@@ -217,7 +238,7 @@
             <span class="sa">f</span><span class="s1">&#39;self.</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.name&#39;</span><span class="p">,</span>
         <span class="p">]</span></div>
 
-<div class="viewcode-block" id="Alpha.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Alpha.parse">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Alpha.parse"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Alpha.parse">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return value, or raise an exception if value is not valid</span>
 
@@ -229,7 +250,7 @@
         <span class="k">return</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">value</span></div></div>
 
 
-<div class="viewcode-block" id="Any"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Any">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="Any"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Any">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">Any</span><span class="p">(</span><span class="n">Type</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Primitive type representing wildcards.</span>
 
@@ -239,7 +260,7 @@
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="Any.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitives.Any.init_code">[docs]</a>    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Any.init_code"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.primitive_types.Any.init_code">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">init_code</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
             <span class="sa">f</span><span class="s1">&#39;if </span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">.type == clingo.SymbolType.Number:&#39;</span><span class="p">,</span>
@@ -297,7 +318,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

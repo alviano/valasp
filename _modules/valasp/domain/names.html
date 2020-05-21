@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>valasp.domain.name &#8212; ValAsp 0.0.1 documentation</title>
+    <title>valasp.domain.names &#8212; ValAsp 0.2.0 documentation</title>
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
@@ -24,7 +24,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
@@ -34,7 +34,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <h1>Source code for valasp.domain.name</h1><div class="highlight"><pre>
+  <h1>Source code for valasp.domain.names</h1><div class="highlight"><pre>
 <span></span><span class="c1"># This file is part of ValAsp which is released under the Apache License, Version 2.0.</span>
 <span class="c1"># See file README.md for full license details.</span>
 
@@ -44,7 +44,7 @@
 <span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span>
 
 
-<div class="viewcode-block" id="ClassName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.name.ClassName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="ClassName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.names.ClassName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">ClassName</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A domain primitive for names of classes.&quot;&quot;&quot;</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
@@ -58,18 +58,18 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
 
-<div class="viewcode-block" id="ClassName.to_predicate"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.name.ClassName.to_predicate">[docs]</a>    <span class="k">def</span> <span class="nf">to_predicate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;PredicateName&#39;</span><span class="p">:</span>
+<div class="viewcode-block" id="ClassName.to_predicate"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.names.ClassName.to_predicate">[docs]</a>    <span class="k">def</span> <span class="nf">to_predicate</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s1">&#39;PredicateName&#39;</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the predicate name associated with this class name.</span>
 
 <span class="sd">        :return: a predicate name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">PredicateName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot find an alpha character&#39;</span><span class="p">)</span></div></div>
+                <span class="k">return</span> <span class="n">PredicateName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span></div></div>
+        <span class="c1"># raise ValueError(&#39;cannot find an alpha character&#39;)</span>
 
 
-<div class="viewcode-block" id="PredicateName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.name.PredicateName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="PredicateName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.names.PredicateName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">PredicateName</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;A domain primitive for names of predicates.&quot;&quot;&quot;</span>
     <span class="n">value</span><span class="p">:</span> <span class="nb">str</span>
@@ -83,18 +83,18 @@
     <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span>
 
-<div class="viewcode-block" id="PredicateName.to_class"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.name.PredicateName.to_class">[docs]</a>    <span class="k">def</span> <span class="nf">to_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassName</span><span class="p">:</span>
+<div class="viewcode-block" id="PredicateName.to_class"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.names.PredicateName.to_class">[docs]</a>    <span class="k">def</span> <span class="nf">to_class</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ClassName</span><span class="p">:</span>
         <span class="sd">&quot;&quot;&quot;Return the class name associated with this predicate name.</span>
 
 <span class="sd">        :return: a class name</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)):</span>
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
-                <span class="k">return</span> <span class="n">ClassName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;cannot find an alpha character&#39;</span><span class="p">)</span></div></div>
+                <span class="k">return</span> <span class="n">ClassName</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[:</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">[</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="p">:])</span></div></div>
+        <span class="c1"># raise ValueError(&#39;cannot find an alpha character&#39;)</span>
 
 
-<div class="viewcode-block" id="AttributeName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.name.AttributeName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="viewcode-block" id="AttributeName"><a class="viewcode-back" href="../../../valasp.domain.html#valasp.domain.names.AttributeName">[docs]</a><span class="nd">@dataclass</span><span class="p">(</span><span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">class</span> <span class="nc">AttributeName</span><span class="p">(</span><span class="n">PredicateName</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;A domain primitive for names of attributes.&quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -131,7 +131,7 @@
         <li class="right" >
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.0.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
           <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>

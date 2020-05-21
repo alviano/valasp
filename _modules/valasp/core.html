@@ -1,0 +1,433 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>valasp.core &#8212; ValAsp 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for valasp.core</h1><div class="highlight"><pre>
+<span></span><span class="c1"># This file is part of ValAsp which is released under the Apache License, Version 2.0.</span>
+<span class="c1"># See file README.md for full license details.</span>
+
+<span class="sd">&quot;&quot;&quot;This module defines the :class:`Context` class, a convenient place where classes and @-terms are registered.</span>
+
+<span class="sd">An instance of :class:`Context` can wrap one or more classes and functions to be used as @-terms by an ASP system.</span>
+<span class="sd">Classes can be registered by using a convenient decorator, and are used to inject data validation into an external ASP program.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span> <span class="k">as</span> <span class="nn">valasp_inspect</span>
+<span class="kn">import</span> <span class="nn">warnings</span> <span class="k">as</span> <span class="nn">valasp_warnings</span>
+
+<span class="kn">import</span> <span class="nn">clingo</span>
+<span class="kn">from</span> <span class="nn">types</span> <span class="kn">import</span> <span class="n">FunctionType</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">ClassVar</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">from</span> <span class="nn">valasp.domain.names</span> <span class="kn">import</span> <span class="n">PredicateName</span><span class="p">,</span> <span class="n">ClassName</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.primitive_types</span> <span class="kn">import</span> <span class="n">Type</span><span class="p">,</span> <span class="n">Fun</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.raisers</span> <span class="kn">import</span> <span class="n">ValAspWarning</span>
+
+
+<div class="viewcode-block" id="Context"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context">[docs]</a><span class="k">class</span> <span class="nc">Context</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;The place where classes and @-terms can be registered to make them available for the ASP system.</span>
+
+<span class="sd">    Typical usage just amount to create an instance and apply the ``valasp`` decorator to one or more classes, and</span>
+<span class="sd">    at the end call the method ``run()`` to execute the ASP system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">wrap</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">max_arity</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">16</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create a context object.</span>
+
+<span class="sd">        If you have already a context object defining methods for @-terms used by your program, you can pass it in the wrap list.</span>
+<span class="sd">        Similarly, if your @-terms are implemented by global functions, you can pass them in the wrap list.</span>
+
+<span class="sd">        :param wrap: a list of objects and functions defining @-terms</span>
+<span class="sd">        :param max_arity: the largest arity to be validated (16 is a reasonable upper bound)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">max_arity</span> <span class="o">&lt;=</span> <span class="mi">99</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;max_arity must be in 1..99, but received </span><span class="si">{max_arity}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__wrap</span> <span class="o">=</span> <span class="n">wrap</span> <span class="k">if</span> <span class="n">wrap</span> <span class="k">else</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__globals</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;__&#39;</span> <span class="ow">or</span> <span class="n">k</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">islower</span><span class="p">()}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__reserved</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__globals</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__validators</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">ClassVar</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max_arity</span> <span class="o">=</span> <span class="n">max_arity</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__secret</span> <span class="o">=</span> <span class="nb">object</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__getattr__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">wrap</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__wrap</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wrap</span><span class="p">,</span><span class="n">Callable</span><span class="p">)</span> <span class="ow">and</span> <span class="n">wrap</span><span class="o">.</span><span class="vm">__name__</span> <span class="o">==</span> <span class="n">name</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">wrap</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+                <span class="n">m</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">wrap</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">m</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">m</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__globals</span><span class="p">:</span>
+                <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__globals</span><span class="p">[</span><span class="n">name</span><span class="p">](</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&#39; object has no attribute &#39;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&#39;; wrong @-term?&quot;</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">method</span>
+
+<div class="viewcode-block" id="Context.valasp"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp">[docs]</a>    <span class="k">def</span> <span class="nf">valasp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_predicate</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">with_fun</span><span class="p">:</span> <span class="n">Fun</span> <span class="o">=</span> <span class="n">Fun</span><span class="o">.</span><span class="n">FORWARD_IMPLICIT</span><span class="p">,</span> <span class="n">auto_blacklist</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Decorator to process classes for ASP validation.</span>
+
+<span class="sd">        Annotations on a decorated class are used to define attributes and to inject an ``__init__()`` method.</span>
+<span class="sd">        If the class defines a ``__post_init__()`` method, it is called at the end of the ``__init__()`` method.</span>
+<span class="sd">        Other common magic methods are also injected, unless already defined in the class.</span>
+
+<span class="sd">        :param is_predicate: True if the class is associated with a predicate in the ASP program</span>
+<span class="sd">        :param with_fun: modality of initialization for instances of the class</span>
+<span class="sd">        :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted</span>
+<span class="sd">        :return: a decorator</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">def</span> <span class="nf">decorator</span><span class="p">(</span><span class="bp">cls</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">):</span>
+            <span class="n">class_name</span> <span class="o">=</span> <span class="n">ClassName</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="p">)</span>
+            <span class="n">annotations</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;__annotations__&#39;</span><span class="p">,</span> <span class="p">{})</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">annotations</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;cannot process classes with no annotations&#39;</span><span class="p">)</span>
+            <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">annotations</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">process_with_fun</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+                <span class="k">nonlocal</span> <span class="n">with_fun</span>
+                <span class="k">if</span> <span class="n">with_fun</span> <span class="o">==</span> <span class="n">Fun</span><span class="o">.</span><span class="n">FORWARD_IMPLICIT</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="n">with_fun</span> <span class="o">=</span> <span class="n">Fun</span><span class="o">.</span><span class="n">FORWARD</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">with_fun</span> <span class="o">=</span> <span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span>
+                <span class="k">if</span> <span class="n">with_fun</span> <span class="o">==</span> <span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">class_name</span><span class="o">.</span><span class="n">to_predicate</span><span class="p">()</span><span class="o">.</span><span class="n">value</span>
+                <span class="k">if</span> <span class="n">with_fun</span> <span class="o">==</span> <span class="n">Fun</span><span class="o">.</span><span class="n">FORWARD</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">annotations</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s1">&#39;FORWARD requires exactly one annotation&#39;</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="kc">None</span>
+                <span class="k">assert</span> <span class="n">with_fun</span> <span class="o">==</span> <span class="n">Fun</span><span class="o">.</span><span class="n">TUPLE</span>
+                <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+
+            <span class="k">def</span> <span class="nf">has_method</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+                <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">getattr</span><span class="p">(</span><span class="nb">object</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">set_method</span><span class="p">(</span><span class="n">method</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">arg_names</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">body_lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_make_fun</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">method</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">arg_names</span><span class="p">,</span> <span class="n">body_lines</span><span class="p">,</span> <span class="n">with_self</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">,</span> <span class="n">fun</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">add_init</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">has_method</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;cannot process classes with __init__() constructor&quot;</span><span class="p">)</span>
+
+                <span class="k">def</span> <span class="nf">unpack</span><span class="p">(</span><span class="n">fun_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">with_fun_string</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> = value&#39;</span><span class="p">]</span>
+                    <span class="k">return</span> <span class="p">[</span>
+                        <span class="sa">f</span><span class="s1">&#39;if value.type != clingo.SymbolType.Function:&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;    raise TypeError(f&quot;expecting clingo.SymbolType.Function, but received </span><span class="se">{{</span><span class="s1">value.type</span><span class="se">}}</span><span class="s1">&quot;)&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;if value.name != &quot;</span><span class="si">{</span><span class="n">fun_name</span><span class="si">}</span><span class="s1">&quot;:&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;    raise ValueError(f&quot;expecting function </span><span class="se">\\</span><span class="s1">&quot;</span><span class="si">{</span><span class="n">fun_name</span><span class="si">}</span><span class="se">\\</span><span class="s1">&quot;, but found </span><span class="se">\\</span><span class="s1">&quot;</span><span class="se">{{</span><span class="s1">value.name</span><span class="se">}}\\</span><span class="s1">&quot;&quot;)&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;if len(value.arguments) != </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s1">:&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;    raise ValueError(f&quot;expecting arity </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s1"> for </span><span class="si">{</span><span class="n">fun_name</span><span class="si">}</span><span class="s1">, &#39;</span>
+                        <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;but found </span><span class="se">{{</span><span class="s1">len(value.arguments)</span><span class="se">}}</span><span class="s1">&quot;)&#39;</span><span class="p">,</span>
+                        <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span><span class="si">}</span><span class="s1">, = value.arguments&#39;</span><span class="p">,</span>
+                    <span class="p">]</span>
+
+                <span class="k">def</span> <span class="nf">init_arg</span><span class="p">(</span><span class="n">arg</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">typ</span><span class="p">:</span> <span class="n">ClassName</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">Type</span><span class="o">.</span><span class="n">is_primitive</span><span class="p">(</span><span class="n">typ</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">Type</span><span class="o">.</span><span class="n">get_primitive</span><span class="p">(</span><span class="n">typ</span><span class="p">)</span><span class="o">.</span><span class="n">init_code</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="p">[</span><span class="sa">f</span><span class="s1">&#39;self.</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1"> = </span><span class="si">{</span><span class="n">typ</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">arg</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">]</span>
+
+                <span class="n">body</span> <span class="o">=</span> <span class="n">unpack</span><span class="p">(</span><span class="n">with_fun_string</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">annotations</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">body</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">init_arg</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span>
+
+                <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">valasp_inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">valasp_inspect</span><span class="o">.</span><span class="n">isfunction</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;check&#39;</span><span class="p">):</span>
+                        <span class="n">m</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valasp_inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                            <span class="n">valasp_warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                                <span class="sa">f</span><span class="s2">&quot;ignore method </span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> of class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> because it has parameters&quot;</span><span class="p">,</span>
+                                <span class="n">ValAspWarning</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;self.</span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s1">()&#39;</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="s1">&#39;__post_init__&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+                    <span class="n">body</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;self.__post_init__()&#39;</span><span class="p">)</span>
+
+                <span class="n">set_method</span><span class="p">(</span><span class="s1">&#39;__init__&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="n">body</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">add_str</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">has_method</span><span class="p">(</span><span class="s1">&#39;__str__&#39;</span><span class="p">):</span>
+                    <span class="n">body</span> <span class="o">=</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;return &#39;</span><span class="si">{</span><span class="n">class_name</span><span class="si">}</span><span class="s2">(&#39; + &quot;</span> <span class="o">+</span> <span class="s2">&quot; + &#39;,&#39; + &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;str(self.</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1">)&#39;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; + &#39;)&#39;&quot;</span><span class="p">]</span>
+                    <span class="n">set_method</span><span class="p">(</span><span class="s1">&#39;__str__&#39;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">body</span><span class="p">)</span>
+
+            <span class="k">def</span> <span class="nf">add_cmp</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">self_tuple</span> <span class="o">=</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;self.</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+                <span class="n">other_tuple</span> <span class="o">=</span> <span class="s2">&quot;(&quot;</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;other.</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+                <span class="n">methods</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;eq&#39;</span><span class="p">,</span> <span class="s1">&#39;==&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ne&#39;</span><span class="p">,</span> <span class="s1">&#39;!=&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lt&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;le&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;ge&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="s1">&#39;&gt;&#39;</span><span class="p">)]</span>
+                <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">methods</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">has_method</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;__</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">__&#39;</span><span class="p">):</span>
+                        <span class="n">set_method</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;__</span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">__&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;other&#39;</span><span class="p">],</span> <span class="p">[</span><span class="sa">f</span><span class="s2">&quot;return </span><span class="si">{</span><span class="n">self_tuple</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">other_tuple</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">])</span>
+
+            <span class="n">with_fun_string</span> <span class="o">=</span> <span class="n">process_with_fun</span><span class="p">()</span>
+            <span class="n">add_init</span><span class="p">()</span>
+            <span class="n">add_str</span><span class="p">()</span>
+            <span class="n">add_cmp</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">is_predicate</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valasp_add_validator</span><span class="p">(</span><span class="n">class_name</span><span class="o">.</span><span class="n">to_predicate</span><span class="p">(),</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">),</span> <span class="n">with_fun_string</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">auto_blacklist</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">valasp_blacklist</span><span class="p">(</span><span class="n">class_name</span><span class="o">.</span><span class="n">to_predicate</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_all_arities_but</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">valasp_register_class</span><span class="p">(</span><span class="bp">cls</span><span class="p">)</span>
+            <span class="k">return</span> <span class="bp">cls</span>
+        <span class="k">return</span> <span class="n">decorator</span></div>
+
+
+<div class="viewcode-block" id="Context.valasp_error"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_error">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">{{</span><span class="s2">msg</span><span class="se">}}</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="sa">f</span><span class="s2">&quot;; args=</span><span class="se">{{</span><span class="s2">args</span><span class="se">}}</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_make_fun"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_make_fun">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_make_fun</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">body_lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">with_self</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return a function obtained by compiling the given code.</span>
+
+<span class="sd">        The provided code can refer classes and @-terms registered in the context.</span>
+
+<span class="sd">        :param name: the name of the function to create (for reference in errors)</span>
+<span class="sd">        :param args: the argument names of the function</span>
+<span class="sd">        :param body_lines: the actual code</span>
+<span class="sd">        :param with_self: True if ``self`` must be included in the arguments</span>
+<span class="sd">        :return: a function</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;self, &#39;</span> <span class="k">if</span> <span class="n">with_self</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;def </span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="s1">&#39;__&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">):&quot;</span>
+        <span class="n">body</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">    &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">body_lines</span><span class="p">)</span>
+        <span class="n">code</span> <span class="o">=</span> <span class="nb">compile</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">sig</span><span class="si">}</span><span class="se">\n</span><span class="s2">    </span><span class="si">{</span><span class="n">body</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;&lt;def </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">(</span><span class="si">{</span><span class="n">args</span><span class="si">}</span><span class="s2">)&gt;&quot;</span><span class="p">,</span> <span class="s2">&quot;exec&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">FunctionType</span><span class="p">(</span><span class="n">code</span><span class="o">.</span><span class="n">co_consts</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">__globals</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_register_class"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_register_class">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_register_class</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">:</span> <span class="n">ClassVar</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add the given class to the context.</span>
+
+<span class="sd">        :param other: a class</span>
+<span class="sd">        :raise: KeyError if the name of the class is reserved</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">key</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">ClassName</span><span class="p">(</span><span class="n">other</span><span class="o">.</span><span class="vm">__name__</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_is_reserved</span><span class="p">(</span><span class="n">key</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s1"> is reserved&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__globals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">other</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__reserved</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_register_term"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_register_term">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_register_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="n">PredicateName</span><span class="p">,</span> <span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">body_lines</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">auth</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add the given @-term to the context.</span>
+
+<span class="sd">        :param name: the name of the @-term</span>
+<span class="sd">        :param args: the argument names</span>
+<span class="sd">        :param auth: if it is the internal secret, the ``valasp`` prefix is authorized</span>
+<span class="sd">        :param body_lines: the code to be associated with the @-term</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_is_reserved</span><span class="p">(</span><span class="n">name</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="n">auth</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">name</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s1"> is reserved&#39;</span><span class="p">)</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="o">.</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_make_fun</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">args</span><span class="p">,</span> <span class="n">body_lines</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Context.valasp_is_reserved"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_is_reserved">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_is_reserved</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">auth</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return True if the given key is reserved.</span>
+
+<span class="sd">        :param key: a string</span>
+<span class="sd">        :param auth: if it is the internal secret, the ``valasp`` prefix is authorized</span>
+<span class="sd">        :return: True if reserved</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__reserved</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="n">auth</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__secret</span> <span class="ow">and</span> <span class="n">key</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;valasp&#39;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Context.valasp_add_validator"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_add_validator">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_add_validator</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predicate</span><span class="p">:</span> <span class="n">PredicateName</span><span class="p">,</span> <span class="n">arity</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">fun</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add a constraint validator for the given predicate name.</span>
+
+<span class="sd">        The constraint validator is paired with an @-term, which in turn calls the constructor of the associated class name.</span>
+
+<span class="sd">        :param predicate: a predicate name to be validated</span>
+<span class="sd">        :param arity: the arity of the predicate</span>
+<span class="sd">        :param fun: the function name expected by the constructor of the associated class name, or None if the constructor expects a single value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">args_as_vars</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;X</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arity</span><span class="p">))</span>
+        <span class="n">at_term</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;valasp_validate_</span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">&#39;</span>
+        <span class="n">constraint</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;:- </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">); &#39;</span>
+        <span class="k">if</span> <span class="n">fun</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">constraint</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;@</span><span class="si">{</span><span class="n">at_term</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">) != 1.&#39;</span>
+        <span class="k">elif</span> <span class="n">fun</span> <span class="ow">is</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">constraint</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;@</span><span class="si">{</span><span class="n">at_term</span><span class="si">}</span><span class="s1">((</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">,)) != 1.&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">constraint</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;@</span><span class="si">{</span><span class="n">at_term</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">fun</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">)) != 1.&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__validators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">constraint</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valasp_register_term</span><span class="p">(</span><span class="n">PredicateName</span><span class="p">(</span><span class="n">at_term</span><span class="p">),</span> <span class="p">[</span><span class="s1">&#39;value&#39;</span><span class="p">],</span> <span class="p">[</span>
+            <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">predicate</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="si">}</span><span class="s1">(value)&#39;</span><span class="p">,</span>
+            <span class="sa">f</span><span class="s1">&#39;return 1&#39;</span>
+        <span class="p">],</span> <span class="n">auth</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__secret</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_validators"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_validators">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_validators</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Return a string with all constraint validators.</span>
+
+<span class="sd">        :return: constraints in a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__validators</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_blacklist"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_blacklist">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_blacklist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">predicate</span><span class="p">:</span> <span class="n">PredicateName</span><span class="p">,</span> <span class="n">arities</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add the given predicate name to the blacklist, for all provided arities.</span>
+
+<span class="sd">        :param predicate: the predicate name to blacklist</span>
+<span class="sd">        :param arities: a list of arities, or None for blacklisting all arities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">arities</span><span class="p">:</span>
+            <span class="n">arities</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_arity</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">arity</span> <span class="ow">in</span> <span class="n">arities</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">arity</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max_arity</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;arities must be in 1..</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__max_arity</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="n">args_as_vars</span> <span class="o">=</span> <span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;X</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">arity</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__validators</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;:- </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">); &#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;@valasp_error(&quot;</span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">arity</span><span class="si">}</span><span class="s1"> is blacklisted&quot;, (</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">,)) == 1.</span><span class="se">\n</span><span class="s1">&#39;</span>
+                <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">) :- </span><span class="si">{</span><span class="n">predicate</span><span class="si">}</span><span class="s1">(</span><span class="si">{</span><span class="n">args_as_vars</span><span class="si">}</span><span class="s1">).&#39;</span>
+            <span class="p">)</span></div>
+
+<div class="viewcode-block" id="Context.valasp_all_arities_but"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_all_arities_but">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_all_arities_but</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">excluded</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">int</span><span class="p">]:</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of all arities but ``excluded``.</span>
+
+<span class="sd">        :param excluded: an arity to exclude</span>
+<span class="sd">        :return: a list of arities</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">x</span><span class="o">+</span><span class="mi">1</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__max_arity</span><span class="p">)</span> <span class="k">if</span> <span class="n">x</span><span class="o">+</span><span class="mi">1</span> <span class="o">!=</span> <span class="n">excluded</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Context.valasp_run_grounder"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_run_grounder">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_run_grounder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_program</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">clingo</span><span class="o">.</span><span class="n">Control</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run grounder for the given ASP code, including all validators.</span>
+
+<span class="sd">        :param base_program: ASP code</span>
+<span class="sd">        :return: the resulting controller</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">control</span> <span class="o">=</span> <span class="n">clingo</span><span class="o">.</span><span class="n">Control</span><span class="p">()</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_program</span> <span class="o">+</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">valasp_validators</span><span class="p">()]))</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">ground</span><span class="p">([(</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="p">[])],</span> <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">control</span></div>
+
+<div class="viewcode-block" id="Context.valasp_run_class_methods"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_run_class_methods">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_run_class_methods</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;check&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Crawl all class methods with a given prefix, and a call them.</span>
+
+<span class="sd">        :param prefix: a string</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="bp">cls</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__classes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">valasp_inspect</span><span class="o">.</span><span class="n">getmembers</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">predicate</span><span class="o">=</span><span class="n">valasp_inspect</span><span class="o">.</span><span class="n">ismethod</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">):</span>
+                    <span class="n">m</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">method</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">valasp_inspect</span><span class="o">.</span><span class="n">signature</span><span class="p">(</span><span class="n">m</span><span class="p">)</span><span class="o">.</span><span class="n">parameters</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">valasp_warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ignore method </span><span class="si">{</span><span class="n">m</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> of class </span><span class="si">{</span><span class="bp">cls</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> because it has parameters&quot;</span><span class="p">,</span>
+                                      <span class="n">ValAspWarning</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">m</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Context.valasp_run_solver"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_run_solver">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_run_solver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_program</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="n">clingo</span><span class="o">.</span><span class="n">SymbolicAtom</span><span class="p">]]:</span>
+        <span class="sd">&quot;&quot;&quot;Run solver on the given ASP program, including all validators.</span>
+
+<span class="sd">        :param base_program: ASP code</span>
+<span class="sd">        :return: a model, or None if the program is inconsistent</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">control</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_run_grounder</span><span class="p">(</span><span class="n">base_program</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">valasp_run_class_methods</span><span class="p">()</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+            <span class="k">nonlocal</span> <span class="n">res</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+        <span class="c1"># noinspection PyUnresolvedReferences</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">on_model</span><span class="o">=</span><span class="n">on_model</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span></div>
+
+<div class="viewcode-block" id="Context.valasp_run"><a class="viewcode-back" href="../../valasp.html#valasp.core.Context.valasp_run">[docs]</a>    <span class="k">def</span> <span class="nf">valasp_run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">control</span><span class="p">:</span> <span class="n">clingo</span><span class="o">.</span><span class="n">Control</span><span class="p">,</span> <span class="n">on_model</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">aux_program</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                   <span class="n">with_validators</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">with_solve</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Run grounder on the given controller, possibly performing validation and searching for a model.</span>
+
+<span class="sd">        :param control: a controller</span>
+<span class="sd">        :param on_model: a callback function to process a model</span>
+<span class="sd">        :param aux_program: more ASP code to add to the program</span>
+<span class="sd">        :param with_validators: if True, validator constraints are added, and ``before_grounding*`` and ``after_grounding*`` class methods are called</span>
+<span class="sd">        :param with_solve: if True, a model is searched</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">with_validators</span><span class="p">:</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;valasp&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="bp">self</span><span class="o">.</span><span class="n">valasp_validators</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valasp_run_class_methods</span><span class="p">(</span><span class="s1">&#39;before_grounding&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">aux_program</span><span class="p">:</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;aux_program&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">aux_program</span><span class="p">))</span>
+        <span class="n">control</span><span class="o">.</span><span class="n">ground</span><span class="p">([(</span><span class="s2">&quot;base&quot;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s2">&quot;valasp&quot;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s2">&quot;aux_program&quot;</span><span class="p">,</span> <span class="p">[])],</span> <span class="n">context</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_validators</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">valasp_run_class_methods</span><span class="p">(</span><span class="s1">&#39;after_grounding&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">with_solve</span><span class="p">:</span>
+            <span class="c1"># noinspection PyUnresolvedReferences</span>
+            <span class="n">control</span><span class="o">.</span><span class="n">solve</span><span class="p">(</span><span class="n">on_model</span><span class="o">=</span><span class="n">on_model</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>
