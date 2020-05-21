@@ -29,7 +29,7 @@ class ClassName:
         for i in range(len(self.value)):
             if self.value[i].isalpha():
                 return PredicateName(self.value[:i] + self.value[i].lower() + self.value[i+1:])
-        raise ValueError('cannot find an alpha character')
+        # raise ValueError('cannot find an alpha character')
 
 
 @dataclass(frozen=True)
@@ -54,7 +54,7 @@ class PredicateName:
         for i in range(len(self.value)):
             if self.value[i].isalpha():
                 return ClassName(self.value[:i] + self.value[i].upper() + self.value[i+1:])
-        raise ValueError('cannot find an alpha character')
+        # raise ValueError('cannot find an alpha character')
 
 
 @dataclass(frozen=True)

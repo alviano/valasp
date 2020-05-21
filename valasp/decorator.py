@@ -51,15 +51,14 @@ def _decorate(cls: ClassVar, context: Context, is_predicate: bool, with_fun: Fun
             if len(annotations) != 1:
                 raise TypeError('FORWARD requires exactly one annotation')
             return None
-        if with_fun == Fun.TUPLE:
-            return ''
-        raise ValueError('unexpected value for with_fun:', with_fun)
+        assert with_fun == Fun.TUPLE
+        return ''
 
     def has_method(method: str) -> bool:
         return getattr(cls, method, None) != getattr(object, method, None)
 
-    def set_method(method: str, args: List[str], body_lines: List[str]) -> None:
-        fun = context.make_fun(f'{class_name}.{method}', args, body_lines, with_self=True)
+    def set_method(method: str, arg_names: List[str], body_lines: List[str]) -> None:
+        fun = context.make_fun(f'{class_name}.{method}', arg_names, body_lines, with_self=True)
         setattr(cls, method, fun)
 
     def add_init() -> None:

@@ -187,6 +187,7 @@ class Context:
             for atom in model.symbols(atoms=True):
                 res.append(atom)
 
+        # noinspection PyUnresolvedReferences
         control.solve(on_model=on_model)
         return res
 
@@ -209,4 +210,5 @@ class Context:
         if with_validators:
             self.run_class_methods('after_grounding')
         if with_solve:
+            # noinspection PyUnresolvedReferences
             control.solve(on_model=on_model)
