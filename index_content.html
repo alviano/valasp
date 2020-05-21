@@ -36,18 +36,17 @@
   <p>ValAsp is validation framework for Answer Set Programming developed by Mario Alviano and Carmine Dodaro.</p>
 <p>The idea of ValAsp is to inject validation without cluttering the ASP encoding.
 It can be done by decorating Python classes, or by processing a YAML file.
-Below are two examples of usage.</p>
+Below is an example usage of the Python layer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">datetime</span>
 
 <span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
-<span class="kn">from</span> <span class="nn">valasp.context</span> <span class="kn">import</span> <span class="n">Context</span>
-<span class="kn">from</span> <span class="nn">valasp.decorator</span> <span class="kn">import</span> <span class="n">validate</span><span class="p">,</span> <span class="n">Fun</span>
-<span class="kn">from</span> <span class="nn">valasp.domain.primitives</span> <span class="kn">import</span> <span class="n">String</span>
+<span class="kn">from</span> <span class="nn">valasp.core</span> <span class="kn">import</span> <span class="n">Context</span>
+<span class="kn">from</span> <span class="nn">valasp.domain.primitive_types</span> <span class="kn">import</span> <span class="n">Fun</span><span class="p">,</span> <span class="n">String</span>
 
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">()</span>
 
-    <span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">,</span> <span class="n">is_predicate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_fun</span><span class="o">=</span><span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">)</span>
+    <span class="nd">@context</span><span class="o">.</span><span class="n">valasp</span><span class="p">(</span><span class="n">is_predicate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">with_fun</span><span class="o">=</span><span class="n">Fun</span><span class="o">.</span><span class="n">IMPLICIT</span><span class="p">)</span>
     <span class="k">class</span> <span class="nc">Date</span><span class="p">:</span>
         <span class="n">year</span><span class="p">:</span> <span class="nb">int</span>
         <span class="n">month</span><span class="p">:</span> <span class="nb">int</span>
@@ -56,7 +55,7 @@ Below are two examples of usage.</p>
         <span class="k">def</span> <span class="nf">__post_init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
             <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">)</span>
 
-    <span class="nd">@validate</span><span class="p">(</span><span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+    <span class="nd">@context</span><span class="o">.</span><span class="n">valasp</span><span class="p">()</span>
     <span class="k">class</span> <span class="nc">Birthday</span><span class="p">:</span>
         <span class="n">name</span><span class="p">:</span> <span class="n">String</span>
         <span class="n">date</span><span class="p">:</span> <span class="n">Date</span>
@@ -69,14 +68,121 @@ Below are two examples of usage.</p>
         <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
             <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
 
-    <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;</span><span class="p">])</span>
-    <span class="c1"># res will be [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">valasp_run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;birthday(&quot;sofia&quot;,date(2019,6,25)). birthday(&quot;leonardo&quot;,date(2018,2,1)).&#39;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>  <span class="c1"># [birthday(&quot;sofia&quot;,date(2019,6,25)), birthday(&quot;leonardo&quot;,date(2018,2,1))]</span>
 
-    <span class="n">context</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">aux_program</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;</span><span class="p">])</span>
+    <span class="n">context</span><span class="o">.</span><span class="n">valasp_run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">aux_program</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;birthday(&quot;no one&quot;,date(2019,2,29)).&#39;</span><span class="p">])</span>
     <span class="c1"># a RuntimeException is raised because the date is not valid</span>
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Attributes can be declared also using <code class="docutils literal notranslate"><span class="pre">int</span></code> and <code class="docutils literal notranslate"><span class="pre">str</span></code>, or the <code class="docutils literal notranslate"><span class="pre">clingo</span></code> types.
+If you use &#64;-terms, pass them to the <code class="docutils literal notranslate"><span class="pre">wrap</span></code> arguments of the constructor, as in the following example.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">valasp.core</span> <span class="kn">import</span> <span class="n">Context</span>
+
+
+<span class="k">def</span> <span class="nf">prec</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">succ</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="p">[</span><span class="n">prec</span><span class="p">,</span> <span class="n">succ</span><span class="p">])</span>  <span class="c1"># or wrap=globals().values() to add all function</span>
+
+    <span class="nd">@context</span><span class="o">.</span><span class="n">valasp</span><span class="p">()</span>
+    <span class="k">class</span> <span class="nc">Num</span><span class="p">:</span>
+        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
+
+
+    <span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">res</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+    <span class="n">context</span><span class="o">.</span><span class="n">valasp_run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;num(@prec(0)). num(@succ(0)).&#39;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>  <span class="c1"># [num(1), num(-1)]</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Even if you opted for putting &#64;-terms in a class, you can still wrap an instance of that class, as done below.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">valasp.core</span> <span class="kn">import</span> <span class="n">Context</span>
+
+
+<span class="k">class</span> <span class="nc">AtTerms</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">prec</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+    <span class="k">def</span> <span class="nf">succ</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="p">[</span><span class="n">AtTerms</span><span class="p">()])</span>
+
+    <span class="nd">@context</span><span class="o">.</span><span class="n">valasp</span><span class="p">()</span>
+    <span class="k">class</span> <span class="nc">Num</span><span class="p">:</span>
+        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
+
+
+    <span class="n">res</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">on_model</span><span class="p">(</span><span class="n">model</span><span class="p">):</span>
+        <span class="k">nonlocal</span> <span class="n">res</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">atom</span> <span class="ow">in</span> <span class="n">model</span><span class="o">.</span><span class="n">symbols</span><span class="p">(</span><span class="n">atoms</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">atom</span><span class="p">)</span>
+
+    <span class="n">context</span><span class="o">.</span><span class="n">valasp_run</span><span class="p">(</span><span class="n">Control</span><span class="p">(),</span> <span class="n">on_model</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;num(@prec(0)). num(@succ(0)).&#39;</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>  <span class="c1"># [num(1), num(-1)]</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">main</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Another option is to run <code class="docutils literal notranslate"><span class="pre">clingo</span></code> with validation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#script(python).</span>
+
+<span class="kn">from</span> <span class="nn">clingo</span> <span class="kn">import</span> <span class="n">Control</span>
+<span class="kn">from</span> <span class="nn">valasp.core</span> <span class="kn">import</span> <span class="n">Context</span>
+
+
+<span class="k">def</span> <span class="nf">prec</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">-</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">succ</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">x</span><span class="o">.</span><span class="n">number</span> <span class="o">+</span> <span class="mi">1</span>
+
+
+<span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">prg</span><span class="p">):</span>
+    <span class="n">context</span> <span class="o">=</span> <span class="n">Context</span><span class="p">(</span><span class="n">wrap</span><span class="o">=</span><span class="p">[</span><span class="n">prec</span><span class="p">,</span> <span class="n">succ</span><span class="p">])</span>
+
+    <span class="nd">@context</span><span class="o">.</span><span class="n">valasp</span><span class="p">()</span>
+    <span class="k">class</span> <span class="nc">Num</span><span class="p">:</span>
+        <span class="n">value</span><span class="p">:</span> <span class="nb">int</span>
+
+    <span class="n">prg</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="s2">&quot;valasp&quot;</span><span class="p">,</span> <span class="p">[],</span> <span class="n">context</span><span class="o">.</span><span class="n">valasp_validators</span><span class="p">())</span>
+    <span class="n">prg</span><span class="o">.</span><span class="n">ground</span><span class="p">([(</span><span class="s1">&#39;base&#39;</span><span class="p">,</span> <span class="p">[]),</span> <span class="p">(</span><span class="s1">&#39;valasp&#39;</span><span class="p">,</span> <span class="p">[])],</span> <span class="n">context</span><span class="o">=</span><span class="n">context</span><span class="p">)</span>
+    <span class="n">prg</span><span class="o">.</span><span class="n">solve</span><span class="p">()</span>
+
+<span class="c1">#end.</span>
+
+<span class="n">num</span><span class="p">(</span><span class="nd">@prec</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span> <span class="n">num</span><span class="p">(</span><span class="nd">@succ</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span><span class="o">.</span>
 </pre></div>
 </div>
 
