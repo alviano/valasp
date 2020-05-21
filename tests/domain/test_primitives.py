@@ -1,6 +1,6 @@
 import pytest
 
-from valasp.domain.primitives import Type, Integer, String, Alpha, Any
+from valasp.domain.primitive_types import Type, Integer, String, Alpha, Any
 
 
 def test_type_cannot_be_instantiated():

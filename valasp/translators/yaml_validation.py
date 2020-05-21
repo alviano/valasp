@@ -1,10 +1,10 @@
 import re
 import yaml
 
-from valasp.domain.name import PredicateName, AttributeName
-from valasp.domain.primitives import Integer
-from valasp.domain.primitives import String
-from valasp.domain.primitives import Alpha
+from valasp.domain.names import PredicateName, AttributeName
+from valasp.domain.primitive_types import Integer
+from valasp.domain.primitive_types import String
+from valasp.domain.primitive_types import Alpha
 
 
 class YamlValidation:

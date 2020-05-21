@@ -1,13 +1,34 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
+"""The enum :class:`Fun` and the primitive types are defined in this module.
+
+The primitive types are markers to be used in annotations. They cannot be instantiated, and offer a very limited set of utility function.
+"""
+
 from dataclasses import dataclass
+from enum import Enum
 from typing import List, ClassVar
 
 import clingo
 import typing
 
-from valasp.domain.name import PredicateName
+from valasp.domain.names import PredicateName
+
+
+class Fun(Enum):
+    """Modalities for the :meth:`validate` decorator.
+
+    * **FORWARD_IMPLICIT** means FORWARD for symbols of arity 1, and IMPLICIT otherwise.
+    * **FORWARD** can be used with symbols of arity 1 and essentially means to leave the init argument as it is.
+    * **IMPLICIT** must be used if the init argument is expected to be a function with the same name of the symbol.
+      The arguments of the function are unpacked.
+    * **TUPLE** is like IMPLICIT, but the function is expected to have emtpy name.
+    """
+    FORWARD_IMPLICIT = 0
+    FORWARD = 1
+    IMPLICIT = 2
+    TUPLE = 3
 
 
 @dataclass(frozen=True)
@@ -19,7 +40,7 @@ class Type:
     __primitives = None
 
     def __init__(self):
-        raise TypeError('this class must be used only as a marker')
+        raise NotImplemented('this class must be used only as a marker')
 
     @staticmethod
     def init_code(arg: str) -> List[str]:

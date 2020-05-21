@@ -17,12 +17,15 @@ sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
+from valasp import __version__
+
+
 project = 'ValAsp'
 copyright = '2020, Mario Alviano and Carmine Dodaro'
 author = 'Mario Alviano and Carmine Dodaro'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.1'
+release = __version__
 
 
 # -- General configuration ---------------------------------------------------

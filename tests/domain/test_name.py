@@ -2,7 +2,7 @@ import keyword
 
 import pytest
 
-from valasp.domain.name import ClassName, PredicateName, AttributeName
+from valasp.domain.names import ClassName, PredicateName, AttributeName
 
 
 def test_class_name_no_blank():
