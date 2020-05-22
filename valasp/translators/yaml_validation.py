@@ -81,10 +81,9 @@ class YamlValidation:
                     cls.__validate_int(c)
                 elif type == 'String':
                     cls.__validate_str(c)
-                elif type == 'Alpha':
-                    cls.__validate_alpha(c)
                 else:
-                    raise ValueError('Unexpected type %s' % type)
+                    assert type == 'Alpha'
+                    cls.__validate_alpha(c)
             except ValueError as v:
                 raise ValueError('Invalid value in enum: %s' % v)
 
@@ -96,19 +95,30 @@ class YamlValidation:
             raise ValueError('Expected regular expression %s ' % re.error)
 
     @classmethod
+    def __validate_min_max(cls, content, positive):
+        for c in content:
+            try:
+                if c == 'min' or c == 'max':
+                    if positive:
+                        cls.__validate_positive_int(content[c])
+                    else:
+                        cls.__validate_negative_int(content[c])
+            except ValueError as v:
+                raise ValueError('%s: %s' % (c, v))
+        cls.__validate_min_less_than_max(content)
+
+    @classmethod
+    def __validate_min_less_than_max(cls, content):
+        if isinstance(content, dict) and 'min' in content and 'max' in content:
+            if int(content['min']) >= int(content['max']):
+                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+
+    @classmethod
     def validate_aggregate_sum_pos(cls, content):
         if isinstance(content, dict):
             keywords = {'min', 'max'}
             cls.__validate_keywords(keywords, content, 'sum+')
-            for c in content:
-                try:
-                    if c == 'min' or c == 'max':
-                        cls.__validate_positive_int(content[c])
-                except ValueError as v:
-                    raise ValueError('%s: %s' % (c, v))
-            if 'min' in content and 'max' in content:
-                if int(content['min']) >= int(content['max']):
-                    raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+            cls.__validate_min_max(content, True)
         else:
             if content != 'Integer':
                 raise ValueError('Expected keyword Integer')
@@ -118,16 +128,7 @@ class YamlValidation:
         if isinstance(content, dict):
             keywords = {'min', 'max'}
             cls.__validate_keywords(keywords, content, 'sum-')
-            for c in content:
-                try:
-                    if c == 'min' or c == 'max':
-                        cls.__validate_negative_int(content[c])
-                except ValueError as v:
-                    raise ValueError('%s: %s' % (c, v))
-            if 'min' in content and 'max' in content:
-                if int(content['min']) >= int(content['max']):
-                    raise ValueError(
-                        'min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+            cls.__validate_min_max(content, False)
         else:
             if content != 'Integer':
                 raise ValueError('Expected keyword Integer')
@@ -136,15 +137,7 @@ class YamlValidation:
     def validate_aggregate_count(cls, content):
         keywords = {'min', 'max'}
         cls.__validate_keywords(keywords, content, 'count')
-        for c in content:
-            try:
-                if c == 'min' or c == 'max':
-                    cls.__validate_positive_int(content[c])
-            except ValueError as v:
-                raise ValueError('%s: %s' % (c, v))
-        if 'min' in content and 'max' in content:
-            if int(content['min']) >= int(content['max']):
-                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+        cls.__validate_min_max(content, True)
 
     @classmethod
     def validate_complex_term_int(cls, content):
@@ -164,9 +157,7 @@ class YamlValidation:
                     cls.__validate_enum(content[c], 'Integer')
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        if 'min' in content and 'max' in content:
-            if int(content['min']) >= int(content['max']):
-                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+        cls.__validate_min_less_than_max(content)
 
     @classmethod
     def validate_complex_term_string(cls, content):
@@ -175,7 +166,7 @@ class YamlValidation:
         for c in content:
             try:
                 if c == 'min' or c == 'max':
-                    cls.__validate_int(content[c])
+                    cls.__validate_positive_int(content[c])
                 elif c == 'count':
                     cls.validate_aggregate_count(content[c])
                 elif c == 'enum':
@@ -184,9 +175,7 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        if 'min' in content and 'max' in content:
-            if int(content['min']) >= int(content['max']):
-                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+        cls.__validate_min_less_than_max(content)
 
     @classmethod
     def validate_complex_term_alpha(cls, content):
@@ -195,7 +184,7 @@ class YamlValidation:
         for c in content:
             try:
                 if c == 'min' or c == 'max':
-                    cls.__validate_int(content[c])
+                    cls.__validate_positive_int(content[c])
                 elif c == 'count':
                     cls.validate_aggregate_count(content[c])
                 elif c == 'enum':
@@ -204,9 +193,7 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        if 'min' in content and 'max' in content:
-            if int(content['min']) >= int(content['max']):
-                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+        cls.__validate_min_less_than_max(content)
 
     @classmethod
     def validate_complex_term_any(cls, content):
@@ -274,26 +261,27 @@ class YamlValidation:
 
     @classmethod
     def validate_having(cls, content):
-        if isinstance(content, dict):
-            keywords = {'equals', 'different', 'gt', 'ge', 'lt', 'le'}
-            cls.__validate_keywords(keywords, content, 'having')
-            for c in content:
-                element = content[c]
-                if isinstance(element, list):
-                    for l in element:
-                        if isinstance(l, list):
-                            if len(l) != 2:
-                                raise ValueError('%s: expected exactly two arguments of the list. Obtained %s' % (c, len(l)))
-                        else:
-                            raise ValueError('%s: expected list. Obtained %s' % (c, l))
-                else:
-                    raise ValueError('expected list. Obtained %s' % element)
-        else:
+        if not isinstance(content, dict):
             raise ValueError('expected structure')
+        keywords = {'equals', 'different', 'gt', 'ge', 'lt', 'le'}
+        cls.__validate_keywords(keywords, content, 'having')
+        for c in content:
+            element = content[c]
+            if isinstance(element, list):
+                for elem in element:
+                    if isinstance(elem, list):
+                        if len(elem) != 2:
+                            raise ValueError(
+                                '%s: expected exactly two arguments of the list. Obtained %s' % (c, len(elem)))
+                    else:
+                        raise ValueError('%s: expected list. Obtained %s' % (c, elem))
+            else:
+                raise ValueError('expected list. Obtained %s' % element)
 
     @classmethod
     def validate_valasp_in_symbol(cls, content):
-        keywords = {'having', 'is_predicate', 'with_fun', 'auto_blacklist', 'after_init', 'before_grounding', 'after_grounding'}
+        keywords = {'having', 'is_predicate', 'with_fun', 'auto_blacklist', 'after_init', 'before_grounding',
+                    'after_grounding'}
         cls.__validate_keywords(keywords, content, 'valasp of symbol')
         try:
             for c in content:
@@ -316,18 +304,18 @@ class YamlValidation:
 
     @classmethod
     def validate_symbol(cls, content):
-        if isinstance(content, dict):
-            for c in content:
-                try:
-                    if c == 'valasp':
-                        cls.validate_valasp_in_symbol(content[c])
-                    else:
-                        cls.__validate_predicate_name(c)
-                        cls.validate_term(content[c])
-                except ValueError as v:
-                    raise ValueError('%s: %s' % (c, v))
-        else:
+        if not isinstance(content, dict):
             raise ValueError('Expected structure for symbol definition')
+        for c in content:
+            try:
+                if c == 'valasp':
+                    cls.validate_valasp_in_symbol(content[c])
+                else:
+                    cls.__validate_predicate_name(c)
+                    cls.validate_term(content[c])
+            except ValueError as v:
+                raise ValueError('%s: %s' % (c, v))
+
 
     @classmethod
     def validate_python(cls, content):
@@ -358,15 +346,14 @@ class YamlValidation:
 
     @classmethod
     def validate(cls, content):
-        if isinstance(content, dict):
-            try:
-                for c in content:
-                    if c == 'valasp':
-                        cls.validate_valasp(content[c])
-                    else:
-                        cls.__validate_predicate_name(c)
-                        cls.validate_symbol(content[c])
-            except ValueError as v:
-                raise ValueError('%s: %s' % (c, v)) from None
-        else:
+        if not isinstance(content, dict):
             raise ValueError('Expected structure')
+        try:
+            for c in content:
+                if c == 'valasp':
+                    cls.validate_valasp(content[c])
+                else:
+                    cls.__validate_predicate_name(c)
+                    cls.validate_symbol(content[c])
+        except ValueError as v:
+            raise ValueError('%s: %s' % (c, v)) from None
