@@ -170,7 +170,8 @@ class Symbol:
 
         output = []
         output.extend(self.__declaration_content)
-        output.extend(self.__post_init_content)
+        if len(self.__post_init_content) > 1:
+            output.extend(self.__post_init_content)
         output.extend(self.__other_methods_content)
         return output
 
