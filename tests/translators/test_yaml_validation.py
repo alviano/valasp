@@ -8,6 +8,15 @@ import yaml
 from valasp.translators.yaml_validation import YamlValidation
 
 
+def test_yaml_invalid_root():
+    for i in ['Integer', 'VALASP', 10, ['a', 'b']]:
+        yaml_input = """
+                %s
+                """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate(yaml.safe_load(yaml_input))
+
+
 def test_yaml_valasp_in_user_defined_module():
     yaml_input = """
     having:
@@ -50,6 +59,18 @@ def test_yaml_valasp_in_user_defined_module():
     YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
+def test_yaml_valasp_in_user_defined_module():
+    yaml_input = """
+    valasp:
+        having:
+            equals:
+                - [first, second]
+                - [first2, second]            
+        is_predicate: True        
+    """
+    YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
+
 def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
     yaml_input = """
         having:
@@ -62,6 +83,15 @@ def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
         """
     with pytest.raises(ValueError):
         YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
+
+
+def test_yaml_having_valasp_not_a_dictionary():
+    for i in [10, '1', ['first', 'second']]:
+        yaml_input = """
+            having: %s              
+            """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_having_valasp_in_user_defined_module_not_a_list():
@@ -241,6 +271,18 @@ def test_yaml_valasp():
     YamlValidation.validate_valasp(yaml.safe_load(yaml_input))
 
 
+def test_yaml_valasp_root():
+    yaml_input = """
+    valasp:
+        python: |+
+            for i in range(10):
+                print(i)
+        asp: |+
+            code
+    """
+    YamlValidation.validate(yaml.safe_load(yaml_input))
+
+
 def test_yaml_valasp_wrong_keyword():
     yaml_input = """
     python: |+
@@ -305,6 +347,15 @@ def test_yaml_symbol_name_invalid_names():
         Name:
             term1: Integer
         """
+        with pytest.raises(ValueError):
+            YamlValidation.validate(yaml.safe_load(yaml_input))
+
+
+def test_yaml_symbol_name_not_a_dictionary():
+    for i in ['Integer', 'String', 'pred', ['a', 'b']]:
+        yaml_input = """
+        predicate: %s             
+        """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate(yaml.safe_load(yaml_input))
 
@@ -419,13 +470,22 @@ def test_yaml_term_integer_declaration_invalid_enum_integer():
         yaml_input = """
         term_name_6:
             type: Integer
-            enum: ['1', 2, 3]
-        """
+            enum: %s
+        """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_term_integer_declaration_invalid_sum_positive():
+    for i in {'String', 'int', 10}:
+        yaml_input = """
+        term_name_6:
+            type: Integer
+            sum+: %s                 
+        """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
     for i in {100000000000, 'Integer', -5}:
         yaml_input = """
         term_name_6:
@@ -450,6 +510,15 @@ def test_yaml_term_integer_declaration_invalid_sum_positive():
 
 
 def test_yaml_term_integer_declaration_invalid_sum_negative():
+    for i in {'String', 'int', -10}:
+        yaml_input = """
+        term_name_6:
+            type: Integer
+            sum-: %s                 
+        """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
     for i in {-10000000000, 'Integer', 10}:
         yaml_input = """
         term_name_6:
@@ -548,6 +617,18 @@ def test_yaml_term_alpha_invalid_enum():
     """
     with pytest.raises(ValueError):
         YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
+
+def test_yaml_term_alpha_invalid_min():
+    for s in {'String', 'Alpha'}:
+        for i in [-1, 'a', [1, 2]]:
+            yaml_input = """
+            term_name_6:
+                type: %s
+                min: %s
+            """ % (s, i)
+            with pytest.raises(ValueError):
+                YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_term_pattern():

@@ -333,11 +333,12 @@ class Context:
         control.solve(on_model=on_model)
         return res
 
-    def valasp_run(self, control: clingo.Control, on_model: Callable = None, aux_program: List[str] = None,
-                   with_validators: bool = True, with_solve: bool = True) -> None:
+    def valasp_run(self, control: clingo.Control, on_validation_done: Callable = None, on_model: Callable = None,
+                   aux_program: List[str] = None, with_validators: bool = True, with_solve: bool = True) -> None:
         """Run grounder on the given controller, possibly performing validation and searching for a model.
 
         :param control: a controller
+        :param on_validation_done: a function invoked after grounding, if no validation error is reported
         :param on_model: a callback function to process a model
         :param aux_program: more ASP code to add to the program
         :param with_validators: if True, validator constraints are added, and ``before_grounding*`` and ``after_grounding*`` class methods are called
@@ -351,6 +352,8 @@ class Context:
         control.ground([("base", []), ("valasp", []), ("aux_program", [])], context=self)
         if with_validators:
             self.valasp_run_class_methods('after_grounding')
+        if on_validation_done:
+            on_validation_done()
         if with_solve:
             # noinspection PyUnresolvedReferences
             control.solve(on_model=on_model)

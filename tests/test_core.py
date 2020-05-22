@@ -16,6 +16,17 @@ def test_max_arity_must_be_positive():
 
 def test_clingo_is_reserved():
     assert Context().valasp_is_reserved('clingo')
+    with pytest.raises(KeyError):
+        Context().valasp_register_term(PredicateName('clingo'), [], [])
+    with pytest.raises(TypeError) as error:
+        Context().clingo()
+        assert "'module' object is not callable" in error
+
+
+def test_missing_at_term():
+    with pytest.raises(AttributeError) as error:
+        Context().missing_at_term()
+        assert "object has no attribute 'missing_at_term'" in error
 
 
 def test_make_fun_successor():
@@ -713,7 +724,7 @@ def test_doc_example():
         for atom in model.symbols(atoms=True):
             res.append(atom)
 
-    context.valasp_run(Control(), on_model, ['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
+    context.valasp_run(Control(), on_model=on_model, aux_program=['birthday("sofia",date(2019,6,25)). birthday("leonardo",date(2018,2,1)).'])
     assert str(res) == '[birthday("sofia",date(2019,6,25)), birthday("leonardo",date(2018,2,1))]'
 
     with pytest.raises(RuntimeError):

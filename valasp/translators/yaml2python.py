@@ -172,7 +172,8 @@ class Symbol:
 
         output = []
         output.extend(self.__declaration_content)
-        output.extend(self.__post_init_content)
+        if len(self.__post_init_content) > 1:
+            output.extend(self.__post_init_content)
         output.extend(self.__other_methods_content)
         return output
 
@@ -408,7 +409,7 @@ def _(x):
 \treturn base64.b64decode(x).decode()
 """
             template = f"""
-def main(files):
+def main(files, output=print):
 \tcontext = valasp.core.Context()
 
 {output}
@@ -416,8 +417,7 @@ def main(files):
 \tcontrol = clingo.Control()
 \tfor file_ in files:
 \t\tcontrol.load(file_)
-\tcontext.valasp_run(control, on_model=lambda m: print("Answer: {{}}".format(m)), aux_program=[base64.b64decode({self.__valasp_asp}).decode()])                        
-
+\tcontext.valasp_run(control, on_validation_done=lambda: output("All valid!"), on_model=lambda m: output(f"Answer: {{m}}"), aux_program=[_({self.__valasp_asp})])                        
 
 if __name__ == '__main__':
 \ttry:

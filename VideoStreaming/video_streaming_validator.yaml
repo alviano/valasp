@@ -1,32 +1,29 @@
 user:
-    userid: int
+    userid: Integer
     videotype:
-        type: str
+        type: String
         enum: ["Documentary", "Video", "Cartoon", "Sport"]
-    resolution: int
-    bandwidth: int
-    maxsat: int
-    maxbit: int
+    resolution: Integer
+    bandwidth: Integer
+    maxsat: Integer
+    maxbit: Integer
         
 assign:
-    userid: int
+    userid: Integer
     videotype:
-        type: str
+        type: String
         enum: ["Documentary", "Video", "Cartoon", "Sport"]
-    resolution: int
-    bitrate: int
-    sat: int
+    resolution: Integer
+    bitrate: Integer
+    sat: Integer
 
 obj:
     value:
-        type: int
+        type: Integer
         min: 0
-        sum+: int        
-    userid: int
-    asp:
-        obj(BEST_SAT-SAT_VALUE,USER_ID) :- assign(USER_ID, _, _, BITRATE, SAT_VALUE), user(USER_ID, _, _,_, BEST_SAT, _).    
-
-ValAsp:
-    include:
-        - VideoStreaming/encoding.asp
-        - VideoStreaming/0-multimedia-0-0.asp
+        sum+: Integer
+    userid: Integer
+    
+valasp:
+    asp: |+
+        obj(BEST_SAT-SAT_VALUE,USER_ID) :- assign(USER_ID, _, _, BITRATE, SAT_VALUE), user(USER_ID, _, _,_, BEST_SAT, _).

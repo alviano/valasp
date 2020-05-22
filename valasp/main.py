@@ -69,9 +69,17 @@ import yaml
 from valasp.translators.yaml2python import Yaml2Python
 
 
+def output(text: str, sep=' ', end='\n', file=None):
+    if output.list is not None:
+        output.list.append(text)
+    else:
+        print(text, sep, end, file)
+output.list = None
+
+
 def parse_args() -> Callable:
     if len(sys.argv) < 2:
-        print('To validate a YAML file against one or more ASP files, also running clingo:\n'
+        output('To validate a YAML file against one or more ASP files, also running clingo:\n'
               '\tpython -m valasp <YAML file> [ASP files]\n'
               'To produce Python code to ease validation in couple with clingo:\n'
               '\tpython -m valasp --print <YAML file>', file=sys.stderr)
@@ -93,8 +101,8 @@ def process_yaml(yaml_file: str) -> List[str]:
 
 def print_python_code(asp_files, validation_code):
     if asp_files:
-        print(f'# files {asp_files} have been ignored')
-    print('\n'.join(validation_code))
+        output(f'# files {asp_files} have been ignored')
+    output('\n'.join(validation_code))
 
 
 def run_clingo(asp_files, validation_code):
@@ -103,11 +111,12 @@ def run_clingo(asp_files, validation_code):
             validation_file.write(line.encode())
         validation_file.seek(0)
         mod = runpy.run_path(path_name=validation_file.name)
-        mod['main'](asp_files)
+        mod['main'](asp_files, output)
 
 
-def main():
+def main(output_list: List[str] = None):
     callback = parse_args()
+    output.list = output_list
 
     yaml_file = sys.argv[1]
     asp_files = sys.argv[2:]
@@ -116,4 +125,5 @@ def main():
         validation_code = process_yaml(yaml_file)
         callback(asp_files, validation_code)
     except Exception as e:
-        print(e, file=sys.stderr)
+        output(str(e), file=sys.stderr)
+
