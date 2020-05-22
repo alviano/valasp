@@ -207,7 +207,8 @@
 
         <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="p">)</span>
-        <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="p">)</span>
         <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">output</span></div></div>
 
