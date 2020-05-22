@@ -65,6 +65,7 @@ class Symbol:
                     if term_type not in all_symbols:
                         raise ValueError('Undefined type %s of %s' % (term_type, term_name))
                     term = UserDefinedTerm(content[term_name], term_name)
+                term.set_predicate_name(self.__name)
                 self.__terms.append(term)
             else:
                 self.__valasp = content[term_name]
@@ -182,10 +183,13 @@ class GenericTerm:
         self.term_type = term_type
         self.post_init_content = []
         self.other_methods_content = []
-
+        self.predicate_name = ''
         self.__count = None
         if isinstance(content, dict):
             self.__parse_content(content)
+
+    def set_predicate_name(self, predicate_name):
+        self.predicate_name = predicate_name
 
     def __parse_content(self, content):
         if 'count' in content:
@@ -201,11 +205,11 @@ class GenericTerm:
             if 'max' in self.__count:
                 max_bound = self.__count['max']
                 self.other_methods_content.append('\t@classmethod')
-                self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} > {max_bound}: raise ValueError(\'count of {self.term_name} may exceed {max_bound}\')')
+                self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} > {max_bound}: raise ValueError(\'count of {self.term_name} in predicate {self.predicate_name} may exceed {max_bound}\')')
             if 'min' in self.__count:
                 min_bound = self.__count['min']
                 self.other_methods_content.append('\t@classmethod')
-                self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} < {min_bound}: raise ValueError(\'count of {self.term_name} cannot reach {min_bound}\')')
+                self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} < {min_bound}: raise ValueError(\'count of {self.term_name} in predicate {self.predicate_name} cannot reach {min_bound}\')')
             self.post_init_content.append(f'self.__class__.count_of_{self.term_name} += 1')
 
 
@@ -251,10 +255,10 @@ class IntegerTerm(GenericTerm):
             self.other_methods_content.append(f'def after_grounding_check_positive_sum_{self.term_name}(cls):')
             if 'max' in self.__sum_positive:
                 max_bound = self.__sum_positive['max']
-                self.other_methods_content.append(f'\tif cls.sum_positive_of_{self.term_name} > {max_bound}: raise ValueError(\'sum of {self.term_name} may exceed {max_bound}\')')
+                self.other_methods_content.append(f'\tif cls.sum_positive_of_{self.term_name} > {max_bound}: raise ValueError(\'sum of {self.term_name} in predicate {self.predicate_name} may exceed {max_bound}\')')
             if 'min' in self.__sum_positive:
                 min_bound = self.__sum_positive['min']
-                self.other_methods_content.append(f'\tif cls.sum_positive_of_{self.term_name} < {min_bound}: raise ValueError(\'sum of {self.term_name} cannot reach {min_bound}\')')
+                self.other_methods_content.append(f'\tif cls.sum_positive_of_{self.term_name} < {min_bound}: raise ValueError(\'sum of {self.term_name} in predicate {self.predicate_name} cannot reach {min_bound}\')')
 
             self.post_init_content.append(f'if self.{self.term_name} > 0:')
             self.post_init_content.append(f'\tself.__class__.sum_positive_of_{self.term_name} += self.{self.term_name}')
@@ -267,10 +271,10 @@ class IntegerTerm(GenericTerm):
             self.other_methods_content.append(f'def after_grounding_check_negative_sum_{self.term_name}(cls):')
             if 'max' in self.__sum_negative:
                 max_bound = self.__sum_negative['max']
-                self.other_methods_content.append(f'\tif cls.sum_negative_of_{self.term_name} > {max_bound}: raise ValueError(\'sum of {self.term_name} cannot reach {max_bound}\')')
+                self.other_methods_content.append(f'\tif cls.sum_negative_of_{self.term_name} > {max_bound}: raise ValueError(\'sum of {self.term_name} in predicate {self.predicate_name} cannot reach {max_bound}\')')
             if 'min' in self.__sum_negative:
                 min_bound = self.__sum_negative['min']
-                self.other_methods_content.append(f'\tif cls.sum_negative_of_{self.term_name} < {min_bound}: raise ValueError(\'sum of {self.term_name} may exceed {min_bound}\')')
+                self.other_methods_content.append(f'\tif cls.sum_negative_of_{self.term_name} < {min_bound}: raise ValueError(\'sum of {self.term_name} in predicate {self.predicate_name} may exceed {min_bound}\')')
             self.post_init_content.append(f'if self.{self.term_name} < 0:')
             self.post_init_content.append(f'\tself.__class__.sum_negative_of_{self.term_name} += self.{self.term_name}')
 
@@ -415,7 +419,10 @@ def main(files):
 \tcontext.valasp_run(control, on_model=lambda m: print("Answer: {{}}".format(m)), aux_program=[base64.b64decode({self.__valasp_asp}).decode()])                        
 
 if __name__ == '__main__':
-\tmain(sys.argv[1:])
+\ttry:
+\t\tmain(sys.argv[1:])
+\texcept ValueError as v:
+\t\tprint('%s' % v)
 """
             print(template)
 
