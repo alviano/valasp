@@ -3,7 +3,9 @@
 # This file is part of ValAsp which is released under the Apache License, Version 2.0.
 # See file README.md for full license details.
 
+import sys
+
 from valasp.main import main
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])

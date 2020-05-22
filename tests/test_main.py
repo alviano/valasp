@@ -1,29 +1,41 @@
-import sys
-from typing import List
+from typing import List, Tuple
 
 import pytest
 
 from valasp.main import main
 
 
-def call_main(args: List[str]) -> List[str]:
-    sys.argv = ['valasp'] + args
-    res = []
-    main(res)
-    return res
+def call_main(tmp_path, args: List[str]) -> Tuple[str, str]:
+    stdout = tmp_path / "out"
+    stderr = tmp_path / "err"
+    main(args, stdout=stdout.open('w'), stderr=stderr.open('w'))
+    return stdout.read_text(), stderr.read_text()
 
 
-def call_main_on_yaml_and_asp(tmp_path, yaml_content, asp_content) -> List[str]:
+def call_main_on_yaml_and_asp(tmp_path, yaml_content: str, asp_content: str = None, for_print: bool = False) -> Tuple[str, str]:
     yaml_file = tmp_path / "input.yaml"
     yaml_file.write_text(yaml_content)
-    asp_file = tmp_path / "input.asp"
-    asp_file.write_text(asp_content)
-    return call_main([str(yaml_file), str(asp_file)])
+    args = [yaml_file.as_posix()]
+    if asp_content:
+        asp_file = tmp_path / "input.asp"
+        asp_file.write_text(asp_content)
+        args.append(asp_file.as_posix())
+    if for_print:
+        args.append('--print')
+    return call_main(tmp_path, args)
 
 
-def test_no_args():
+def test_no_args(tmp_path):
     with pytest.raises(SystemExit) as error:
-        call_main([])
+        call_main(tmp_path, [])
+        assert error.value.code == 1
+
+    with pytest.raises(SystemExit) as error:
+        call_main(tmp_path, ['--print'])
+        assert error.value.code == 1
+
+    with pytest.raises(SystemExit) as error:
+        call_main(tmp_path, ['--print', '--print'])
         assert error.value.code == 1
 
 
@@ -52,9 +64,24 @@ bday:
     date: date
     """
 
-    res = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)).")
-    assert 'All valid!' in res
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)).")
+    assert 'All valid!' in out
+    assert not err
 
-    res = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
-    assert 'ValueError: expecting arity 3 for TUPLE' in '\n'.join(res)
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
+    assert 'ValueError: expecting arity 3 for TUPLE' in err
 
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
+    assert 'if len(self.name) < 3: raise ValueError(f"Len should be >= 3. Received: {self.name}")' in out
+
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "ignored file content", for_print=True)
+    assert 'have been ignored' in out
+
+
+def test_wrong_yaml(tmp_path):
+    yaml = """
+valasp:
+    unknown_key: foo
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    assert 'Unexpected unknown_key in valasp' in err
