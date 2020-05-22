@@ -336,8 +336,8 @@ def test_yaml_term_integer_declaration():
             min: 0
             max: 1000
         sum-:
-            min: 0
-            max: -1000
+            min: -1000
+            max: -10
         count:
             min: 10
             max: 100
@@ -345,6 +345,17 @@ def test_yaml_term_integer_declaration():
         enum: [1, 2, 3]
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
+
+def test_yaml_term_integer_min_greater_than_max():
+    yaml_input = """
+    term_name_6:
+        type: Integer
+        min: 20
+        max: 10        
+    """
+    with pytest.raises(ValueError):
+        YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_term_integer_declaration_no_type():

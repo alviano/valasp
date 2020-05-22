@@ -1,5 +1,4 @@
 import re
-import yaml
 
 from valasp.domain.names import PredicateName, AttributeName
 from valasp.domain.primitive_types import Integer
@@ -107,6 +106,9 @@ class YamlValidation:
                         cls.__validate_positive_int(content[c])
                 except ValueError as v:
                     raise ValueError('%s: %s' % (c, v))
+            if 'min' in content and 'max' in content:
+                if int(content['min']) >= int(content['max']):
+                    raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
         else:
             if content != 'Integer':
                 raise ValueError('Expected keyword Integer')
@@ -122,6 +124,10 @@ class YamlValidation:
                         cls.__validate_negative_int(content[c])
                 except ValueError as v:
                     raise ValueError('%s: %s' % (c, v))
+            if 'min' in content and 'max' in content:
+                if int(content['min']) >= int(content['max']):
+                    raise ValueError(
+                        'min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
         else:
             if content != 'Integer':
                 raise ValueError('Expected keyword Integer')
@@ -136,6 +142,9 @@ class YamlValidation:
                     cls.__validate_positive_int(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
+        if 'min' in content and 'max' in content:
+            if int(content['min']) >= int(content['max']):
+                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
 
     @classmethod
     def validate_complex_term_int(cls, content):
@@ -155,6 +164,9 @@ class YamlValidation:
                     cls.__validate_enum(content[c], 'Integer')
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
+        if 'min' in content and 'max' in content:
+            if int(content['min']) >= int(content['max']):
+                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
 
     @classmethod
     def validate_complex_term_string(cls, content):
@@ -172,6 +184,9 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
+        if 'min' in content and 'max' in content:
+            if int(content['min']) >= int(content['max']):
+                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
 
     @classmethod
     def validate_complex_term_alpha(cls, content):
@@ -189,6 +204,9 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
+        if 'min' in content and 'max' in content:
+            if int(content['min']) >= int(content['max']):
+                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
 
     @classmethod
     def validate_complex_term_any(cls, content):
