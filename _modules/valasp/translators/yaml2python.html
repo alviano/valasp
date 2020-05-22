@@ -1,0 +1,514 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>valasp.translators.yaml2python &#8212; ValAsp 0.2.0 documentation</title>
+    <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script src="../../../_static/jquery.js"></script>
+    <script src="../../../_static/underscore.js"></script>
+    <script src="../../../_static/doctools.js"></script>
+    <script src="../../../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for valasp.translators.yaml2python</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">base64</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">valasp.domain.names</span> <span class="kn">import</span> <span class="n">PredicateName</span>
+<span class="kn">from</span> <span class="nn">valasp.translators.yaml_validation</span> <span class="kn">import</span> <span class="n">YamlValidation</span>
+
+<span class="n">INT_MIN</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="o">-</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">31</span><span class="p">))</span>
+<span class="n">INT_MAX</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">31</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">all_symbols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+
+
+<span class="k">def</span> <span class="nf">_encode</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="ErrorMessages"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.ErrorMessages">[docs]</a><span class="k">class</span> <span class="nc">ErrorMessages</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+<div class="viewcode-block" id="ErrorMessages.raise_error"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.ErrorMessages.raise_error">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">received</span><span class="p">):</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="n">received</span><span class="p">:</span>
+            <span class="n">output</span> <span class="o">+=</span> <span class="s1">&#39;{</span><span class="si">%s</span><span class="s1">}, &#39;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
+        <span class="n">output</span> <span class="o">=</span> <span class="n">output</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;f</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s2">. Received: </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">&quot;</span>
+        <span class="k">return</span> <span class="n">error</span></div></div>
+
+
+<div class="viewcode-block" id="Symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Symbol">[docs]</a><span class="k">class</span> <span class="nc">Symbol</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__name</span> <span class="o">=</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__having</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span> <span class="o">=</span> <span class="s1">&#39;FORWARD_IMPLICIT&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__before_grounding</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__parse_content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__parse_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">term_name</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">term_name</span> <span class="o">!=</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                    <span class="n">term_type</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">term_type</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                    <span class="n">term</span> <span class="o">=</span> <span class="n">IntegerTerm</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="n">term_name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;String&#39;</span><span class="p">:</span>
+                    <span class="n">term</span> <span class="o">=</span> <span class="n">StringTerm</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="n">term_name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;Alpha&#39;</span><span class="p">:</span>
+                    <span class="n">term</span> <span class="o">=</span> <span class="n">AlphaTerm</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="n">term_name</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">term_type</span> <span class="o">==</span> <span class="s1">&#39;Any&#39;</span><span class="p">:</span>
+                    <span class="n">term</span> <span class="o">=</span> <span class="n">GenericTerm</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="n">term_name</span><span class="p">,</span> <span class="s1">&#39;Any&#39;</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">term_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">all_symbols</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Undefined type </span><span class="si">%s</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">term_type</span><span class="p">,</span> <span class="n">term_name</span><span class="p">))</span>
+                    <span class="n">term</span> <span class="o">=</span> <span class="n">UserDefinedTerm</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">],</span> <span class="n">term_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">term</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">term_name</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__parse_valasp</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__exists_term</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i</span><span class="o">.</span><span class="n">term_name</span> <span class="o">==</span> <span class="n">term_name</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__parse_valasp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;having&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__having</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__parse_having</span><span class="p">()</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_init&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__before_grounding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_grounding&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">assert</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__parse_having</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="p">{</span><span class="s1">&#39;equals&#39;</span><span class="p">,</span> <span class="s1">&#39;different&#39;</span><span class="p">,</span> <span class="s1">&#39;gt&#39;</span><span class="p">,</span> <span class="s1">&#39;ge&#39;</span><span class="p">,</span> <span class="s1">&#39;lt&#39;</span><span class="p">,</span> <span class="s1">&#39;le&#39;</span><span class="p">}:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="n">list_of_comparisons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="n">list_of_comparisons</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">comp</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                            <span class="k">assert</span> <span class="kc">False</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exists_term</span><span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s1">: having: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">comp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> is not a term name&#39;</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__exists_term</span><span class="p">(</span><span class="n">comp</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s1">: having: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">comp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1"> is not a term name&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__handle_comparison__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">elements_</span><span class="p">,</span> <span class="n">comparison</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="s1">&#39;</span><span class="se">\t\t</span><span class="s1">if self.</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1"> self.</span><span class="si">%s</span><span class="s1">: raise ValueError(&quot;</span><span class="si">%s</span><span class="s1">&quot;)&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="n">elements_</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">comparison</span><span class="p">,</span> <span class="n">elements_</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;Expected </span><span class="si">{</span><span class="n">elements_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1"> %s </span><span class="si">{</span><span class="n">elements_</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">comparison</span><span class="p">))</span>
+
+<div class="viewcode-block" id="Symbol.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Symbol.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@context.valasp(is_predicate=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span><span class="si">}</span><span class="s2">, with_fun=valasp.domain.primitive_types.Fun.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span><span class="si">}</span><span class="s2">, auto_blacklist=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;class </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">term</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">term</span><span class="o">.</span><span class="n">term_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\t</span><span class="s2">def __post_init__(self):&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="p">:</span>
+            <span class="n">term</span><span class="o">.</span><span class="n">convert2python</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">post_init_content</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t\t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">having</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;equals&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;!=&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;different&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;==&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;gt&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;&lt;=&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;lt&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;&gt;=&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;ge&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;&lt;&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="s1">&#39;le&#39;</span> <span class="o">==</span> <span class="n">having</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">comp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">[</span><span class="n">having</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__handle_comparison__</span><span class="p">(</span><span class="n">comp</span><span class="p">,</span> <span class="s1">&#39;&gt;&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t\t</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">term</span><span class="o">.</span><span class="n">other_methods_content</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__before_grounding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">def before_grounding_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s1">(cls):&#39;</span><span class="p">)</span>
+            <span class="n">afg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__before_grounding</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">afg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">j</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">def after_grounding_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s1">(cls):&#39;</span><span class="p">)</span>
+            <span class="n">afg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">afg</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t\t</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">j</span><span class="p">)</span>
+
+        <span class="n">output</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="p">)</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__post_init_content</span><span class="p">)</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__other_methods_content</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">output</span></div></div>
+
+
+<div class="viewcode-block" id="GenericTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.GenericTerm">[docs]</a><span class="k">class</span> <span class="nc">GenericTerm</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">term_type</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__content</span> <span class="o">=</span> <span class="n">content</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span> <span class="o">=</span> <span class="n">term_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">term_type</span> <span class="o">=</span> <span class="n">term_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__count</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__parse_content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__parse_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;count&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__count</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;count&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="GenericTerm.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.GenericTerm.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s1">&#39;def before_grounding_init_count_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls): cls.count_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> = 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;def after_grounding_check_count_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls):&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span><span class="p">:</span>
+                <span class="n">max_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">@classmethod&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.count_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &gt; </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">count of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> may exceed </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span><span class="p">:</span>
+                <span class="n">min_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__count</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">@classmethod&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.count_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &lt; </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">count of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> cannot reach </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;self.__class__.count_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> += 1&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="IntegerTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.IntegerTerm">[docs]</a><span class="k">class</span> <span class="nc">IntegerTerm</span><span class="p">(</span><span class="n">GenericTerm</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
+        <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="s1">&#39;Integer&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="n">INT_MIN</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">=</span> <span class="n">INT_MAX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__parse_content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__parse_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;sum+&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum+&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum+&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum+&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">INT_MAX</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;max&#39;</span><span class="p">:</span> <span class="n">INT_MAX</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s1">&#39;sum-&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum-&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum-&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;sum-&#39;</span><span class="p">]:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">INT_MIN</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;min&#39;</span><span class="p">:</span> <span class="n">INT_MIN</span><span class="p">}</span>
+        <span class="k">if</span> <span class="s1">&#39;enum&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;enum&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__process_sums_positive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;def before_grounding_init_positive_sum_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls): cls.sum_positive_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> = 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;def after_grounding_check_positive_sum_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls):&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">:</span>
+                <span class="n">max_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.sum_positive_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &gt; </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">sum of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> may exceed </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">:</span>
+                <span class="n">min_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_positive</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.sum_positive_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &lt; </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">sum of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> cannot reach </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &gt; 0:&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">self.__class__.sum_positive_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> += self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__process_sums_negative</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;def before_grounding_init_negative_sum_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls): cls.sum_negative_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> = 0&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;@classmethod&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;def after_grounding_check_negative_sum_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">(cls):&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span><span class="p">:</span>
+                <span class="n">max_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.sum_negative_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &gt; </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">sum of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> cannot reach </span><span class="si">{</span><span class="n">max_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span><span class="p">:</span>
+                <span class="n">min_bound</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__sum_negative</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">other_methods_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">if cls.sum_negative_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &lt; </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="se">\&#39;</span><span class="s1">sum of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> may exceed </span><span class="si">{</span><span class="n">min_bound</span><span class="si">}</span><span class="se">\&#39;</span><span class="s1">)&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &lt; 0:&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\t</span><span class="s1">self.__class__.sum_negative_of_</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> += self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="IntegerTerm.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.IntegerTerm.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">&gt;</span> <span class="n">INT_MIN</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Should be &gt;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__min</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__min</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">&lt;</span> <span class="n">INT_MAX</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Should be &lt;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__max</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> &gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__max</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__enum</span><span class="p">)</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Should be one of </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> not in </span><span class="si">{</span><span class="n">s</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="n">GenericTerm</span><span class="o">.</span><span class="n">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__process_sums_positive</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__process_sums_negative</span><span class="p">()</span></div></div>
+
+
+<div class="viewcode-block" id="StringAlphaTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.StringAlphaTerm">[docs]</a><span class="k">class</span> <span class="nc">StringAlphaTerm</span><span class="p">(</span><span class="n">GenericTerm</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">term_type</span><span class="p">):</span>
+        <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">term_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">=</span> <span class="n">INT_MAX</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__parse_content</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__parse_content</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;min&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;min&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;max&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;max&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;pattern&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;pattern&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;enum&#39;</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;enum&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="StringAlphaTerm.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.StringAlphaTerm.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__min</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Len should be &gt;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__min</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if len(self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">) &lt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__min</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__max</span> <span class="o">!=</span> <span class="n">INT_MAX</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Len should be &lt;= </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__max</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if len(self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">) &gt; </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__max</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__enum</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__enum</span><span class="p">)</span>
+            <span class="n">s1</span> <span class="o">=</span> <span class="s2">&quot;{&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s1</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">),&#39;</span>
+            <span class="n">s1</span> <span class="o">=</span> <span class="n">s1</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;}&quot;</span>
+
+            <span class="n">s2</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">s</span><span class="p">:</span>
+                <span class="n">s2</span> <span class="o">+=</span> <span class="s1">&#39;{&#39;</span> <span class="o">+</span> <span class="sa">f</span><span class="s1">&#39;_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="si">}</span><span class="s1">)&#39;</span> <span class="o">+</span> <span class="s1">&#39;},&#39;</span>
+            <span class="n">s2</span> <span class="o">=</span> <span class="n">s2</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Should be one of [</span><span class="si">{</span><span class="n">s2</span><span class="si">}</span><span class="s1">]&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1"> not in </span><span class="si">{</span><span class="n">s1</span><span class="si">}</span><span class="s1">: raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Not match regex </span><span class="se">{{</span><span class="s1">_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span><span class="p">)</span><span class="si">}</span><span class="s1">)</span><span class="se">}}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if not(re.match(_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span><span class="p">)</span><span class="si">}</span><span class="s1">), self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">)): raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StringTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.StringTerm">[docs]</a><span class="k">class</span> <span class="nc">StringTerm</span><span class="p">(</span><span class="n">StringAlphaTerm</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
+        <span class="n">StringAlphaTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="s1">&#39;String&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="AlphaTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.AlphaTerm">[docs]</a><span class="k">class</span> <span class="nc">AlphaTerm</span><span class="p">(</span><span class="n">StringAlphaTerm</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
+        <span class="n">StringAlphaTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="s1">&#39;Alpha&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="UserDefinedTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.UserDefinedTerm">[docs]</a><span class="k">class</span> <span class="nc">UserDefinedTerm</span><span class="p">(</span><span class="n">GenericTerm</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Yaml2Python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python">[docs]</a><span class="k">class</span> <span class="nc">Yaml2Python</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__content</span> <span class="o">=</span> <span class="n">content</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__output</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">__read_valasp</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;valasp&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;python&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;python&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;asp&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;asp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="nf">__read_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol_name</span> <span class="o">!=</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+                <span class="n">all_symbols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol_name</span> <span class="o">!=</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+                <span class="n">symbol</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="n">symbol_name</span><span class="p">],</span> <span class="n">symbol_name</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">convert2python</span><span class="p">())</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Yaml2Python.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">YamlValidation</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__read_valasp</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__read_symbols</span><span class="p">()</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\t</span><span class="si">{}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="p">))</span>
+            <span class="n">all_import</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">import clingo</span>
+<span class="s2">import valasp</span>
+<span class="s2">import valasp.core</span>
+<span class="s2">import base64</span>
+<span class="s2">import re</span>
+<span class="s2">import sys</span>
+<span class="s2">from valasp.domain.primitive_types import Alpha, Any, Integer, String</span>
+
+<span class="s2">def _(x):</span>
+<span class="se">\t</span><span class="s2">return base64.b64decode(x).decode()</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">all_import</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">)</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">def main(files):</span>
+<span class="se">\t</span><span class="s2">context = valasp.core.Context()</span>
+
+<span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2"></span>
+
+<span class="se">\t</span><span class="s2">control = clingo.Control()</span>
+<span class="se">\t</span><span class="s2">for file_ in files:</span>
+<span class="se">\t\t</span><span class="s2">control.load(file_)</span>
+<span class="se">\t</span><span class="s2">context.valasp_run(control, on_model=lambda m: print(&quot;Answer: </span><span class="se">{{}}</span><span class="s2">&quot;.format(m)), aux_program=[base64.b64decode(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">).decode()])                        </span>
+
+<span class="s2">if __name__ == &#39;__main__&#39;:</span>
+<span class="se">\t</span><span class="s2">main(sys.argv[1:])</span>
+<span class="s2">&quot;&quot;&quot;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Usage: python3 </span><span class="si">%s</span><span class="s1"> yaml_file&#39;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">element</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">yaml_input</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+            <span class="n">yaml2python</span> <span class="o">=</span> <span class="n">Yaml2Python</span><span class="p">(</span><span class="n">yaml_input</span><span class="p">)</span>
+            <span class="n">yaml2python</span><span class="o">.</span><span class="n">convert2python</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.0 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+    </div>
+  </body>
+</html>

@@ -175,6 +175,93 @@
 </dd></dl>
 
 </div>
+<div class="section" id="module-valasp.translators.yaml2python">
+<span id="valasp-translators-yaml2python-module"></span><h2>valasp.translators.yaml2python module<a class="headerlink" href="#module-valasp.translators.yaml2python" title="Permalink to this headline">¶</a></h2>
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.AlphaTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">AlphaTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#AlphaTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.AlphaTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.translators.yaml2python.StringAlphaTerm" title="valasp.translators.yaml2python.StringAlphaTerm"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.translators.yaml2python.StringAlphaTerm</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.ErrorMessages">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">ErrorMessages</code><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#ErrorMessages"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.ErrorMessages" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.ErrorMessages.raise_error">
+<em class="property">static </em><code class="sig-name descname">raise_error</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">message</span></em>, <em class="sig-param"><span class="n">received</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#ErrorMessages.raise_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.ErrorMessages.raise_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.GenericTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">GenericTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em>, <em class="sig-param"><span class="n">term_type</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#GenericTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.GenericTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.GenericTerm.convert2python">
+<code class="sig-name descname">convert2python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#GenericTerm.convert2python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.GenericTerm.convert2python" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.IntegerTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">IntegerTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#IntegerTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.IntegerTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.translators.yaml2python.GenericTerm" title="valasp.translators.yaml2python.GenericTerm"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.translators.yaml2python.GenericTerm</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.IntegerTerm.convert2python">
+<code class="sig-name descname">convert2python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#IntegerTerm.convert2python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.IntegerTerm.convert2python" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.StringAlphaTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">StringAlphaTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em>, <em class="sig-param"><span class="n">term_type</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#StringAlphaTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.StringAlphaTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.translators.yaml2python.GenericTerm" title="valasp.translators.yaml2python.GenericTerm"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.translators.yaml2python.GenericTerm</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.StringAlphaTerm.convert2python">
+<code class="sig-name descname">convert2python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#StringAlphaTerm.convert2python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.StringAlphaTerm.convert2python" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.StringTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">StringTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#StringTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.StringTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.translators.yaml2python.StringAlphaTerm" title="valasp.translators.yaml2python.StringAlphaTerm"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.translators.yaml2python.StringAlphaTerm</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.Symbol">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">Symbol</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#Symbol"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.Symbol" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.Symbol.convert2python">
+<code class="sig-name descname">convert2python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#Symbol.convert2python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.Symbol.convert2python" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.UserDefinedTerm">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">UserDefinedTerm</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em>, <em class="sig-param"><span class="n">term_name</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#UserDefinedTerm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.UserDefinedTerm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#valasp.translators.yaml2python.GenericTerm" title="valasp.translators.yaml2python.GenericTerm"><code class="xref py py-class docutils literal notranslate"><span class="pre">valasp.translators.yaml2python.GenericTerm</span></code></a></p>
+</dd></dl>
+
+<dl class="py class">
+<dt id="valasp.translators.yaml2python.Yaml2Python">
+<em class="property">class </em><code class="sig-prename descclassname">valasp.translators.yaml2python.</code><code class="sig-name descname">Yaml2Python</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">content</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#Yaml2Python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.Yaml2Python" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.8)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<dl class="py method">
+<dt id="valasp.translators.yaml2python.Yaml2Python.convert2python">
+<code class="sig-name descname">convert2python</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/translators/yaml2python.html#Yaml2Python.convert2python"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.translators.yaml2python.Yaml2Python.convert2python" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
 <div class="section" id="module-valasp.translators.yaml_validation">
 <span id="valasp-translators-yaml-validation-module"></span><h2>valasp.translators.yaml_validation module<a class="headerlink" href="#module-valasp.translators.yaml_validation" title="Permalink to this headline">¶</a></h2>
 <dl class="py class">
@@ -291,6 +378,7 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-valasp.translators.input2json">valasp.translators.input2json module</a></li>
 <li><a class="reference internal" href="#module-valasp.translators.json2python">valasp.translators.json2python module</a></li>
+<li><a class="reference internal" href="#module-valasp.translators.yaml2python">valasp.translators.yaml2python module</a></li>
 <li><a class="reference internal" href="#module-valasp.translators.yaml_validation">valasp.translators.yaml_validation module</a></li>
 <li><a class="reference internal" href="#module-valasp.translators">Module contents</a></li>
 </ul>
