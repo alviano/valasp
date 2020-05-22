@@ -219,12 +219,13 @@ Other common magic methods are also injected, unless already defined in the clas
 
 <dl class="py method">
 <dt id="valasp.core.Context.valasp_run">
-<code class="sig-name descname">valasp_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">control</span><span class="p">:</span> <span class="n">clingo.Control</span></em>, <em class="sig-param"><span class="n">on_model</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aux_program</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">with_validators</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">with_solve</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/core.html#Context.valasp_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.core.Context.valasp_run" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">valasp_run</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">control</span><span class="p">:</span> <span class="n">clingo.Control</span></em>, <em class="sig-param"><span class="n">on_validation_done</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">on_model</span><span class="p">:</span> <span class="n">Callable</span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">aux_program</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em>, <em class="sig-param"><span class="n">with_validators</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em>, <em class="sig-param"><span class="n">with_solve</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)">bool</a></span> <span class="o">=</span> <span class="default_value">True</span></em><span class="sig-paren">)</span> &#x2192; <a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.8)">None</a><a class="reference internal" href="_modules/valasp/core.html#Context.valasp_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.core.Context.valasp_run" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run grounder on the given controller, possibly performing validation and searching for a model.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>control</strong> – a controller</p></li>
+<li><p><strong>on_validation_done</strong> – a function invoked after grounding, if no validation error is reported</p></li>
 <li><p><strong>on_model</strong> – a callback function to process a model</p></li>
 <li><p><strong>aux_program</strong> – more ASP code to add to the program</p></li>
 <li><p><strong>with_validators</strong> – if True, validator constraints are added, and <code class="docutils literal notranslate"><span class="pre">before_grounding*</span></code> and <code class="docutils literal notranslate"><span class="pre">after_grounding*</span></code> class methods are called</p></li>
@@ -289,9 +290,83 @@ Other common magic methods are also injected, unless already defined in the clas
 </div>
 <div class="section" id="module-valasp.main">
 <span id="valasp-main-module"></span><h2>valasp.main module<a class="headerlink" href="#module-valasp.main" title="Permalink to this headline">¶</a></h2>
+<p>The main method when the module is executed as a script is defined here.</p>
+<p>Here is an example of usage for a valid file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>valasp<span class="o">)</span> $ cat examples/bday.yaml
+valasp:
+    python: <span class="p">|</span>+
+        import datetime
+    asp: <span class="p">|</span>+
+
+date:
+    year: Integer
+    month: Integer
+    day: Integer
+
+    valasp:
+        is_predicate: False
+        with_fun: TUPLE
+        after_init: <span class="p">|</span>+
+            datetime.datetime<span class="o">(</span>self.year, self.month, self.day<span class="o">)</span>
+
+bday:
+    name:
+        type: Alpha
+        min: <span class="m">3</span>
+    date: date
+
+<span class="o">(</span>valasp<span class="o">)</span> $ cat examples/bday.valid.asp
+bday<span class="o">(</span>sofia, <span class="o">(</span><span class="m">2019</span>,6,25<span class="o">))</span>.
+bday<span class="o">(</span>leonardo, <span class="o">(</span><span class="m">2018</span>,2,1<span class="o">))</span>.
+
+<span class="o">(</span>valasp<span class="o">)</span> $ python -m valasp examples/bday.yaml examples/bday.valid.asp
+Answer: bday<span class="o">(</span>sofia,<span class="o">(</span><span class="m">2019</span>,6,25<span class="o">))</span> bday<span class="o">(</span>leonardo,<span class="o">(</span><span class="m">2018</span>,2,1<span class="o">))</span>
+</pre></div>
+</div>
+<p>And here is an example of invalid file:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="o">(</span>valasp<span class="o">)</span> $ cat examples/bday.invalid.asp
+bday<span class="o">(</span>sofia, <span class="o">(</span><span class="m">2019</span>,6,25<span class="o">))</span>.
+bday<span class="o">(</span>leonardo, <span class="o">(</span><span class="m">2018</span>,2,1<span class="o">))</span>.
+bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982</span>,123<span class="o">))</span>.
+
+<span class="o">(</span>valasp<span class="o">)</span> $ python -m valasp examples/bday.yaml examples/bday.invalid.asp
+&lt;block&gt;:31:17-51: error: error in context:
+  Traceback <span class="o">(</span>most recent call last<span class="o">)</span>:
+    File <span class="s2">&quot;&lt;def valasp_validate_bday(value)&gt;&quot;</span>, line <span class="m">2</span>, in valasp_validate_bday
+    File <span class="s2">&quot;&lt;def Bday.__init__(self, value)&gt;&quot;</span>, line <span class="m">16</span>, in Bday____init__
+    File <span class="s2">&quot;&lt;def Date.__init__(self, value)&gt;&quot;</span>, line <span class="m">7</span>, in Date____init__
+  ValueError: expecting arity <span class="m">3</span> <span class="k">for</span> TUPLE, but found <span class="m">2</span>
+</pre></div>
+</div>
+<p>Functions in this module are not intended to be used directly or imported in some other module of this project.</p>
 <dl class="py function">
 <dt id="valasp.main.main">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.main" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_list</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.main" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="valasp.main.output">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">output</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em>, <em class="sig-param"><span class="n">sep</span><span class="o">=</span><span class="default_value">' '</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">'\n'</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="valasp.main.parse_args">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Callable<a class="reference internal" href="_modules/valasp/main.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.parse_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="valasp.main.print_python_code">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">print_python_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#print_python_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.print_python_code" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="valasp.main.process_yaml">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">process_yaml</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">yaml_file</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em><span class="sig-paren">)</span> &#x2192; List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span><a class="reference internal" href="_modules/valasp/main.html#process_yaml"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.process_yaml" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt id="valasp.main.run_clingo">
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">run_clingo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#run_clingo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.run_clingo" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>

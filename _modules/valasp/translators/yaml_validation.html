@@ -109,17 +109,17 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected 0 or a negative integer&#39;</span><span class="p">)</span>
 
     <span class="nd">@classmethod</span>
-    <span class="k">def</span> <span class="nf">__validate_enum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__validate_enum</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">typ</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected list&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
-                <span class="k">if</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">&#39;Integer&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_int</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
-                <span class="k">elif</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;String&#39;</span><span class="p">:</span>
+                <span class="k">elif</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">&#39;String&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
                 <span class="k">else</span><span class="p">:</span>
-                    <span class="k">assert</span> <span class="nb">type</span> <span class="o">==</span> <span class="s1">&#39;Alpha&#39;</span>
+                    <span class="k">assert</span> <span class="n">typ</span> <span class="o">==</span> <span class="s1">&#39;Alpha&#39;</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_alpha</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
             <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Invalid value in enum: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">v</span><span class="p">)</span>
@@ -304,24 +304,21 @@
         <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;having&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
             <span class="n">element</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
-            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
-                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
-                        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-                            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                                <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected exactly two arguments of the list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">)))</span>
-                    <span class="k">else</span><span class="p">:</span>
-                        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">elem</span><span class="p">))</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span></div>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">element</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">elem</span> <span class="ow">in</span> <span class="n">element</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">elem</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">elem</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: expected exactly two arguments of the list. Obtained </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">elem</span><span class="p">)))</span></div>
 
 <div class="viewcode-block" id="YamlValidation.validate_valasp_in_symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_valasp_in_symbol">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">validate_valasp_in_symbol</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
         <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;having&#39;</span><span class="p">,</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">,</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">,</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">,</span> <span class="s1">&#39;after_init&#39;</span><span class="p">,</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">,</span>
                     <span class="s1">&#39;after_grounding&#39;</span><span class="p">}</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;valasp of symbol&#39;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;having&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">validate_having</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">:</span>
@@ -336,8 +333,8 @@
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_grounding&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_str</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span></div>
 
 <div class="viewcode-block" id="YamlValidation.validate_symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_symbol">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">validate_symbol</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
@@ -385,15 +382,15 @@
     <span class="k">def</span> <span class="nf">validate</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Expected structure&#39;</span><span class="p">)</span>
-        <span class="k">try</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">validate_valasp</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
                 <span class="k">else</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_predicate_name</span><span class="p">(</span><span class="n">c</span><span class="p">)</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">validate_symbol</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="kn">from</span> <span class="bp">None</span></div></div>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="kn">from</span> <span class="bp">None</span></div></div>
 </pre></div>
 
           </div>

@@ -37,31 +37,133 @@
   <h1>Source code for valasp.main</h1><div class="highlight"><pre>
 <span></span><span class="c1"># This file is part of ValAsp which is released under the Apache License, Version 2.0.</span>
 <span class="c1"># See file README.md for full license details.</span>
+
+<span class="sd">&quot;&quot;&quot;The main method when the module is executed as a script is defined here.</span>
+
+<span class="sd">Here is an example of usage for a valid file:</span>
+
+<span class="sd">.. code-block:: bash</span>
+
+<span class="sd">    (valasp) $ cat examples/bday.yaml</span>
+<span class="sd">    valasp:</span>
+<span class="sd">        python: |+</span>
+<span class="sd">            import datetime</span>
+<span class="sd">        asp: |+</span>
+
+<span class="sd">    date:</span>
+<span class="sd">        year: Integer</span>
+<span class="sd">        month: Integer</span>
+<span class="sd">        day: Integer</span>
+
+<span class="sd">        valasp:</span>
+<span class="sd">            is_predicate: False</span>
+<span class="sd">            with_fun: TUPLE</span>
+<span class="sd">            after_init: |+</span>
+<span class="sd">                datetime.datetime(self.year, self.month, self.day)</span>
+
+<span class="sd">    bday:</span>
+<span class="sd">        name:</span>
+<span class="sd">            type: Alpha</span>
+<span class="sd">            min: 3</span>
+<span class="sd">        date: date</span>
+
+<span class="sd">    (valasp) $ cat examples/bday.valid.asp</span>
+<span class="sd">    bday(sofia, (2019,6,25)).</span>
+<span class="sd">    bday(leonardo, (2018,2,1)).</span>
+
+<span class="sd">    (valasp) $ python -m valasp examples/bday.yaml examples/bday.valid.asp</span>
+<span class="sd">    Answer: bday(sofia,(2019,6,25)) bday(leonardo,(2018,2,1))</span>
+
+
+<span class="sd">And here is an example of invalid file:</span>
+
+<span class="sd">.. code-block:: bash</span>
+
+<span class="sd">    (valasp) $ cat examples/bday.invalid.asp</span>
+<span class="sd">    bday(sofia, (2019,6,25)).</span>
+<span class="sd">    bday(leonardo, (2018,2,1)).</span>
+<span class="sd">    bday(bigel, (1982,123)).</span>
+
+<span class="sd">    (valasp) $ python -m valasp examples/bday.yaml examples/bday.invalid.asp</span>
+<span class="sd">    &lt;block&gt;:31:17-51: error: error in context:</span>
+<span class="sd">      Traceback (most recent call last):</span>
+<span class="sd">        File &quot;&lt;def valasp_validate_bday(value)&gt;&quot;, line 2, in valasp_validate_bday</span>
+<span class="sd">        File &quot;&lt;def Bday.__init__(self, value)&gt;&quot;, line 16, in Bday____init__</span>
+<span class="sd">        File &quot;&lt;def Date.__init__(self, value)&gt;&quot;, line 7, in Date____init__</span>
+<span class="sd">      ValueError: expecting arity 3 for TUPLE, but found 2</span>
+
+
+<span class="sd">Functions in this module are not intended to be used directly or imported in some other module of this project.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">runpy</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Callable</span>
+
+<span class="kn">import</span> <span class="nn">yaml</span>
+
+<span class="kn">from</span> <span class="nn">valasp.translators.yaml2python</span> <span class="kn">import</span> <span class="n">Yaml2Python</span>
 
 
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../valasp.html#valasp.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Usage </span><span class="si">%s</span><span class="s1"> input_file output_file&#39;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<div class="viewcode-block" id="output"><a class="viewcode-back" href="../../valasp.html#valasp.main.output">[docs]</a><span class="k">def</span> <span class="nf">output</span><span class="p">(</span><span class="n">text</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">sep</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">output</span><span class="o">.</span><span class="n">list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">output</span><span class="o">.</span><span class="n">list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">sep</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span></div>
+<span class="n">output</span><span class="o">.</span><span class="n">list</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../valasp.html#valasp.main.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">(</span><span class="s1">&#39;To validate a YAML file against one or more ASP files, also running clingo:</span><span class="se">\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">python -m valasp &lt;YAML file&gt; [ASP files]</span><span class="se">\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;To produce Python code to ease validation in couple with clingo:</span><span class="se">\n</span><span class="s1">&#39;</span>
+              <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">python -m valasp --print &lt;YAML file&gt;&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
         <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
-    <span class="k">raise</span> <span class="ne">ModuleNotFoundError</span><span class="p">(</span><span class="s2">&quot;currently not implemented&quot;</span><span class="p">)</span></div>
-    <span class="c1"># filename = sys.argv[1]</span>
-    <span class="c1"># with open(filename, &#39;r&#39;) as f:</span>
-    <span class="c1">#     try:</span>
-    <span class="c1">#         yaml.safe_load(f)</span>
-    <span class="c1">#         values = input2json.create_json_structure(filename, &#39;yaml&#39;)</span>
-    <span class="c1">#     except yaml.YAMLError as exc:</span>
-    <span class="c1">#         values = input2json.create_json_structure(filename, &#39;asp&#39;)</span>
-    <span class="c1">#</span>
-    <span class="c1"># v = json2python.Validation()</span>
-    <span class="c1"># v.start_validation(values)</span>
-    <span class="c1"># v.validate()</span>
-    <span class="c1"># output = v.end_validation()</span>
-    <span class="c1">#</span>
-    <span class="c1"># destination = sys.argv[2]</span>
-    <span class="c1"># with open(destination, &#39;w&#39;, encoding=&#39;utf-8&#39;) as f:</span>
-    <span class="c1">#     f.write(output)</span>
+    <span class="n">print_only</span> <span class="o">=</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;--print&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">print_only</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">argv</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[:</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="n">print_python_code</span>
+    <span class="k">return</span> <span class="n">run_clingo</span></div>
+
+
+<div class="viewcode-block" id="process_yaml"><a class="viewcode-back" href="../../valasp.html#valasp.main.process_yaml">[docs]</a><span class="k">def</span> <span class="nf">process_yaml</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">yaml_input</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">yaml2python</span> <span class="o">=</span> <span class="n">Yaml2Python</span><span class="p">(</span><span class="n">yaml_input</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">yaml2python</span><span class="o">.</span><span class="n">convert2python</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="print_python_code"><a class="viewcode-back" href="../../valasp.html#valasp.main.print_python_code">[docs]</a><span class="k">def</span> <span class="nf">print_python_code</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">asp_files</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;# files </span><span class="si">{</span><span class="n">asp_files</span><span class="si">}</span><span class="s1"> have been ignored&#39;</span><span class="p">)</span>
+    <span class="n">output</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">validation_code</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="run_clingo"><a class="viewcode-back" href="../../valasp.html#valasp.main.run_clingo">[docs]</a><span class="k">def</span> <span class="nf">run_clingo</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">validation_file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">validation_code</span><span class="p">:</span>
+            <span class="n">validation_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+        <span class="n">validation_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">mod</span> <span class="o">=</span> <span class="n">runpy</span><span class="o">.</span><span class="n">run_path</span><span class="p">(</span><span class="n">path_name</span><span class="o">=</span><span class="n">validation_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">mod</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">](</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../valasp.html#valasp.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">output_list</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+    <span class="n">callback</span> <span class="o">=</span> <span class="n">parse_args</span><span class="p">()</span>
+    <span class="n">output</span><span class="o">.</span><span class="n">list</span> <span class="o">=</span> <span class="n">output_list</span>
+
+    <span class="n">yaml_file</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">asp_files</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">2</span><span class="p">:]</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">validation_code</span> <span class="o">=</span> <span class="n">process_yaml</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">)</span>
+        <span class="n">callback</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div>
+
 </pre></div>
 
           </div>

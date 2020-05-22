@@ -37,6 +37,8 @@
   <h1>Source code for valasp.translators.yaml2python</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">base64</span>
 <span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
+
 <span class="kn">import</span> <span class="nn">yaml</span>
 
 <span class="kn">from</span> <span class="nn">valasp.domain.names</span> <span class="kn">import</span> <span class="n">PredicateName</span>
@@ -425,7 +427,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">convert2python</span><span class="p">())</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Yaml2Python.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Yaml2Python.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">YamlValidation</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__read_valasp</span><span class="p">()</span>
@@ -443,10 +445,8 @@
 <span class="s2">def _(x):</span>
 <span class="se">\t</span><span class="s2">return base64.b64decode(x).decode()</span>
 <span class="s2">&quot;&quot;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">all_import</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">)</span>
             <span class="n">template</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">def main(files):</span>
+<span class="s2">def main(files, output=print):</span>
 <span class="se">\t</span><span class="s2">context = valasp.core.Context()</span>
 
 <span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2"></span>
@@ -454,18 +454,19 @@
 <span class="se">\t</span><span class="s2">control = clingo.Control()</span>
 <span class="se">\t</span><span class="s2">for file_ in files:</span>
 <span class="se">\t\t</span><span class="s2">control.load(file_)</span>
-<span class="se">\t</span><span class="s2">context.valasp_run(control, on_model=lambda m: print(&quot;Answer: </span><span class="se">{{}}</span><span class="s2">&quot;.format(m)), aux_program=[base64.b64decode(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">).decode()])                        </span>
+<span class="se">\t</span><span class="s2">context.valasp_run(control, on_validation_done=lambda: output(&quot;All valid!&quot;), on_model=lambda m: output(f&quot;Answer: </span><span class="se">{{</span><span class="s2">m</span><span class="se">}}</span><span class="s2">&quot;), aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)])                        </span>
 
 <span class="s2">if __name__ == &#39;__main__&#39;:</span>
 <span class="se">\t</span><span class="s2">try:</span>
 <span class="se">\t\t</span><span class="s2">main(sys.argv[1:])</span>
-<span class="se">\t</span><span class="s2">except ValueError as v:</span>
-<span class="se">\t\t</span><span class="s2">print(&#39;%s&#39; % v)</span>
+<span class="se">\t</span><span class="s2">except Exception as e:</span>
+<span class="se">\t\t</span><span class="s2">print(e, file=sys.stderr)</span>
 <span class="s2">&quot;&quot;&quot;</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">template</span><span class="p">)</span>
 
-        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div></div>
+            <span class="k">return</span> <span class="p">[</span><span class="n">all_import</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">,</span> <span class="n">template</span><span class="p">]</span>
+
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span></div></div>
 
 
 <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
@@ -477,7 +478,8 @@
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">yaml_input</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
             <span class="n">yaml2python</span> <span class="o">=</span> <span class="n">Yaml2Python</span><span class="p">(</span><span class="n">yaml_input</span><span class="p">)</span>
-            <span class="n">yaml2python</span><span class="o">.</span><span class="n">convert2python</span><span class="p">()</span>
+            <span class="n">lines</span> <span class="o">=</span> <span class="n">yaml2python</span><span class="o">.</span><span class="n">convert2python</span><span class="p">()</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
     <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
 </pre></div>
