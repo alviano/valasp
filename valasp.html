@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>valasp package &#8212; ValAsp 0.2.0 documentation</title>
+    <title>valasp package &#8212; ValAsp 0.2.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -32,7 +32,7 @@
         <li class="right" >
           <a href="index.html" title="Welcome to ValAsp’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -341,22 +341,17 @@ bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982<
 <p>Functions in this module are not intended to be used directly or imported in some other module of this project.</p>
 <dl class="py function">
 <dt id="valasp.main.main">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">output_list</span><span class="p">:</span> <span class="n">List<span class="p">[</span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a><span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.main" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt id="valasp.main.output">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">output</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">text</span><span class="p">:</span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)">str</a></span></em>, <em class="sig-param"><span class="n">sep</span><span class="o">=</span><span class="default_value">' '</span></em>, <em class="sig-param"><span class="n">end</span><span class="o">=</span><span class="default_value">'\n'</span></em>, <em class="sig-param"><span class="n">file</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.output" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">main</code><span class="sig-paren">(</span><em class="sig-param">args: List[str], stdout=&lt;_io.TextIOWrapper name='&lt;stdout&gt;' mode='w' encoding='UTF-8'&gt;, stderr=&lt;_io.TextIOWrapper name='&lt;stderr&gt;' mode='w' encoding='UTF-8'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="valasp.main.parse_args">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &#x2192; Callable<a class="reference internal" href="_modules/valasp/main.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.parse_args" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">parse_args</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">args</span></em>, <em class="sig-param"><span class="n">stdout</span></em>, <em class="sig-param"><span class="n">stderr</span></em><span class="sig-paren">)</span> &#x2192; Callable<a class="reference internal" href="_modules/valasp/main.html#parse_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.parse_args" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
 <dt id="valasp.main.print_python_code">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">print_python_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#print_python_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.print_python_code" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">print_python_code</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em>, <em class="sig-param"><span class="n">stdout</span></em>, <em class="sig-param"><span class="n">stderr</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#print_python_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.print_python_code" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py function">
@@ -366,7 +361,7 @@ bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982<
 
 <dl class="py function">
 <dt id="valasp.main.run_clingo">
-<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">run_clingo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#run_clingo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.run_clingo" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">valasp.main.</code><code class="sig-name descname">run_clingo</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">asp_files</span></em>, <em class="sig-param"><span class="n">validation_code</span></em>, <em class="sig-param"><span class="n">stdout</span></em>, <em class="sig-param"><span class="n">stderr</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/main.html#run_clingo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.main.run_clingo" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 </div>
@@ -435,7 +430,7 @@ bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982<
         <li class="right" >
           <a href="index.html" title="Welcome to ValAsp’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.0 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
