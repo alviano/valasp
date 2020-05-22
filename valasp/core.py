@@ -119,7 +119,7 @@ class Context:
                         f'if value.name != "{fun_name}":',
                         f'    raise ValueError(f"expecting function \\"{fun_name}\\", but found \\"{{value.name}}\\"")',
                         f'if len(value.arguments) != {len(args)}:',
-                        f'    raise ValueError(f"expecting arity {len(args)} for {fun_name}, '
+                        f'    raise ValueError(f"expecting arity {len(args)} for {fun_name if fun_name else "TUPLE"}, '
                         + f'but found {{len(value.arguments)}}")',
                         f'{", ".join(args)}, = value.arguments',
                     ]

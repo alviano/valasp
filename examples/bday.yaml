@@ -1,0 +1,22 @@
+valasp:
+    python: |+
+        import datetime
+    asp: |+
+
+date:
+    year: Integer
+    month: Integer
+    day: Integer    
+
+    valasp:
+        is_predicate: False
+        with_fun: TUPLE
+        after_init: |+
+            datetime.datetime(self.year, self.month, self.day)
+
+bday:
+    name:
+        type: Alpha
+        min: 3
+    date: date
+    

@@ -274,22 +274,19 @@ class YamlValidation:
 
     @classmethod
     def validate_having(cls, content):
-        if isinstance(content, dict):
-            keywords = {'equals', 'different', 'gt', 'ge', 'lt', 'le'}
-            cls.__validate_keywords(keywords, content, 'having')
-            for c in content:
-                element = content[c]
-                if isinstance(element, list):
-                    for l in element:
-                        if isinstance(l, list):
-                            if len(l) != 2:
-                                raise ValueError('%s: expected exactly two arguments of the list. Obtained %s' % (c, len(l)))
-                        else:
-                            raise ValueError('%s: expected list. Obtained %s' % (c, l))
-                else:
-                    raise ValueError('expected list. Obtained %s' % element)
-        else:
+        if not isinstance(content, dict):
             raise ValueError('expected structure')
+        keywords = {'equals', 'different', 'gt', 'ge', 'lt', 'le'}
+        cls.__validate_keywords(keywords, content, 'having')
+        for c in content:
+            element = content[c]
+            if not isinstance(element, list):
+                raise ValueError('expected list. Obtained %s' % element)
+            for l in element:
+                if not isinstance(l, list):
+                    raise ValueError('%s: expected list. Obtained %s' % (c, l))
+                if len(l) != 2:
+                    raise ValueError('%s: expected exactly two arguments of the list. Obtained %s' % (c, len(l)))
 
     @classmethod
     def validate_valasp_in_symbol(cls, content):

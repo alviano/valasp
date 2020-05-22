@@ -1,5 +1,7 @@
 import base64
 import sys
+from typing import List
+
 import yaml
 
 from valasp.domain.names import PredicateName
@@ -387,7 +389,7 @@ class Yaml2Python:
                 self.__output.extend(symbol.convert2python())
                 self.__output.append('')
 
-    def convert2python(self):
+    def convert2python(self) -> List[str]:
         try:
             YamlValidation.validate(self.__content)
             self.__read_valasp()
@@ -405,8 +407,6 @@ from valasp.domain.primitive_types import Alpha, Any, Integer, String
 def _(x):
 \treturn base64.b64decode(x).decode()
 """
-            print(all_import)
-            print(self.__valasp_python)
             template = f"""
 def main(files):
 \tcontext = valasp.core.Context()
@@ -418,16 +418,18 @@ def main(files):
 \t\tcontrol.load(file_)
 \tcontext.valasp_run(control, on_model=lambda m: print("Answer: {{}}".format(m)), aux_program=[base64.b64decode({self.__valasp_asp}).decode()])                        
 
+
 if __name__ == '__main__':
 \ttry:
 \t\tmain(sys.argv[1:])
-\texcept ValueError as v:
-\t\tprint('%s' % v)
+\texcept Exception as e:
+\t\tprint(e, file=sys.stderr)
 """
-            print(template)
 
-        except ValueError as v:
-            print(v, file=sys.stderr)
+            return [all_import, self.__valasp_python, template]
+
+        except ValueError as e:
+            print(e, file=sys.stderr)
 
 
 if __name__ == '__main__':
@@ -439,6 +441,7 @@ if __name__ == '__main__':
         with open(element) as f:
             yaml_input = yaml.safe_load(f)
             yaml2python = Yaml2Python(yaml_input)
-            yaml2python.convert2python()
+            lines = yaml2python.convert2python()
+            print('\n'.join(lines))
     except Exception as v:
         print(v, file=sys.stderr)
