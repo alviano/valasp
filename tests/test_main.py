@@ -84,4 +84,4 @@ valasp:
     unknown_key: foo
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
-    assert 'Unexpected unknown_key in valasp' in err
+    assert 'unexpected unknown_key in valasp' in err

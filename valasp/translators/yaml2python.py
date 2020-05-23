@@ -347,6 +347,8 @@ class Yaml2Python:
         self.__content = content
         self.__valasp_python = ""
         self.__valasp_asp = ""
+        self.__valasp_wrap = []
+        self.__valasp_max_arity = 16
         self.__symbols = []
         self.__output = []
 
@@ -356,13 +358,18 @@ class Yaml2Python:
                 self.__valasp_python = self.__content['valasp']['python']
             if 'asp' in self.__content['valasp']:
                 self.__valasp_asp = base64.b64encode(str(self.__content['valasp']['asp']).encode())
+            if 'wrap' in self.__content['valasp']:
+                self.__valasp_wrap = self.__content['valasp']['wrap']
+            if 'max_arity' in self.__content['valasp']:
+                self.__valasp_max_arity = self.__content['valasp']['max_arity']
 
     def __read_symbols(self):
+        reserved_keywords = {'valasp, wrap, max_arity'}
         for symbol_name in self.__content:
-            if symbol_name != 'valasp':
+            if symbol_name not in reserved_keywords:
                 all_symbols.add(symbol_name)
         for symbol_name in self.__content:
-            if symbol_name != 'valasp':
+            if symbol_name not in reserved_keywords:
                 symbol = Symbol(self.__content[symbol_name], symbol_name)
                 self.__symbols.append(symbol)
                 self.__output.extend(symbol.convert2python())
@@ -389,7 +396,7 @@ def _(x):
         template = f"""
 def main(files, stdout=sys.stdout, stderr=sys.stderr):
     try:
-        context = valasp.core.Context()
+        context = valasp.core.Context(wrap={self.__valasp_wrap}, max_arity={self.__valasp_max_arity})
 
         {output}
 

@@ -1,6 +1,6 @@
 import re
 
-from valasp.domain.names import PredicateName, AttributeName
+from valasp.domain.names import PredicateName, AttributeName, ClassName
 from valasp.domain.primitive_types import Integer
 from valasp.domain.primitive_types import String
 from valasp.domain.primitive_types import Alpha
@@ -12,7 +12,7 @@ class YamlValidation:
     def __validate_keywords(cls, keywords, content, message):
         for c in content:
             if c not in keywords:
-                raise ValueError('Unexpected %s in %s' % (c, message))
+                raise ValueError('unexpected %s in %s' % (c, message))
 
     @classmethod
     def __validate_predicate_name(cls, content):
@@ -45,7 +45,7 @@ class YamlValidation:
     @classmethod
     def __validate_bool(cls, content):
         if not isinstance(content, bool):
-            raise ValueError('Unexpected %s. Expected True or False' % content)
+            raise ValueError('unexpected %s. Expected True or False' % content)
 
     @classmethod
     def __validate_int(cls, content):
@@ -62,19 +62,19 @@ class YamlValidation:
         cls.__validate_int(content)
         c = int(content)
         if c < 0:
-            raise ValueError('Expected 0 or a positive integer')
+            raise ValueError('expected 0 or a positive integer')
 
     @classmethod
     def __validate_negative_int(cls, content):
         cls.__validate_int(content)
         c = int(content)
         if c > 0:
-            raise ValueError('Expected 0 or a negative integer')
+            raise ValueError('expected 0 or a negative integer')
 
     @classmethod
     def __validate_enum(cls, content, typ):
         if not isinstance(content, list):
-            raise ValueError('Expected list')
+            raise ValueError('expected list')
         for c in content:
             try:
                 if typ == 'Integer':
@@ -85,14 +85,14 @@ class YamlValidation:
                     assert typ == 'Alpha'
                     cls.__validate_alpha(c)
             except ValueError as v:
-                raise ValueError('Invalid value in enum: %s' % v)
+                raise ValueError('invalid value in enum: %s' % v)
 
     @classmethod
     def __validate_pattern(cls, content):
         try:
             re.compile(content)
         except re.error:
-            raise ValueError('Expected regular expression %s ' % re.error)
+            raise ValueError('expected regular expression %s ' % re.error)
 
     @classmethod
     def __validate_min_max(cls, content, positive):
@@ -121,7 +121,7 @@ class YamlValidation:
             cls.__validate_min_max(content, True)
         else:
             if content != 'Integer':
-                raise ValueError('Expected keyword Integer')
+                raise ValueError('expected keyword Integer')
 
     @classmethod
     def validate_aggregate_sum_neg(cls, content):
@@ -131,7 +131,7 @@ class YamlValidation:
             cls.__validate_min_max(content, False)
         else:
             if content != 'Integer':
-                raise ValueError('Expected keyword Integer')
+                raise ValueError('expected keyword Integer')
 
     @classmethod
     def validate_aggregate_count(cls, content):
@@ -225,7 +225,7 @@ class YamlValidation:
             try:
                 cls.__validate_term_name(content)
             except ValueError as v:
-                raise ValueError('Expected one of %s or user defined symbol: %s' % (keywords, v))
+                raise ValueError('expected one of %s or user defined symbol: %s' % (keywords, v))
 
     @classmethod
     def validate_term(cls, content):
@@ -233,7 +233,7 @@ class YamlValidation:
             required = {'type'}
             for r in required:
                 if r not in content:
-                    raise ValueError('Expected keyword %s' % r)
+                    raise ValueError('expected keyword %s' % r)
             try:
                 type_ = content['type']
                 cls.validate_term_type(type_)
@@ -257,7 +257,7 @@ class YamlValidation:
         content = str(content)
         keywords = {'FORWARD_IMPLICIT', 'FORWARD', 'IMPLICIT', 'TUPLE'}
         if content not in keywords:
-            raise ValueError('Unexpected value %s' % content)
+            raise ValueError('unexpected value %s' % content)
 
     @classmethod
     def validate_having(cls, content):
@@ -300,7 +300,7 @@ class YamlValidation:
     @classmethod
     def validate_symbol(cls, content):
         if not isinstance(content, dict):
-            raise ValueError('Expected structure for symbol definition')
+            raise ValueError('expected structure for symbol definition')
         for c in content:
             try:
                 if c == 'valasp':
@@ -310,7 +310,6 @@ class YamlValidation:
                     cls.validate_term(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-
 
     @classmethod
     def validate_python(cls, content):
@@ -327,22 +326,54 @@ class YamlValidation:
             raise ValueError('%s: %s' % (content, v))
 
     @classmethod
+    def __is_predicate_name(cls, content):
+        try:
+            PredicateName(content)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    @classmethod
+    def __is_class_name(cls, content):
+        try:
+            ClassName(content)
+            return True
+        except (ValueError, TypeError):
+            return False
+
+    @classmethod
+    def validate_wrap(cls, content):
+        if not isinstance(content, list):
+            raise ValueError('expected a list')
+        for c in content:
+            if not(cls.__is_predicate_name(c)) and not(cls.__is_class_name(c)):
+                raise ValueError('expected predicate or class name')
+
+    @classmethod
     def validate_valasp(cls, content):
-        keywords = {'python', 'asp'}
+        keywords = {'python', 'asp', 'wrap', 'max_arity'}
         cls.__validate_keywords(keywords, content, 'valasp')
         for c in content:
             try:
                 if c == 'python':
                     cls.validate_python(content[c])
-                if c == 'asp':
+                elif c == 'asp':
                     cls.validate_asp(content[c])
+                elif c == 'wrap':
+                    cls.validate_wrap(content[c])
+                else:
+                    assert c == 'max_arity'
+                    print(content[c])
+                    cls.__validate_positive_int(content[c])
+                    if int(content[c]) > 99:
+                        raise ValueError('expected positive int less than 99')
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
 
     @classmethod
     def validate(cls, content):
         if not isinstance(content, dict):
-            raise ValueError('Expected structure')
+            raise ValueError('expected structure')
         for c in content:
             try:
                 if c == 'valasp':
