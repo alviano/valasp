@@ -262,8 +262,43 @@ def test_yaml_valasp():
             print(i)
     asp: |+
         code
+    
+    wrap:
+        - a
+        - B
+        - lower
+        - Upper
+        
+    max_arity: 10
     """
     YamlValidation.validate_valasp(yaml.safe_load(yaml_input))
+
+
+def test_yaml_valasp_max_arity_wrong_types():
+    for i in ['a', -1, 100, {'a': 1}, [1]]:
+        yaml_input = """
+        max_arity: %s
+        """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp(yaml.safe_load(yaml_input))
+
+
+def test_yaml_valasp_wrap_not_list():
+    for i in ['a', 1, {'a': 1}]:
+        yaml_input = """    
+        wrap: %s            
+        """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp(yaml.safe_load(yaml_input))
+
+
+def test_yaml_valasp_not_predicate():
+    yaml_input = """    
+    wrap:
+        - a a        
+    """
+    with pytest.raises(ValueError):
+        YamlValidation.validate_valasp(yaml.safe_load(yaml_input))
 
 
 def test_yaml_valasp_root():

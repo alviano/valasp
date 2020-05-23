@@ -1,8 +1,13 @@
-user:
-    userid: Integer
-    videotype:
+video_type:
+    value:    
         type: String
         enum: ["Documentary", "Video", "Cartoon", "Sport"]
+    valasp:
+        is_predicate: False
+
+user:
+    userid: Integer
+    videotype: video_type        
     resolution: Integer
     bandwidth: Integer
     maxsat: Integer
@@ -10,9 +15,7 @@ user:
         
 assign:
     userid: Integer
-    videotype:
-        type: String
-        enum: ["Documentary", "Video", "Cartoon", "Sport"]
+    videotype: video_type
     resolution: Integer
     bitrate: Integer
     sat: Integer
