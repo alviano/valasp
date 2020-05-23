@@ -364,7 +364,7 @@ class Yaml2Python:
                 self.__valasp_max_arity = self.__content['valasp']['max_arity']
 
     def __read_symbols(self):
-        reserved_keywords = {'valasp, wrap, max_arity'}
+        reserved_keywords = {'valasp'}
         for symbol_name in self.__content:
             if symbol_name not in reserved_keywords:
                 all_symbols.add(symbol_name)
