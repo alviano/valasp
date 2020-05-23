@@ -384,6 +384,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__content</span> <span class="o">=</span> <span class="n">content</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_wrap</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span> <span class="o">=</span> <span class="mi">16</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__output</span> <span class="o">=</span> <span class="p">[]</span>
 
@@ -393,13 +395,18 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;python&#39;</span><span class="p">]</span>
             <span class="k">if</span> <span class="s1">&#39;asp&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">]:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span> <span class="o">=</span> <span class="n">base64</span><span class="o">.</span><span class="n">b64encode</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;asp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
+            <span class="k">if</span> <span class="s1">&#39;wrap&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_wrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;wrap&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;max_arity&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">]:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;max_arity&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__read_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">reserved_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valasp, wrap, max_arity&#39;</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">symbol_name</span> <span class="o">!=</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reserved_keywords</span><span class="p">:</span>
                 <span class="n">all_symbols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
-            <span class="k">if</span> <span class="n">symbol_name</span> <span class="o">!=</span> <span class="s1">&#39;valasp&#39;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">symbol_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reserved_keywords</span><span class="p">:</span>
                 <span class="n">symbol</span> <span class="o">=</span> <span class="n">Symbol</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="n">symbol_name</span><span class="p">],</span> <span class="n">symbol_name</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__symbols</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">symbol</span><span class="p">)</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">convert2python</span><span class="p">())</span>
@@ -426,7 +433,7 @@
         <span class="n">template</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">def main(files, stdout=sys.stdout, stderr=sys.stderr):</span>
 <span class="s2">    try:</span>
-<span class="s2">        context = valasp.core.Context()</span>
+<span class="s2">        context = valasp.core.Context(wrap=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_wrap</span><span class="si">}</span><span class="s2">, max_arity=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span><span class="si">}</span><span class="s2">)</span>
 
 <span class="s2">        </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2"></span>
 
