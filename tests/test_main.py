@@ -140,8 +140,6 @@ valasp:
         a(@succ(0)).
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
-    print(out)
-    print(err)
     assert 'Answer: a(1)' in out
     assert not err
 
@@ -158,7 +156,5 @@ valasp:
         a(@succ(0)).
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
-    print(out)
-    print(err)
     assert 'Answer: a(1)' in out
     assert not err
