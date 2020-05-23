@@ -450,7 +450,7 @@
 <span class="s2">                aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)]</span>
 <span class="s2">            )</span>
 <span class="s2">        except RuntimeError as e:</span>
-<span class="s2">            raise ValueError(context.valasp_extract_error_message(e))</span>
+<span class="s2">            raise ValueError(context.valasp_extract_error_message(e)) from None</span>
 <span class="s2">    except Exception as e:</span>
 <span class="s2">        print(&#39;VALIDATION FAILED&#39;, file=stderr)</span>
 <span class="s2">        print(&#39;=================&#39;, file=stderr)</span>
