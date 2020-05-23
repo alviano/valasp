@@ -1,6 +1,6 @@
 ValAsp is validation framework for Answer Set Programming developed by Mario Alviano and Carmine Dodaro.
 
-The idea of ValAsp is to inject validation without cluttering the ASP encoding.
+The idea of ``valasp`` is to inject validation without cluttering the ASP encoding.
 It can be done by decorating Python classes, or by processing a YAML file.
 Below is an example usage of the Python layer.
 

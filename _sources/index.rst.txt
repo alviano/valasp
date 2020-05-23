@@ -1,4 +1,4 @@
-Welcome to ValAsp's documentation!
+Welcome to valasp's documentation!
 ==================================
 
 .. include:: index_content.rst
