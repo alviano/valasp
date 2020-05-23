@@ -368,13 +368,13 @@ class Yaml2Python:
                 self.__output.extend(symbol.convert2python())
                 self.__output.append('')
 
-    def convert2python(self) -> List[str]:
-        try:
-            YamlValidation.validate(self.__content)
-            self.__read_valasp()
-            self.__read_symbols()
-            output = (''.join('\t{}\n'.format(e) for e in self.__output))
-            all_import = """
+    def convert2python(self, with_main: bool = False) -> List[str]:
+        YamlValidation.validate(self.__content)
+        self.__read_valasp()
+        self.__read_symbols()
+        output = '\n        '.join(self.__output)
+
+        all_import = """
 import clingo
 import valasp
 import valasp.core
@@ -384,30 +384,40 @@ import sys
 from valasp.domain.primitive_types import Alpha, Any, Integer, String
 
 def _(x):
-\treturn base64.b64decode(x).decode()
+    return base64.b64decode(x).decode()
 """
-            template = f"""
-def main(files, output=print):
-\tcontext = valasp.core.Context()
+        template = f"""
+def main(files, stdout=sys.stdout, stderr=sys.stderr):
+    try:
+        context = valasp.core.Context()
 
-{output}
+        {output}
 
-\tcontrol = clingo.Control()
-\tfor file_ in files:
-\t\tcontrol.load(file_)
-\tcontext.valasp_run(control, on_validation_done=lambda: output("All valid!"), on_model=lambda m: output(f"Answer: {{m}}"), aux_program=[_({self.__valasp_asp})])                        
+        control = clingo.Control()
+        for file_ in files:
+            control.load(file_)
+        context.valasp_run(
+            control, 
+            on_validation_done=lambda: print("All valid!", file=stdout), 
+            on_model=lambda m: print(f"Answer: {{m}}", file=stdout), 
+            aux_program=[_({self.__valasp_asp})]
+        )
+    except Exception as e:
+        print(e, file=stderr)
+"""
 
+        __main__ = """
 if __name__ == '__main__':
-\ttry:
-\t\tmain(sys.argv[1:])
-\texcept Exception as e:
-\t\tprint(e, file=sys.stderr)
+    try:
+        main(sys.argv[1:])
+    except Exception as e:
+        print(e, file=sys.stderr)
 """
 
-            return [all_import, self.__valasp_python, template]
-
-        except ValueError as e:
-            print(e, file=sys.stderr)
+        res = [all_import, self.__valasp_python, template]
+        if with_main:
+            res.append(__main__)
+        return res
 
 
 if __name__ == '__main__':
@@ -419,7 +429,7 @@ if __name__ == '__main__':
         with open(element) as f:
             yaml_input = yaml.safe_load(f)
             yaml2python = Yaml2Python(yaml_input)
-            lines = yaml2python.convert2python()
+            lines = yaml2python.convert2python(with_main=True)
             print('\n'.join(lines))
     except Exception as v:
         print(v, file=sys.stderr)

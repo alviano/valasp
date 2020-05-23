@@ -69,25 +69,22 @@ import yaml
 from valasp.translators.yaml2python import Yaml2Python
 
 
-def output(text: str, sep=' ', end='\n', file=None):
-    if output.list is not None:
-        output.list.append(text)
-    else:
-        print(text, sep, end, file)
-output.list = None
+def parse_args(args, stdout, stderr) -> Callable:
+    print_only = False
+    for arg in args:
+        if arg == '--print':
+            print_only = True
+            break
+    args[:] = filter(lambda arg: arg != '--print', args)
 
-
-def parse_args() -> Callable:
-    if len(sys.argv) < 2:
-        output('To validate a YAML file against one or more ASP files, also running clingo:\n'
+    if len(args) < 1:
+        print('To validate a YAML file against one or more ASP files, also running clingo:\n'
               '\tpython -m valasp <YAML file> [ASP files]\n'
               'To produce Python code to ease validation in couple with clingo:\n'
-              '\tpython -m valasp --print <YAML file>', file=sys.stderr)
+              '\tpython -m valasp --print <YAML file>', file=stderr)
         exit(1)
 
-    print_only = (sys.argv[1] == '--print')
     if print_only:
-        sys.argv = sys.argv[:1] + sys.argv[2:]
         return print_python_code
     return run_clingo
 
@@ -99,31 +96,30 @@ def process_yaml(yaml_file: str) -> List[str]:
         return yaml2python.convert2python()
 
 
-def print_python_code(asp_files, validation_code):
+def print_python_code(asp_files, validation_code, stdout, stderr):
     if asp_files:
-        output(f'# files {asp_files} have been ignored')
-    output('\n'.join(validation_code))
+        print(f'# files {asp_files} have been ignored', file=stdout)
+    print('\n'.join(validation_code), file=stdout)
 
 
-def run_clingo(asp_files, validation_code):
+def run_clingo(asp_files, validation_code, stdout, stderr):
     with tempfile.NamedTemporaryFile() as validation_file:
         for line in validation_code:
             validation_file.write(line.encode())
         validation_file.seek(0)
         mod = runpy.run_path(path_name=validation_file.name)
-        mod['main'](asp_files, output)
+        mod['main'](asp_files, stdout, stderr)
 
 
-def main(output_list: List[str] = None):
-    callback = parse_args()
-    output.list = output_list
+def main(args: List[str], stdout=sys.stdout, stderr=sys.stderr):
+    callback = parse_args(args, stdout, stderr)
 
-    yaml_file = sys.argv[1]
-    asp_files = sys.argv[2:]
+    yaml_file = args[0]
+    asp_files = args[1:]
 
     try:
         validation_code = process_yaml(yaml_file)
-        callback(asp_files, validation_code)
+        callback(asp_files, validation_code, stdout, stderr)
     except Exception as e:
-        output(str(e), file=sys.stderr)
+        print(e, file=stderr)
 
