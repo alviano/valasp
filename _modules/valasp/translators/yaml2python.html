@@ -412,11 +412,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">symbol</span><span class="o">.</span><span class="n">convert2python</span><span class="p">())</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
 
-<div class="viewcode-block" id="Yaml2Python.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">with_main</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<div class="viewcode-block" id="Yaml2Python.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
         <span class="n">YamlValidation</span><span class="o">.</span><span class="n">validate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read_valasp</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__read_symbols</span><span class="p">()</span>
-        <span class="n">output</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">        &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="p">)</span>
+
+        <span class="n">newline</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="n">slash_slash</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span>
 
         <span class="n">all_import</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">import clingo</span>
@@ -435,48 +437,29 @@
 <span class="s2">    try:</span>
 <span class="s2">        context = valasp.core.Context(wrap=[</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_wrap</span><span class="p">)</span><span class="si">}</span><span class="s2">], max_arity=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span><span class="si">}</span><span class="s2">)</span>
 
-<span class="s2">        </span><span class="si">{</span><span class="n">output</span><span class="si">}</span><span class="s2"></span>
+<span class="s2">        </span><span class="si">{</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">newline</span><span class="si">}</span><span class="s1">        &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__output</span><span class="p">)</span><span class="si">}</span><span class="s2"></span>
 
 <span class="s2">        control = clingo.Control()</span>
 <span class="s2">        for file_ in files:</span>
 <span class="s2">            control.load(file_)</span>
-<span class="s2">        context.valasp_run(</span>
-<span class="s2">            control, </span>
-<span class="s2">            on_validation_done=lambda: print(&quot;All valid!&quot;, file=stdout), </span>
-<span class="s2">            on_model=lambda m: print(f&quot;Answer: </span><span class="se">{{</span><span class="s2">m</span><span class="se">}}</span><span class="s2">&quot;, file=stdout), </span>
-<span class="s2">            aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)]</span>
-<span class="s2">        )</span>
+<span class="s2">        try:</span>
+<span class="s2">            context.valasp_run(</span>
+<span class="s2">                control, </span>
+<span class="s2">                on_validation_done=lambda: print(&quot;ALL VALID!</span><span class="si">{</span><span class="n">slash_slash</span><span class="si">}</span><span class="s2">n==========&quot;, file=stdout), </span>
+<span class="s2">                on_model=lambda m: print(f&quot;Answer: </span><span class="se">{{</span><span class="s2">m</span><span class="se">}}</span><span class="si">{</span><span class="n">slash_slash</span><span class="si">}</span><span class="s2">n==========&quot;, file=stdout), </span>
+<span class="s2">                aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)]</span>
+<span class="s2">            )</span>
+<span class="s2">        except RuntimeError as e:</span>
+<span class="s2">            raise ValueError(context.valasp_extract_error_message(e))</span>
 <span class="s2">    except Exception as e:</span>
+<span class="s2">        print(&#39;VALIDATION FAILED&#39;, file=stderr)</span>
+<span class="s2">        print(&#39;=================&#39;, file=stderr)</span>
 <span class="s2">        print(e, file=stderr)</span>
+<span class="s2">        print(&#39;=================&#39;, file=stderr)</span>
+<span class="s2">        exit(-2)</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
-        <span class="n">__main__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">if __name__ == &#39;__main__&#39;:</span>
-<span class="s2">    try:</span>
-<span class="s2">        main(sys.argv[1:])</span>
-<span class="s2">    except Exception as e:</span>
-<span class="s2">        print(e, file=sys.stderr)</span>
-<span class="s2">&quot;&quot;&quot;</span>
-
-        <span class="n">res</span> <span class="o">=</span> <span class="p">[</span><span class="n">all_import</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">,</span> <span class="n">template</span><span class="p">]</span>
-        <span class="k">if</span> <span class="n">with_main</span><span class="p">:</span>
-            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">__main__</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">res</span></div></div>
-
-
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Usage: python3 </span><span class="si">%s</span><span class="s1"> yaml_file&#39;</span> <span class="o">%</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
-        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="k">try</span><span class="p">:</span>
-        <span class="n">element</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">element</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
-            <span class="n">yaml_input</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-            <span class="n">yaml2python</span> <span class="o">=</span> <span class="n">Yaml2Python</span><span class="p">(</span><span class="n">yaml_input</span><span class="p">)</span>
-            <span class="n">lines</span> <span class="o">=</span> <span class="n">yaml2python</span><span class="o">.</span><span class="n">convert2python</span><span class="p">(</span><span class="n">with_main</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span>
-    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">v</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">all_import</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">,</span> <span class="n">template</span><span class="p">]</span></div></div>
 </pre></div>
 
           </div>
