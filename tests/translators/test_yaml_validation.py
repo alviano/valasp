@@ -63,30 +63,29 @@ def test_yaml_valasp_in_user_defined_module():
     yaml_input = """
     valasp:
         having:
-            equals:
-                - [first, second]
-                - [first2, second]            
+            - first == second
+            - first2 != second
+            - first3 < second
+            - first3 <= second
+            - first3 > second
+            - first3 >= second            
         is_predicate: True        
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
-    yaml_input = """
-        having:
-            equal:
-                - [first, second]
-                - [first2, second]
-            different:
-                - [first, second]
-                - [first2, second]
-        """
-    with pytest.raises(ValueError):
-        YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
+    for i in {'different', '<>', '=', '>>'}:
+        yaml_input = """
+            having:
+                first %s second            
+            """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_having_valasp_not_a_dictionary():
-    for i in [10, '1', ['first', 'second']]:
+def test_yaml_having_valasp_not_a_list():
+    for i in [10, '1', {'first': 0}]:
         yaml_input = """
             having: %s              
             """ % i
@@ -103,21 +102,17 @@ def test_yaml_having_valasp_in_user_defined_module_not_a_list():
         YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_having_valasp_in_user_defined_module_not_a_list_internal():
-    yaml_input = """
-        having:
-            equals:
-                - a
-                - [first2, second]
-            different:
-                - [first, second]
-                - [first2, second]
-        """
-    with pytest.raises(ValueError):
-        YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
+def test_yaml_having_valasp_in_user_defined_module_not_valid_split():
+    for i in ['first == second == third', ['a', 'b'], 'first of == second']:
+        yaml_input = """
+            having:
+                - %s
+            """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_having_valasp_in_user_defined_module_not_a_list_of_two():
+def test_yaml_having_valasp_in_user_defined_module_complex_usage():
     yaml_input = """
         having:
             equals:

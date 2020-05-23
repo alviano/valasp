@@ -36,7 +36,7 @@ class Symbol:
         self.__name = PredicateName(name)
         self.__terms = []
         self.__valasp = None
-        self.__having = {}
+        self.__having = []
         self.__is_predicate = True
         self.__with_fun = 'FORWARD_IMPLICIT'
         self.__auto_blacklist = True
@@ -102,21 +102,12 @@ class Symbol:
 
     def __parse_having(self):
         for i in self.__having:
-            for j in {'equals', 'different', 'gt', 'ge', 'lt', 'le'}:
-                if i == j:
-                    list_of_comparisons = self.__having[i]
-                    for comp in list_of_comparisons:
-                        if len(comp) != 2:
-                            assert False
-                        if not self.__exists_term(comp[0]):
-                            raise ValueError(f'{self.__name}: having: {i}: {comp[0]} is not a term name')
-                        if not self.__exists_term(comp[1]):
-                            raise ValueError(f'{self.__name}: having: {i}: {comp[1]} is not a term name')
-
-    def __handle_comparison__(self, elements_, comparison):
-        self.__post_init_content.append(
-            '\t\tif self.%s %s self.%s: raise ValueError("%s")' % (
-                elements_[0], comparison, elements_[1], f'Expected {elements_[0]} %s {elements_[1]}' % comparison))
+            list_of_comparisons = i.split()
+            assert len(list_of_comparisons) == 3
+            if not self.__exists_term(list_of_comparisons[0]):
+                raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[0]} is not a term name')
+            if not self.__exists_term(list_of_comparisons[1]):
+                raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[1]} is not a term name')
 
     def convert2python(self):
         self.__declaration_content.append(f"@context.valasp(is_predicate={self.__is_predicate}, with_fun=valasp.domain.primitive_types.Fun.{self.__with_fun}, auto_blacklist={self.__auto_blacklist})")
@@ -131,24 +122,11 @@ class Symbol:
                 self.__post_init_content.append(f"\t\t{i}")
 
         for having in self.__having:
-            if 'equals' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '!=')
-            elif 'different' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '==')
-            elif 'gt' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '<=')
-            elif 'lt' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '>=')
-            elif 'ge' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '<')
-            elif 'le' == having:
-                for comp in self.__having[having]:
-                    self.__handle_comparison__(comp, '>')
+            comp = having.split()
+            assert len(comp) == 3
+            self.__post_init_content.append(
+                '\t\tif self.%s %s self.%s: raise ValueError("%s")' % (
+                    comp[0], comp[1], comp[2], f'Expected {comp[0]} {comp[1]} {comp[2]}'))
 
         if self.__after_init is not None:
             self.__post_init_content.append(f"\t\t{self.__after_init}")

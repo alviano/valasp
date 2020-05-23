@@ -261,19 +261,17 @@ class YamlValidation:
 
     @classmethod
     def validate_having(cls, content):
-        if not isinstance(content, dict):
-            raise ValueError('expected structure')
-        keywords = {'equals', 'different', 'gt', 'ge', 'lt', 'le'}
-        cls.__validate_keywords(keywords, content, 'having')
+        if not isinstance(content, list):
+            raise ValueError('expected list of strings')
         for c in content:
-            element = content[c]
-            if not isinstance(element, list):
-                raise ValueError('expected list. Obtained %s' % element)
-            for elem in element:
-                if not isinstance(elem, list):
-                    raise ValueError('%s: expected list. Obtained %s' % (c, elem))
-                if len(elem) != 2:
-                    raise ValueError('%s: expected exactly two arguments of the list. Obtained %s' % (c, len(elem)))
+            if not isinstance(c, str):
+                raise ValueError('expected string')
+            elements = c.split()
+            if len(elements) != 3:
+                raise ValueError('having: expected field comparator field')
+            keywords = {'==', '!=', '<', '<=', '>', '>='}
+            if elements[1] not in keywords:
+                raise ValueError(f'having: expected one of {keywords} as comparator')
 
     @classmethod
     def validate_valasp_in_symbol(cls, content):
