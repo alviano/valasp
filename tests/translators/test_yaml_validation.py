@@ -78,7 +78,7 @@ def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
     for i in {'different', '<>', '=', '>>'}:
         yaml_input = """
             having:
-                first %s second            
+                - first %s second            
             """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
