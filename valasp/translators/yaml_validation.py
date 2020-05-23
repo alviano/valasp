@@ -363,7 +363,6 @@ class YamlValidation:
                     cls.validate_wrap(content[c])
                 else:
                     assert c == 'max_arity'
-                    print(content[c])
                     cls.__validate_positive_int(content[c])
                     if int(content[c]) > 99:
                         raise ValueError('expected positive int less than 99')
