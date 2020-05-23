@@ -93,7 +93,7 @@ valasp:
     max_arity: 10
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
-    assert 'context = valasp.core.Context(max_arity=10)' in out
+    assert 'context = valasp.core.Context(wrap=[], max_arity=10)' in out
     assert not err
 
 
@@ -106,7 +106,7 @@ valasp:
         - C
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
-    assert 'context = valasp.core.Context(wrap=[a, b, C])' in out
+    assert 'context = valasp.core.Context(wrap=[a, b, C], max_arity=16)' in out
     assert not err
 
 
@@ -131,11 +131,8 @@ def test_wrap_at_terms_from_external_file(tmp_path):
     yaml = f"""
 valasp:
     python: |+
-        import importlib.util
-        spec = importlib.util.spec_from_file_location("at_terms", "{at_terms.as_posix()}")
-        foo = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(foo)
-
+        import sys
+        sys.path.append('{tmp_path.as_posix()}')
         from at_terms import *    
     wrap:
         - succ
@@ -143,5 +140,25 @@ valasp:
         a(@succ(0)).
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    print(out)
+    print(err)
+    assert 'Answer: a(1)' in out
+    assert not err
+
+
+def test_wrap_at_terms_from_class(tmp_path):
+    yaml = f"""
+valasp:
+    python: |+
+        class AtTerms:
+            def succ(x): return x.number + 1
+    wrap:
+        - AtTerms
+    asp:
+        a(@succ(0)).
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    print(out)
+    print(err)
     assert 'Answer: a(1)' in out
     assert not err

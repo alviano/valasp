@@ -396,7 +396,7 @@ def _(x):
         template = f"""
 def main(files, stdout=sys.stdout, stderr=sys.stderr):
     try:
-        context = valasp.core.Context(wrap={self.__valasp_wrap}, max_arity={self.__valasp_max_arity})
+        context = valasp.core.Context(wrap=[{', '.join(self.__valasp_wrap)}], max_arity={self.__valasp_max_arity})
 
         {output}
 
