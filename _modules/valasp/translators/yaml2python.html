@@ -401,7 +401,7 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">[</span><span class="s1">&#39;valasp&#39;</span><span class="p">][</span><span class="s1">&#39;max_arity&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__read_symbols</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="n">reserved_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valasp, wrap, max_arity&#39;</span><span class="p">}</span>
+        <span class="n">reserved_keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;valasp&#39;</span><span class="p">}</span>
         <span class="k">for</span> <span class="n">symbol_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__content</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">symbol_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">reserved_keywords</span><span class="p">:</span>
                 <span class="n">all_symbols</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">)</span>
