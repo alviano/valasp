@@ -85,3 +85,63 @@ valasp:
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
     assert 'Unexpected unknown_key in valasp' in err
+
+
+def test_max_arity(tmp_path):
+    yaml = """
+valasp:
+    max_arity: 10
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
+    assert 'context = valasp.core.Context(max_arity=10)' in out
+    assert not err
+
+
+def test_wrap(tmp_path):
+    yaml = """
+valasp:
+    wrap:
+        - a
+        - b
+        - C
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
+    assert 'context = valasp.core.Context(wrap=[a, b, C])' in out
+    assert not err
+
+
+def test_wrap_at_terms(tmp_path):
+    yaml = """
+valasp:
+    python: |+
+        def succ(x): return x.number + 1
+    wrap:
+        - succ
+    asp:
+        a(@succ(0)).
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    assert 'Answer: a(1)' in out
+    assert not err
+
+
+def test_wrap_at_terms_from_external_file(tmp_path):
+    at_terms = tmp_path / 'at_terms.py'
+    at_terms.write_text('def succ(x): return x.number + 1')
+    yaml = f"""
+valasp:
+    python: |+
+        import importlib.util
+        spec = importlib.util.spec_from_file_location("at_terms", "{at_terms.as_posix()}")
+        foo = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(foo)
+
+        from at_terms import *    
+    wrap:
+        - succ
+    asp:
+        a(@succ(0)).
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    assert 'Answer: a(1)' in out
+    assert not err

@@ -15,8 +15,6 @@ date:
             datetime.datetime(self.year, self.month, self.day)
 
 bday:
-    name:
-        type: Alpha
-        min: 3
+    name: Alpha
     date: date
     

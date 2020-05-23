@@ -38,7 +38,7 @@ class Context:
         if not (1 <= max_arity <= 99):
             raise ValueError("max_arity must be in 1..99, but received {max_arity}")
 
-        self.__wrap = wrap if wrap else []
+        self.__wrap = list(wrap) if wrap else []
 
         self.__globals = {k: v for k, v in globals().items() if k[0:2] == '__' or k[0].islower()}
         self.__reserved = set(self.__globals.keys())
