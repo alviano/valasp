@@ -182,7 +182,8 @@ class Context:
     def valasp_error(self, msg, args):
         raise TypeError(f"{{msg}}" + f"; args={{args}}")
 
-    def valasp_extract_error_message(self, error: Exception) -> str:
+    @staticmethod
+    def valasp_extract_error_message(error: Exception) -> str:
         res = []
         lines = error.args[0].split('\n')
         for line in lines:
@@ -190,7 +191,7 @@ class Context:
             if line.startswith('File "<valasp|'):
                 line = line.split('|')[1]
                 if not res:
-                    res.append(line + ':')
+                    res.append(line)
                 else:
                     res.append(f'    because of {line.strip()}')
             elif 'Error:' in line:
