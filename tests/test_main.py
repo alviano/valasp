@@ -65,11 +65,12 @@ bday:
     """
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)).")
-    assert 'All valid!' in out
+    assert 'ALL VALID!' in out
     assert not err
 
-    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
-    assert 'ValueError: expecting arity 3 for TUPLE' in err
+    with pytest.raises(SystemExit):
+        out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
+        assert 'ValueError: expecting arity 3 for TUPLE' in err
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
     assert 'if len(self.name) < 3: raise ValueError(f"Len should be >= 3. Received: {self.name}")' in out

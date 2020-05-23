@@ -17,7 +17,7 @@ def test_max_arity_must_be_positive():
 def test_clingo_is_reserved():
     assert Context().valasp_is_reserved('clingo')
     with pytest.raises(KeyError):
-        Context().valasp_register_term(PredicateName('clingo'), [], [])
+        Context().valasp_register_term('filename', PredicateName('clingo'), [], [])
     with pytest.raises(TypeError) as error:
         Context().clingo()
         assert "'module' object is not callable" in error
@@ -31,14 +31,14 @@ def test_missing_at_term():
 
 def test_make_fun_successor():
     context = Context()
-    successor = context.valasp_make_fun('successor', ['x'], ['return x + 1'])
+    successor = context.valasp_make_fun('filename', 'successor', ['x'], ['return x + 1'])
     assert successor(0) == 1
     assert successor(99) == 100
 
 
 def test_make_fun_can_access_symbol_type():
     context = Context()
-    is_number = context.valasp_make_fun('is_number', ['x'], ['return x.type == clingo.SymbolType.Number'])
+    is_number = context.valasp_make_fun('filename', 'is_number', ['x'], ['return x.type == clingo.SymbolType.Number'])
     assert is_number(Number(1))
 
 
@@ -52,7 +52,7 @@ def test_register_class():
 
     context = Context()
     context.valasp_register_class(Sum)
-    sum_first = context.valasp_make_fun('sum_first', ['n'], [
+    sum_first = context.valasp_make_fun('filename', 'sum_first', ['n'], [
         'res = Sum()',
         'for i in range(n):',
         '    res.add(i)',
@@ -84,7 +84,7 @@ def test_run_solver():
 
 def test_register_term():
     context = Context()
-    context.valasp_register_term(PredicateName('successor'), ['x'], ['return x.number + 1'])
+    context.valasp_register_term('filename', PredicateName('successor'), ['x'], ['return x.number + 1'])
     model = context.valasp_run_solver(["one(@successor(0))."])
     assert str(model) == '[one(1)]'
 

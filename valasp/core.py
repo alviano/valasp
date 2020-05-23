@@ -103,7 +103,11 @@ class Context:
                 return getattr(cls, method, None) != getattr(object, method, None)
 
             def set_method(method: str, arg_names: List[str], body_lines: List[str]) -> None:
-                fun = self.valasp_make_fun(f'{class_name}.{method}', arg_names, body_lines, with_self=True)
+                if method == '__init__':
+                    filename = f'constructor of {class_name.to_predicate()}'
+                else:
+                    filename = f'method {method} of {class_name.to_predicate()}'
+                fun = self.valasp_make_fun(filename, f'{class_name}.{method}', arg_names, body_lines, with_self=True)
                 setattr(cls, method, fun)
 
             def add_init() -> None:
@@ -178,11 +182,29 @@ class Context:
     def valasp_error(self, msg, args):
         raise TypeError(f"{{msg}}" + f"; args={{args}}")
 
-    def valasp_make_fun(self, name: str, args: List[str], body_lines: List[str], with_self: bool = False) -> Callable:
+    def valasp_extract_error_message(self, error: Exception) -> str:
+        res = []
+        lines = error.args[0].split('\n')
+        for line in lines:
+            line = line.strip()
+            if line.startswith('File "<valasp|'):
+                line = line.split('|')[1]
+                if not res:
+                    res.append(line + ':')
+                else:
+                    res.append(f'    because of {line.strip()}')
+            elif 'Error:' in line:
+                line = line.split(':')[1]
+                res.append(f'  with error: {line.strip()}')
+
+        return '\n'.join(res)
+
+    def valasp_make_fun(self, filename: str, name: str, args: List[str], body_lines: List[str], with_self: bool = False) -> Callable:
         """Return a function obtained by compiling the given code.
 
         The provided code can refer classes and @-terms registered in the context.
 
+        :param filename: the name of the file associated with the given code (for reference in errors)
         :param name: the name of the function to create (for reference in errors)
         :param args: the argument names of the function
         :param body_lines: the actual code
@@ -192,7 +214,7 @@ class Context:
         args = ('self, ' if with_self else '') + ','.join(args)
         sig = f"def {name.replace('.', '__')}({args}):"
         body = '\n    '.join(body_lines)
-        code = compile(f"{sig}\n    {body}", f"<def {name}({args})>", "exec")
+        code = compile(f"{sig}\n    {body}", f"<valasp|{filename}|>", "exec")
         return FunctionType(code.co_consts[0], self.__globals)
 
     def valasp_register_class(self, other: ClassVar) -> None:
@@ -208,9 +230,10 @@ class Context:
         self.__reserved.add(key)
         self.__classes.append(other)
 
-    def valasp_register_term(self, name: PredicateName, args: List[str], body_lines: List[str], auth: Any = None) -> None:
+    def valasp_register_term(self, filename: str, name: PredicateName, args: List[str], body_lines: List[str], auth: Any = None) -> None:
         """Add the given @-term to the context.
 
+        :param filename: the name of the file associated with the given code (for reference in errors)
         :param name: the name of the @-term
         :param args: the argument names
         :param auth: if it is the internal secret, the ``valasp`` prefix is authorized
@@ -218,7 +241,7 @@ class Context:
         """
         if self.valasp_is_reserved(name.value, auth):
             raise KeyError(f'{name.value} is reserved')
-        setattr(self, name.value, self.valasp_make_fun(str(name), args, body_lines))
+        setattr(self, name.value, self.valasp_make_fun(filename, str(name), args, body_lines))
 
     def valasp_is_reserved(self, key: str, auth: Any = None) -> bool:
         """Return True if the given key is reserved.
@@ -248,7 +271,7 @@ class Context:
         else:
             constraint += f'@{at_term}({fun}({args_as_vars})) != 1.'
         self.__validators.append(constraint)
-        self.valasp_register_term(PredicateName(at_term), ['value'], [
+        self.valasp_register_term(f'Invalid instance of {predicate}:', PredicateName(at_term), ['value'], [
             f'{predicate.to_class()}(value)',
             f'return 1'
         ], auth=self.__secret)
