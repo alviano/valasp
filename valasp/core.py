@@ -119,12 +119,11 @@ class Context:
                         return [f'{args[0]} = value']
                     return [
                         f'if value.type != clingo.SymbolType.Function:',
-                        f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{value.type}}")',
+                        f'    raise TypeError(f"expecting clingo.SymbolType.Function, but received {{value.type}}; invalid term {{value}}")',
                         f'if value.name != "{fun_name}":',
-                        f'    raise ValueError(f"expecting function \\"{fun_name}\\", but found \\"{{value.name}}\\"")',
+                        f'    raise ValueError(f"expecting function \\"{fun_name}\\", but found \\"{{value.name}}\\"; invalid term {{value}}")',
                         f'if len(value.arguments) != {len(args)}:',
-                        f'    raise ValueError(f"expecting arity {len(args)} for {fun_name if fun_name else "TUPLE"}, '
-                        + f'but found {{len(value.arguments)}}")',
+                        f'    raise ValueError(f"expecting arity {len(args)} for {fun_name if fun_name else "TUPLE"}, but found {{len(value.arguments)}}; invalid term {{value}}")',
                         f'{", ".join(args)}, = value.arguments',
                     ]
 
@@ -185,7 +184,7 @@ class Context:
     @staticmethod
     def valasp_extract_error_message(error: Exception) -> str:
         res = []
-        lines = error.args[0].split('\n')
+        lines = str(error).split('\n')
         for line in lines:
             line = line.strip()
             if line.startswith('File "<valasp|'):
@@ -193,7 +192,7 @@ class Context:
                 if not res:
                     res.append(line)
                 else:
-                    res.append(f'    because of {line.strip()}')
+                    res.append(f'    in {line.strip()}')
             elif 'Error:' in line:
                 line = line.split(':')[1]
                 res.append(f'  with error: {line.strip()}')
@@ -273,7 +272,10 @@ class Context:
             constraint += f'@{at_term}({fun}({args_as_vars})) != 1.'
         self.__validators.append(constraint)
         self.valasp_register_term(f'Invalid instance of {predicate}:', PredicateName(at_term), ['value'], [
-            f'{predicate.to_class()}(value)',
+            f'try:'
+            f'    {predicate.to_class()}(value)',
+            f'except Exception as e:',
+            f'    raise ValueError(f"{{e}} in atom {{value}}").with_traceback(e.__traceback__.tb_next) from None',
             f'return 1'
         ], auth=self.__secret)
 

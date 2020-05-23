@@ -413,7 +413,7 @@ def main(files, stdout=sys.stdout, stderr=sys.stderr):
                 aux_program=[_({self.__valasp_asp})]
             )
         except RuntimeError as e:
-            raise ValueError(context.valasp_extract_error_message(e))
+            raise ValueError(context.valasp_extract_error_message(e)) from None
     except Exception as e:
         print('VALIDATION FAILED', file=stderr)
         print('=================', file=stderr)
