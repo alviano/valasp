@@ -127,10 +127,9 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__before_grounding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
-            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_grounding&#39;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">assert</span> <span class="kc">False</span>
+                <span class="k">assert</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;after_grounding&#39;</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__after_grounding</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__parse_having</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__having</span><span class="p">:</span>
@@ -371,9 +370,8 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">content</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
-            <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">content</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="n">GenericTerm</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="n">term_name</span><span class="p">,</span> <span class="n">PredicateName</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Yaml2Python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python">[docs]</a><span class="k">class</span> <span class="nc">Yaml2Python</span><span class="p">:</span>
@@ -452,10 +450,10 @@
 <span class="s2">        except RuntimeError as e:</span>
 <span class="s2">            raise ValueError(context.valasp_extract_error_message(e)) from None</span>
 <span class="s2">    except Exception as e:</span>
-<span class="s2">        print(&#39;VALIDATION FAILED&#39;, file=stderr)</span>
-<span class="s2">        print(&#39;=================&#39;, file=stderr)</span>
-<span class="s2">        print(e, file=stderr)</span>
-<span class="s2">        print(&#39;=================&#39;, file=stderr)</span>
+<span class="s2">        print(&#39;VALIDATION FAILED&#39;, file=stdout)</span>
+<span class="s2">        print(&#39;=================&#39;, file=stdout)</span>
+<span class="s2">        print(e, file=stdout)</span>
+<span class="s2">        print(&#39;=================&#39;, file=stdout)</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="p">[</span><span class="n">all_import</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">,</span> <span class="n">template</span><span class="p">]</span></div></div>
