@@ -219,7 +219,7 @@ class IntegerTerm(GenericTerm):
             if content['sum-'] != 'Integer':
                 self.__sum_negative = content['sum-']
                 if 'min' not in content['sum-']:
-                    self.__sum_positive['min'] = INT_MIN
+                    self.__sum_negative['min'] = INT_MIN
             else:
                 self.__sum_negative = {'min': INT_MIN}
         if 'enum' in content:

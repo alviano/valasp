@@ -7,7 +7,7 @@ import pytest
 
 from valasp.main import main
 import yaml
-from valasp.translators.yaml2python import Symbol, Yaml2Python, IntegerTerm
+from valasp.translators.yaml2python import Symbol, IntegerTerm
 
 
 def test_symbol_type():
@@ -86,7 +86,6 @@ def test_symbol_min_max_integer():
     result = yaml.safe_load(yaml_input)
     obj = IntegerTerm(result["value"], "value")
     obj.convert2python()
-    print(obj.post_init_content)
     found_element = False
     for i in obj.post_init_content:
         if i.startswith("if self.value < 10: raise ValueError"):
@@ -95,6 +94,22 @@ def test_symbol_min_max_integer():
     found_element = False
     for i in obj.post_init_content:
         if i.startswith("if self.value > 100: raise ValueError"):
+            found_element = True
+    assert found_element
+
+
+def test_symbol_enum_integer():
+    yaml_input = """
+    value:
+        type: Integer
+        enum: [1, 2, 3]
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = IntegerTerm(result["value"], "value")
+    obj.convert2python()
+    found_element = False
+    for i in obj.post_init_content:
+        if i.startswith("if self.value not in {1, 2, 3}: raise ValueError"):
             found_element = True
     assert found_element
 
@@ -189,6 +204,48 @@ def test_symbol_sum_positive():
     assert "\t\tif cls.sum_positive_of_value < 10: raise ValueError('sum of value in predicate predicate cannot reach 10')" in output
 
 
+def test_symbol_sum_positive_default():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum+: Integer                
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value > 0:" in output
+    assert "\t\t\tself.__class__.sum_positive_of_value += self.value" in output
+    assert "\tdef before_grounding_init_positive_sum_value(cls): cls.sum_positive_of_value = 0" in output
+    assert "\tdef after_grounding_check_positive_sum_value(cls):" in output
+    assert "\t\tif cls.sum_positive_of_value > 2147483647: raise ValueError('sum of value in predicate predicate may exceed 2147483647')" in output
+
+
+def test_symbol_sum_positive_missing_max():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum+:
+                min: 10                
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value > 0:" in output
+    assert "\t\t\tself.__class__.sum_positive_of_value += self.value" in output
+    assert "\tdef before_grounding_init_positive_sum_value(cls): cls.sum_positive_of_value = 0" in output
+    assert "\tdef after_grounding_check_positive_sum_value(cls):" in output
+    assert "\t\tif cls.sum_positive_of_value > 2147483647: raise ValueError('sum of value in predicate predicate may exceed 2147483647')" in output
+    assert "\t\tif cls.sum_positive_of_value < 10: raise ValueError('sum of value in predicate predicate cannot reach 10')" in output
+
+
 def test_symbol_sum_negative():
     yaml_input = """
     predicate:
@@ -209,6 +266,48 @@ def test_symbol_sum_negative():
     assert "\tdef before_grounding_init_negative_sum_value(cls): cls.sum_negative_of_value = 0" in output
     assert "\tdef after_grounding_check_negative_sum_value(cls):" in output
     assert "\t\tif cls.sum_negative_of_value < -100: raise ValueError('sum of value in predicate predicate may exceed -100')" in output
+    assert "\t\tif cls.sum_negative_of_value > -10: raise ValueError('sum of value in predicate predicate cannot reach -10')" in output
+
+
+def test_symbol_sum_negative_default():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum-: Integer
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value < 0:" in output
+    assert "\t\t\tself.__class__.sum_negative_of_value += self.value" in output
+    assert "\tdef before_grounding_init_negative_sum_value(cls): cls.sum_negative_of_value = 0" in output
+    assert "\tdef after_grounding_check_negative_sum_value(cls):" in output
+    assert "\t\tif cls.sum_negative_of_value < -2147483648: raise ValueError('sum of value in predicate predicate may exceed -2147483648')" in output
+
+
+def test_symbol_sum_negative_missing_min():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum-:
+                max: -10
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value < 0:" in output
+    assert "\t\t\tself.__class__.sum_negative_of_value += self.value" in output
+    assert "\tdef before_grounding_init_negative_sum_value(cls): cls.sum_negative_of_value = 0" in output
+    assert "\tdef after_grounding_check_negative_sum_value(cls):" in output
+    assert "\t\tif cls.sum_negative_of_value < -2147483648: raise ValueError('sum of value in predicate predicate may exceed -2147483648')" in output
     assert "\t\tif cls.sum_negative_of_value > -10: raise ValueError('sum of value in predicate predicate cannot reach -10')" in output
 
 
@@ -256,3 +355,23 @@ def test_symbol_having():
             oper = oper.lstrip().rstrip()
             assert "\t\tif self.first %s self.second: raise ValueError(\"Expected first %s second\")" % (oper, oper) in output
 
+
+def test_symbol_pattern():
+    for a in {'String', 'Alpha'}:
+        yaml_input = """
+        predicate:
+            value:
+                type: %s
+                pattern: a|b
+        """ % a
+        result = yaml.safe_load(yaml_input)
+        obj = Symbol(result["predicate"], "predicate")
+        output = obj.convert2python()
+        assert "class Predicate:" in output
+        assert "\tvalue: %s" % a in output
+        assert "\tdef __post_init__(self):" in output
+        found_element = False
+        for i in output:
+            if i.startswith("\t\tif not(re.match(_(%s), self.value)):" % base64.b64encode(str("a|b").encode())):
+                found_element = True
+        assert found_element

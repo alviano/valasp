@@ -76,6 +76,9 @@ def test_yaml_valasp_in_user_defined_module():
         is_predicate: True        
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+
+
+def test_yaml_valasp_in_user_defined_module_2():
     for i in {"Integer", "String", "Alpha", "Any"}:
         for oper in {"==", "!=", ">", ">=", "<", "<=", " == ", " !=", "> ", "  >=", "<  ", "  <=  "}:
             yaml_input = """
@@ -86,7 +89,7 @@ def test_yaml_valasp_in_user_defined_module():
                      having:
                         - first%ssecond                  
              """ % (i, i, oper)
-            YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+            YamlValidation.validate(yaml.safe_load(yaml_input))
 
 
 def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
