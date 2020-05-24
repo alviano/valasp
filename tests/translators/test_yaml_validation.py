@@ -99,6 +99,24 @@ def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
+def test_yaml_having_valasp_in_user_defined_module_wrong_name():
+    for i in {'>', '==', '!=', '<='}:
+        yaml_input = """
+            having:
+                - First %s second       
+            """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
+
+    for i in {'>', '==', '!=', '<='}:
+        yaml_input = """
+            having:
+                - first %s Second       
+            """ % i
+        with pytest.raises(ValueError):
+            YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
+
+
 def test_yaml_having_valasp_not_a_list():
     for i in [10, '1', {'first': 0}]:
         yaml_input = """

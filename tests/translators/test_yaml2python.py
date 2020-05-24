@@ -7,7 +7,7 @@ import pytest
 
 from valasp.main import main
 import yaml
-from valasp.translators.yaml2python import Symbol, Yaml2Python
+from valasp.translators.yaml2python import Symbol, Yaml2Python, IntegerTerm
 
 
 def test_symbol_type():
@@ -74,6 +74,56 @@ def test_symbol_min_max():
         if i.startswith("\t\tif self.value > 100: raise ValueError"):
             found_element = True
     assert found_element
+
+
+def test_symbol_min_max_integer():
+    yaml_input = """
+    value:
+        type: Integer
+        min: 10   
+        max: 100
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = IntegerTerm(result["value"], "value")
+    obj.convert2python()
+    print(obj.post_init_content)
+    found_element = False
+    for i in obj.post_init_content:
+        if i.startswith("if self.value < 10: raise ValueError"):
+            found_element = True
+    assert found_element
+    found_element = False
+    for i in obj.post_init_content:
+        if i.startswith("if self.value > 100: raise ValueError"):
+            found_element = True
+    assert found_element
+
+
+def test_symbol_min_max():
+    for i in {'String', 'Alpha'}:
+        yaml_input = """
+        predicate:
+            value:
+                type: %s
+                min: 10   
+                max: 100
+        """ % i
+        result = yaml.safe_load(yaml_input)
+        obj = Symbol(result["predicate"], "predicate")
+        output = obj.convert2python()
+        assert "class Predicate:" in output
+        assert "\tvalue: %s" % i in output
+        assert "\tdef __post_init__(self):" in output
+        found_element = False
+        for i in output:
+            if i.startswith("\t\tif len(self.value) < 10: raise ValueError"):
+                found_element = True
+        assert found_element
+        found_element = False
+        for i in output:
+            if i.startswith("\t\tif len(self.value) > 100: raise ValueError"):
+                found_element = True
+        assert found_element
 
 
 def test_symbol_enum():
