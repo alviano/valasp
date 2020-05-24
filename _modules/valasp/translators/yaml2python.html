@@ -36,10 +36,7 @@
             
   <h1>Source code for valasp.translators.yaml2python</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">base64</span>
-<span class="kn">import</span> <span class="nn">sys</span>
 <span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">List</span>
-
-<span class="kn">import</span> <span class="nn">yaml</span>
 
 <span class="kn">from</span> <span class="nn">valasp.domain.names</span> <span class="kn">import</span> <span class="n">PredicateName</span>
 <span class="kn">from</span> <span class="nn">valasp.translators.yaml_validation</span> <span class="kn">import</span> <span class="n">YamlValidation</span>
@@ -54,8 +51,6 @@
 
 
 <div class="viewcode-block" id="ErrorMessages"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.ErrorMessages">[docs]</a><span class="k">class</span> <span class="nc">ErrorMessages</span><span class="p">:</span>
-    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">pass</span>
 
 <div class="viewcode-block" id="ErrorMessages.raise_error"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.ErrorMessages.raise_error">[docs]</a>    <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">raise_error</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">received</span><span class="p">):</span>
@@ -354,7 +349,8 @@
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">message</span> <span class="o">=</span> <span class="n">ErrorMessages</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Not match regex </span><span class="se">{{</span><span class="s1">_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span><span class="p">)</span><span class="si">}</span><span class="s1">)</span><span class="se">}}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;self.</span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="p">])</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if not(re.match(_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span><span class="p">)</span><span class="si">}</span><span class="s1">), self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">)): raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span></div></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">post_init_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;if not(re.match(_(</span><span class="si">{</span><span class="n">_encode</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__pattern</span><span class="p">)</span><span class="si">}</span><span class="s1">), self.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s1">)): raise ValueError(</span><span class="si">{</span><span class="n">message</span><span class="si">}</span><span class="s1">)&#39;</span><span class="p">)</span>
+        <span class="n">GenericTerm</span><span class="o">.</span><span class="n">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div></div>
 
 
 <div class="viewcode-block" id="StringTerm"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.StringTerm">[docs]</a><span class="k">class</span> <span class="nc">StringTerm</span><span class="p">(</span><span class="n">StringAlphaTerm</span><span class="p">):</span>
@@ -379,6 +375,8 @@
 <div class="viewcode-block" id="Yaml2Python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Yaml2Python">[docs]</a><span class="k">class</span> <span class="nc">Yaml2Python</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
+        <span class="k">global</span> <span class="n">all_symbols</span>
+        <span class="n">all_symbols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__content</span> <span class="o">=</span> <span class="n">content</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span> <span class="o">=</span> <span class="sa">b</span><span class="s1">&#39;&#39;</span>
