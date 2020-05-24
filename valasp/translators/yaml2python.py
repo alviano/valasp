@@ -90,10 +90,9 @@ class Symbol:
                 self.__after_init = self.__valasp[c]
             elif c == 'before_grounding':
                 self.__before_grounding = self.__valasp[c]
-            elif c == 'after_grounding':
-                self.__after_grounding = self.__valasp[c]
             else:
-                assert False
+                assert c == 'after_grounding'
+                self.__after_grounding = self.__valasp[c]
 
     def __parse_having(self):
         for i in self.__having:

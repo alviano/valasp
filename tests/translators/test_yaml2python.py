@@ -1,13 +1,8 @@
 import base64
-import sys
-from subprocess import Popen, PIPE
-from typing import Tuple, List
-
 import pytest
-
-from valasp.main import main
 import yaml
-from valasp.translators.yaml2python import Symbol, IntegerTerm
+
+from valasp.translators.yaml2python import Symbol, IntegerTerm, Yaml2Python
 
 
 def test_symbol_type():
@@ -24,6 +19,29 @@ def test_symbol_type():
         assert "\tdef __post_init__(self):" not in output
 
 
+def test_symbol_type_valasp():
+    for i in {'FORWARD_IMPLICIT', 'FORWARD', 'IMPLICIT', 'TUPLE'}:
+        yaml_input = """
+        predicate:
+            value: Integer
+            valasp:
+                is_predicate: False
+                auto_blacklist: False
+                with_fun: %s
+                before_grounding: cls.a = 0
+                after_grounding: print(cls.a)
+        """ % i
+        result = yaml.safe_load(yaml_input)
+        obj = Symbol(result["predicate"], "predicate")
+        output = obj.convert2python()
+        assert "@context.valasp(is_predicate=False, with_fun=valasp.domain.primitive_types.Fun.%s, auto_blacklist=False)" % i in output
+        assert "\tvalue: Integer" in output
+        assert "\tdef __post_init__(self):" not in output
+        assert "\tdef after_grounding_predicate(cls):" in output
+        assert "\t\tcls.a = 0" in output
+        assert "\t\tprint(cls.a)" in output
+
+
 def test_symbol_custom_invalid():
     for i in {'my', 'Date', 'bday'}:
         yaml_input = """
@@ -36,12 +54,7 @@ def test_symbol_custom_invalid():
 
 
 def test_symbol_custom_invalid_wrong_methods():
-    yaml_input = """        
-    bday:
-        day: Integer
-        valasp:
-            is_predicate: False   
-
+    yaml_input = """
     predicate:
         value: my   
     """
