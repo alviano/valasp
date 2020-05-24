@@ -394,7 +394,7 @@ def _(x):
     return base64.b64decode(x).decode()
 """
         template = f"""
-def main(files, stdout=sys.stdout, stderr=sys.stderr, exit=exit):
+def main(files, stdout=sys.stdout, stderr=sys.stderr):
     try:
         context = valasp.core.Context(wrap=[{', '.join(self.__valasp_wrap)}], max_arity={self.__valasp_max_arity})
 
