@@ -260,18 +260,24 @@ class YamlValidation:
             raise ValueError('unexpected value %s' % content)
 
     @classmethod
+    def match_having(cls, line: str) -> re.Match:
+        pattern = re.compile(r'^\s*(?P<first>[^\s]+)\s*(?P<op>==|!=|<|<=|>=|>)\s*(?P<second>[^\s]+)\s*$')
+        return pattern.match(line)
+
+    @classmethod
     def validate_having(cls, content):
         if not isinstance(content, list):
             raise ValueError('expected list of strings')
         for c in content:
             if not isinstance(c, str):
                 raise ValueError('expected string')
-            elements = c.split()
-            if len(elements) != 3:
-                raise ValueError('having: expected field comparator field')
-            keywords = {'==', '!=', '<', '<=', '>', '>='}
-            if elements[1] not in keywords:
-                raise ValueError(f'having: expected one of {keywords} as comparator')
+            m = cls.match_having(c)
+            if not m:
+                raise ValueError('having: expected field comparator field, where comparator is among ==, !=, <, <=, >=, >')
+            if not cls.__is_predicate_name(m['first']):
+                raise ValueError('expected predicate or class name')
+            if not cls.__is_predicate_name(m['second']):
+                raise ValueError('expected predicate or class name')
 
     @classmethod
     def validate_valasp_in_symbol(cls, content):
