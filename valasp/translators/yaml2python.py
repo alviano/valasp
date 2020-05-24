@@ -98,10 +98,8 @@ class Symbol:
     def __parse_having(self):
         for i in self.__having:
             m = YamlValidation.match_having(i)
-            print(m)
             assert m
             list_of_comparisons = m['first'], m['op'], m['second']
-            print(list_of_comparisons)
             assert len(list_of_comparisons) == 3
             if not self.__exists_term(list_of_comparisons[0]):
                 raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[0]} is not a term name')
