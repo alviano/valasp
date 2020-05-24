@@ -187,14 +187,14 @@ def test_symbol_count():
 
 def test_symbol_having():
     for i in {"Integer", "String", "Alpha", "Any"}:
-        for oper in {"==", "!=", ">", ">=", "<", "<="}:
+        for oper in {"==", "!=", ">", ">=", "<", "<=", " == ", " !=", "> ", "  >=", "<  " , "  <=  "}:
             yaml_input = """
              predicate:
                  first: %s
                  second: %s
                  valasp:
                      having:
-                        - first %s second                  
+                        - first%ssecond                  
              """ % (i, i, oper)
             result = yaml.safe_load(yaml_input)
             obj = Symbol(result["predicate"], "predicate")

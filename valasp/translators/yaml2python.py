@@ -103,8 +103,8 @@ class Symbol:
             assert len(list_of_comparisons) == 3
             if not self.__exists_term(list_of_comparisons[0]):
                 raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[0]} is not a term name')
-            if not self.__exists_term(list_of_comparisons[1]):
-                raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[1]} is not a term name')
+            if not self.__exists_term(list_of_comparisons[2]):
+                raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[2]} is not a term name')
 
     def convert2python(self):
         self.__declaration_content.append(f"@context.valasp(is_predicate={self.__is_predicate}, with_fun=valasp.domain.primitive_types.Fun.{self.__with_fun}, auto_blacklist={self.__auto_blacklist})")
