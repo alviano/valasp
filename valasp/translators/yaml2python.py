@@ -1,8 +1,5 @@
 import base64
-import sys
 from typing import List
-
-import yaml
 
 from valasp.domain.names import PredicateName
 from valasp.translators.yaml_validation import YamlValidation
@@ -17,8 +14,6 @@ def _encode(x):
 
 
 class ErrorMessages:
-    def __init__(self):
-        pass
 
     @staticmethod
     def raise_error(message, received):
@@ -320,6 +315,7 @@ class StringAlphaTerm(GenericTerm):
         if self.__pattern is not None:
             message = ErrorMessages.raise_error(f'Not match regex {{_({_encode(self.__pattern)})}}', ['self.%s' % self.term_name])
             self.post_init_content.append(f'if not(re.match(_({_encode(self.__pattern)}), self.{self.term_name})): raise ValueError({message})')
+        GenericTerm.convert2python(self)
 
 
 class StringTerm(StringAlphaTerm):
@@ -344,6 +340,8 @@ class UserDefinedTerm(GenericTerm):
 class Yaml2Python:
 
     def __init__(self, content):
+        global all_symbols
+        all_symbols = set()
         self.__content = content
         self.__valasp_python = ""
         self.__valasp_asp = ""
