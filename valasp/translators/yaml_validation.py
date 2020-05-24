@@ -261,7 +261,7 @@ class YamlValidation:
 
     @classmethod
     def match_having(cls, line: str) -> re.Match:
-        pattern = re.compile(r'^\s*(?P<first>[^\s]+)\s*(?P<op>==|!=|<|<=|>=|>)\s*(?P<second>[^\s]+)\s*$')
+        pattern = re.compile(r'^\s*(?P<first>[^\s]+)\s*(?P<op>==|!=|<=|>=|<|>)\s*(?P<second>[^\s]+)\s*$')
         return pattern.match(line)
 
     @classmethod
