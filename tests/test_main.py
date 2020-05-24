@@ -69,13 +69,16 @@ bday:
     assert not err
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
-    assert 'expecting arity 3 for TUPLE, but found 2' in err
+    assert 'expecting arity 3 for TUPLE, but found 2' in out
+    assert not err
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
     assert 'if len(self.name) < 3: raise ValueError(f"Len should be >= 3. Received: {self.name}")' in out
+    assert not err
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "ignored file content", for_print=True)
     assert 'have been ignored' in out
+    assert not err
 
 
 def test_wrong_yaml(tmp_path):
@@ -171,4 +174,47 @@ predicate:
             max: 1002
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
-    assert 'count of value in predicate predicate cannot reach 10' in err
+    assert 'count of value in predicate predicate cannot reach 10' in out
+    assert not err
+
+
+def test_after_grounding(tmp_path):
+    yaml = """
+valasp:
+    asp: {}
+person:
+    name: Alpha
+    valasp:
+        after_init: self.__class__.instances += 1
+        before_grounding: cls.instances = 0
+        after_grounding: |+
+            if cls.instances != 2:
+                raise ValueError('expecting 2 instances')
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml.format('person(mario). person(carmine).'))
+    assert 'ALL VALID' in out
+    assert not err
+
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml.format('person(mario).'))
+    assert 'VALIDATION FAILED' in out
+    assert 'expecting 2 instances' in out
+    assert not err
+
+
+def test_auto_blacklist(tmp_path):
+    yaml = """
+    valasp:
+        asp: person(mario). person(mar,io).
+    person:
+        name: Alpha
+        valasp:
+            auto_blacklist: {}
+        """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml.format('false'))
+    assert 'ALL VALID' in out
+    assert not err
+
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml.format('true'))
+    assert 'VALIDATION FAILED' in out
+    assert 'person/2 is blacklisted' in out
+    assert not err

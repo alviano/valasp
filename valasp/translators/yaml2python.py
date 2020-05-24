@@ -90,10 +90,9 @@ class Symbol:
                 self.__after_init = self.__valasp[c]
             elif c == 'before_grounding':
                 self.__before_grounding = self.__valasp[c]
-            elif c == 'after_grounding':
-                self.__after_grounding = self.__valasp[c]
             else:
-                assert False
+                assert c == 'after_grounding'
+                self.__after_grounding = self.__valasp[c]
 
     def __parse_having(self):
         for i in self.__having:
@@ -334,9 +333,8 @@ class UserDefinedTerm(GenericTerm):
 
     def __init__(self, content, term_name):
         if isinstance(content, dict):
-            GenericTerm.__init__(self, content, term_name, PredicateName(content['type']).to_class().value)
-        else:
-            GenericTerm.__init__(self, content, term_name, PredicateName(content).to_class().value)
+            content = content['type']
+        GenericTerm.__init__(self, content, term_name, PredicateName(content).to_class().value)
 
 
 class Yaml2Python:
@@ -415,10 +413,10 @@ def main(files, stdout=sys.stdout, stderr=sys.stderr):
         except RuntimeError as e:
             raise ValueError(context.valasp_extract_error_message(e)) from None
     except Exception as e:
-        print('VALIDATION FAILED', file=stderr)
-        print('=================', file=stderr)
-        print(e, file=stderr)
-        print('=================', file=stderr)
+        print('VALIDATION FAILED', file=stdout)
+        print('=================', file=stdout)
+        print(e, file=stdout)
+        print('=================', file=stdout)
 """
 
         return [all_import, self.__valasp_python, template]
