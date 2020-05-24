@@ -187,7 +187,7 @@ def test_symbol_count():
 
 def test_symbol_having():
     for i in {"Integer", "String", "Alpha", "Any"}:
-        for oper in {"==", "!=", ">", ">=", "<", "<=", " == ", " !=", "> ", "  >=", "<  " , "  <=  "}:
+        for oper in {"==", "!=", ">", ">=", "<", "<=", " == ", " !=", "> ", "  >=", "<  ", "  <=  "}:
             yaml_input = """
              predicate:
                  first: %s
@@ -200,8 +200,9 @@ def test_symbol_having():
             obj = Symbol(result["predicate"], "predicate")
             output = obj.convert2python()
             assert "class Predicate:" in output
-            assert "\tvalue: first" in output
-            assert "\tvalue: second" in output
+            assert "\tfirst: %s" % i in output
+            assert "\tsecond: %s" % i in output
             assert "\tdef __post_init__(self):" in output
-            assert "\t\tif self.first %s self.second: raise ValueError" % oper in output
+            oper = oper.lstrip().rstrip()
+            assert "\t\tif self.first %s self.second: raise ValueError(\"Expected first %s second\")" % (oper, oper) in output
 

@@ -98,8 +98,10 @@ class Symbol:
     def __parse_having(self):
         for i in self.__having:
             m = YamlValidation.match_having(i)
+            print(m)
             assert m
             list_of_comparisons = m['first'], m['op'], m['second']
+            print(list_of_comparisons)
             assert len(list_of_comparisons) == 3
             if not self.__exists_term(list_of_comparisons[0]):
                 raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[0]} is not a term name')
@@ -119,11 +121,13 @@ class Symbol:
                 self.__post_init_content.append(f"\t\t{i}")
 
         for having in self.__having:
-            comp = having.split()
-            assert len(comp) == 3
+            m = YamlValidation.match_having(having)
+            assert m
+            having = m['first'], m['op'], m['second']
+            assert len(having) == 3
             self.__post_init_content.append(
                 '\t\tif self.%s %s self.%s: raise ValueError("%s")' % (
-                    comp[0], comp[1], comp[2], f'Expected {comp[0]} {comp[1]} {comp[2]}'))
+                    having[0], having[1], having[2], f'Expected {having[0]} {having[1]} {having[2]}'))
 
         if self.__after_init is not None:
             self.__post_init_content.append(f"\t\t{self.__after_init}")

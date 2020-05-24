@@ -70,10 +70,23 @@ def test_yaml_valasp_in_user_defined_module():
             - first3 > second
             - first3 >= second
             - first    ==     second
-            - first==second            
+            - first==second   
+            - first  >=second
+            - first>=second        
         is_predicate: True        
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
+    for i in {"Integer", "String", "Alpha", "Any"}:
+        for oper in {"==", "!=", ">", ">=", "<", "<=", " == ", " !=", "> ", "  >=", "<  ", "  <=  "}:
+            yaml_input = """
+             predicate:
+                 first: %s
+                 second: %s
+                 valasp:
+                     having:
+                        - first%ssecond                  
+             """ % (i, i, oper)
+            YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
 
 def test_yaml_having_valasp_in_user_defined_module_wrong_keyword():
