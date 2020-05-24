@@ -179,7 +179,7 @@ class Context:
 
 
     def valasp_error(self, msg, args):
-        raise TypeError(f"{{msg}}" + f"; args={{args}}")
+        raise TypeError(f"{msg}; args={args}")
 
     @staticmethod
     def valasp_extract_error_message(error: Exception) -> str:

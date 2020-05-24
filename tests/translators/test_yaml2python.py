@@ -4,7 +4,6 @@ import yaml
 
 from valasp.translators.yaml2python import Symbol, IntegerTerm, Yaml2Python
 
-
 def test_symbol_type():
     for i in {'Integer', 'String', 'Any', 'Alpha'}:
         yaml_input = """
@@ -388,3 +387,71 @@ def test_symbol_pattern():
             if i.startswith("\t\tif not(re.match(_(%s), self.value)):" % base64.b64encode(str("a|b").encode())):
                 found_element = True
         assert found_element
+
+
+def test_missing_type():
+    yaml_input = f"""
+        year:
+            value:
+                type: Integer
+                min: 1900
+                max: 2100
+
+        date:
+            year: year
+            month:
+                type: Integer
+                min: 1
+                max: 12
+            day: day
+    """
+    result = yaml.safe_load(yaml_input)
+    with pytest.raises(ValueError) as error:
+        Yaml2Python(result).convert2python()
+    assert 'Undefined type' in str(error.value)
+
+
+def test_missing_field_in_having_right():
+    yaml_input = f"""
+        ordered_pair:
+            first: Integer
+            second: Integer
+            valasp:
+                having:
+                    - first < secnd
+    """
+    result = yaml.safe_load(yaml_input)
+    with pytest.raises(ValueError) as error:
+        Yaml2Python(result).convert2python()
+    assert 'secnd is not a term name' in str(error.value)
+
+
+def test_missing_field_in_having_left():
+    yaml_input = f"""
+            ordered_pair:
+                first: Integer
+                second: Integer
+                valasp:
+                    having:
+                        - secnd > first
+        """
+    result = yaml.safe_load(yaml_input)
+    with pytest.raises(ValueError) as error:
+        Symbol(result["ordered_pair"], "ordered_pair")
+    assert 'secnd is not a term name' in str(error.value)
+
+
+def test_user_defined_term():
+    yaml_input = f"""
+        pred:
+            value: Integer
+        
+        predicate:
+            term:
+               type: pred
+               count:
+                    min: 10
+    """
+    result = yaml.safe_load(yaml_input)
+    lines = Yaml2Python(result).convert2python()
+    assert 'term: Pred' in '\n'.join(lines)
