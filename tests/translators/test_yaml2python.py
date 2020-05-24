@@ -1,3 +1,4 @@
+import base64
 import sys
 from subprocess import Popen, PIPE
 from typing import Tuple, List
@@ -5,113 +6,202 @@ from typing import Tuple, List
 import pytest
 
 from valasp.main import main
-
-'''
-def test_yaml_from_string():
-    # add a method to process yaml from string, and also other portions of the code
-    # should be unit testable as much as possible
-    raise ModuleNotFoundError
+import yaml
+from valasp.translators.yaml2python import Symbol, Yaml2Python
 
 
-def test_main_on_no_args(tmp_path):
-    with pytest.raises(SystemExit) as error:
-        main()
-    assert error.value.code == 1
+def test_symbol_type():
+    for i in {'Integer', 'String', 'Any', 'Alpha'}:
+        yaml_input = """
+        predicate:
+            value: %s   
+        """ % i
+        result = yaml.safe_load(yaml_input)
+        obj = Symbol(result["predicate"], "predicate")
+        output = obj.convert2python()
+        assert "class Predicate:" in output
+        assert "\tvalue: %s" % i in output
+        assert "\tdef __post_init__(self):" not in output
 
 
-def test_main_on_one_arg():
-    with pytest.raises(SystemExit) as error:
-        main()
-    assert error.value.code == 1
+def test_symbol_custom_invalid():
+    for i in {'my', 'Date', 'bday'}:
+        yaml_input = """
+        predicate:
+            value: %s   
+        """ % i
+        result = yaml.safe_load(yaml_input)
+        with pytest.raises(ValueError):
+            Symbol(result["predicate"], "predicate")
 
 
-def test_main_on_three_args():
-    with pytest.raises(SystemExit) as error:
-        main()
-    assert error.value.code == 1
+def test_symbol_custom_invalid_wrong_methods():
+    yaml_input = """        
+    bday:
+        day: Integer
+        valasp:
+            is_predicate: False   
+
+    predicate:
+        value: my   
+    """
+    with pytest.raises(ValueError):
+        result = yaml.safe_load(yaml_input)
+        Symbol(result["predicate"], "predicate")
 
 
-def test_main_on_empty_file(tmp_path):
-    inp = tmp_path / "input.yaml"
-    inp.write_text('')
-    sys.argv = [sys.argv[0], inp, tmp_path / "output.yaml"]
-    main()
-    # no exception at this level; we have to inform the user
+def test_symbol_min_max():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            min: 10   
+            max: 100
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    found_element = False
+    for i in output:
+        if i.startswith("\t\tif self.value < 10: raise ValueError"):
+            found_element = True
+    assert found_element
+    found_element = False
+    for i in output:
+        if i.startswith("\t\tif self.value > 100: raise ValueError"):
+            found_element = True
+    assert found_element
 
 
-def test_main_on_missing_file(tmp_path):
-    sys.argv = [sys.argv[0], tmp_path / "input.yaml", tmp_path / "output.yaml"]
-    main()
+def test_symbol_enum():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            enum: [1, 2, 3]
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    found_element = False
+    for i in output:
+        if i.startswith("\t\tif self.value not in {1, 2, 3}: raise ValueError"):
+            found_element = True
+    assert found_element
 
 
-def run_main_on_yaml(tmp_path, yaml_content) -> str:
-    inp = tmp_path / "input.yaml"
-    inp.write_text(yaml_content)
-    dest = tmp_path / "output.yaml"
-    sys.argv = [sys.argv[0], inp, dest]
-    main()
-    print(dest.read_text())
-    return str(dest)
+def test_symbol_enum():
+    yaml_input = """
+    predicate:
+        value:
+            type: String
+            enum: ['a']
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: String" in output
+    assert "\tdef __post_init__(self):" in output
+    found_element = False
+    for i in output:
+        if i.startswith("\t\tif self.value not in {_(%s)}: raise ValueError" % base64.b64encode(str("a").encode())):
+            found_element = True
+    assert found_element
 
 
-def run_clingo_as_process(files: List[str]) -> Tuple[str, str, int]:
-    process = Popen(["clingo"] + files, stdout=PIPE, stderr=PIPE)
-    (output, err) = process.communicate()
-    exit_code = process.wait()
-    return output.decode(), err.decode(), exit_code
+def test_symbol_sum_positive():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum+:
+                min: 10
+                max: 100
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value > 0:" in output
+    assert "\t\t\tself.__class__.sum_positive_of_value += self.value" in output
+    assert "\tdef before_grounding_init_positive_sum_value(cls): cls.sum_positive_of_value = 0" in output
+    assert "\tdef after_grounding_check_positive_sum_value(cls):" in output
+    assert "\t\tif cls.sum_positive_of_value > 100: raise ValueError('sum of value in predicate predicate may exceed 100')" in output
+    assert "\t\tif cls.sum_positive_of_value < 10: raise ValueError('sum of value in predicate predicate cannot reach 10')" in output
 
 
-def write_file(tmp_path, filename: str, content: str) -> str:
-    f = tmp_path / filename
-    f.write_text(content)
-    return str(f)
+def test_symbol_sum_negative():
+    yaml_input = """
+    predicate:
+        value:
+            type: Integer
+            sum-:
+                min: -100
+                max: -10
+    """
+    result = yaml.safe_load(yaml_input)
+    obj = Symbol(result["predicate"], "predicate")
+    output = obj.convert2python()
+    assert "class Predicate:" in output
+    assert "\tvalue: Integer" in output
+    assert "\tdef __post_init__(self):" in output
+    assert "\t\tif self.value < 0:" in output
+    assert "\t\t\tself.__class__.sum_negative_of_value += self.value" in output
+    assert "\tdef before_grounding_init_negative_sum_value(cls): cls.sum_negative_of_value = 0" in output
+    assert "\tdef after_grounding_check_negative_sum_value(cls):" in output
+    assert "\t\tif cls.sum_negative_of_value < -100: raise ValueError('sum of value in predicate predicate may exceed -100')" in output
+    assert "\t\tif cls.sum_negative_of_value > -10: raise ValueError('sum of value in predicate predicate cannot reach -10')" in output
 
 
-def test_main_on_yaml_with_errors(tmp_path):
-    asp_file = run_main_on_yaml(tmp_path, """
-        Foo:
-            bar: int
-    """)
-
-    (out, err, exit_code) = run_clingo_as_process([
-        asp_file,
-        write_file(tmp_path, "testcase.asp", "foo(1).")
-    ])
-    assert exit_code not in [10, 20, 30]
-    assert 'syntax error' in err
-    assert 'parsing failed' in err
-
-
-def test_main_on_yaml_valasp_is_not_reserved(tmp_path):
-    asp_file = run_main_on_yaml(tmp_path, """
-            valasp:
-                bar: int
-        """)
-
-    (out, err, exit_code) = run_clingo_as_process([
-        asp_file,
-        write_file(tmp_path, "testcase.asp", "valasp(wrong).")
-    ])
-    assert exit_code not in [10, 20, 30]
-    assert 'TypeError: expecting clingo.SymbolType.Number, but received' in err
+def test_symbol_count():
+    for i in {'Integer', 'Any', 'String', 'Alpha'}:
+        yaml_input = """
+        predicate:
+            value:
+                type: %s
+                count:
+                    min: 10
+                    max: 100
+        """ % i
+        result = yaml.safe_load(yaml_input)
+        obj = Symbol(result['predicate'], 'predicate')
+        output = obj.convert2python()
+        assert "class Predicate:" in output
+        assert "\tvalue: %s" % i in output
+        assert "\tdef __post_init__(self):" in output
+        assert "\t\tself.__class__.count_of_value += 1" in output
+        assert "\tdef before_grounding_init_count_value(cls): cls.count_of_value = 0" in output
+        assert "\tdef after_grounding_check_count_value(cls):" in output
+        assert "\t\tif cls.count_of_value > 100: raise ValueError('count of value in predicate predicate may exceed 100')" in output
+        assert "\t\tif cls.count_of_value < 10: raise ValueError('count of value in predicate predicate cannot reach 10')" in output
 
 
-def test_main_on_yaml_file_with_one_atom(tmp_path):
-    asp_file = run_main_on_yaml(tmp_path, """
-        foo:
-            bar: int
-    """)
+def test_symbol_having():
+    for i in {"Integer", "String", "Alpha", "Any"}:
+        for oper in {"==", "!=", ">", ">=", "<", "<="}:
+            yaml_input = """
+             predicate:
+                 first: %s
+                 second: %s
+                 valasp:
+                     having:
+                        - first %s second                  
+             """ % (i, i, oper)
+            result = yaml.safe_load(yaml_input)
+            obj = Symbol(result["predicate"], "predicate")
+            output = obj.convert2python()
+            assert "class Predicate:" in output
+            assert "\tvalue: first" in output
+            assert "\tvalue: second" in output
+            assert "\tdef __post_init__(self):" in output
+            assert "\t\tif self.first %s self.second: raise ValueError" % oper in output
 
-    (out, err, exit_code) = run_clingo_as_process([
-        asp_file,
-        write_file(tmp_path, "testcase.asp", "foo(wrong).")
-    ])
-    assert exit_code not in [10, 20, 30]
-    assert 'TypeError: expecting clingo.SymbolType.Number, but received' in err
-
-    (out, err, exit_code) = run_clingo_as_process([
-        asp_file,
-        write_file(tmp_path, "testcase.asp", "foo(1).")
-    ])
-    assert exit_code in [10, 20, 30]
-'''

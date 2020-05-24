@@ -68,7 +68,9 @@ def test_yaml_valasp_in_user_defined_module():
             - first3 < second
             - first3 <= second
             - first3 > second
-            - first3 >= second            
+            - first3 >= second
+            - first    ==     second
+            - first==second            
         is_predicate: True        
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
