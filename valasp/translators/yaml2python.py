@@ -180,11 +180,9 @@ class GenericTerm:
             self.other_methods_content.append(f'def after_grounding_check_count_{self.term_name}(cls):')
             if 'max' in self.__count:
                 max_bound = self.__count['max']
-                self.other_methods_content.append('\t@classmethod')
                 self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} > {max_bound}: raise ValueError(\'count of {self.term_name} in predicate {self.predicate_name} may exceed {max_bound}\')')
             if 'min' in self.__count:
                 min_bound = self.__count['min']
-                self.other_methods_content.append('\t@classmethod')
                 self.other_methods_content.append(f'\tif cls.count_of_{self.term_name} < {min_bound}: raise ValueError(\'count of {self.term_name} in predicate {self.predicate_name} cannot reach {min_bound}\')')
             self.post_init_content.append(f'self.__class__.count_of_{self.term_name} += 1')
 
@@ -344,7 +342,7 @@ class Yaml2Python:
         all_symbols = set()
         self.__content = content
         self.__valasp_python = ""
-        self.__valasp_asp = ""
+        self.__valasp_asp = b''
         self.__valasp_wrap = []
         self.__valasp_max_arity = 16
         self.__symbols = []
@@ -394,7 +392,7 @@ def _(x):
     return base64.b64decode(x).decode()
 """
         template = f"""
-def main(files, stdout=sys.stdout, stderr=sys.stderr):
+def main(files, stdout=sys.stdout, stderr=sys.stderr, exit=exit):
     try:
         context = valasp.core.Context(wrap=[{', '.join(self.__valasp_wrap)}], max_arity={self.__valasp_max_arity})
 
@@ -417,7 +415,6 @@ def main(files, stdout=sys.stdout, stderr=sys.stderr):
         print('=================', file=stderr)
         print(e, file=stderr)
         print('=================', file=stderr)
-        exit(-2)
 """
 
         return [all_import, self.__valasp_python, template]

@@ -28,15 +28,15 @@ def call_main_on_yaml_and_asp(tmp_path, yaml_content: str, asp_content: str = No
 def test_no_args(tmp_path):
     with pytest.raises(SystemExit) as error:
         call_main(tmp_path, [])
-        assert error.value.code == 1
+    assert error.value.code == 1
 
     with pytest.raises(SystemExit) as error:
         call_main(tmp_path, ['--print'])
-        assert error.value.code == 1
+    assert error.value.code == 1
 
     with pytest.raises(SystemExit) as error:
         call_main(tmp_path, ['--print', '--print'])
-        assert error.value.code == 1
+    assert error.value.code == 1
 
 
 def test_bday(tmp_path):
@@ -68,9 +68,8 @@ bday:
     assert 'ALL VALID!' in out
     assert not err
 
-    with pytest.raises(SystemExit):
-        out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
-        assert 'ValueError: expecting arity 3 for TUPLE' in err
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml, "bday(sofia, (2019,6,25)). bday(leonardo, (2018,2,1)). bday(bigel, (1982,123)).")
+    assert 'expecting arity 3 for TUPLE, but found 2' in err
 
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml, for_print=True)
     assert 'if len(self.name) < 3: raise ValueError(f"Len should be >= 3. Received: {self.name}")' in out
@@ -153,9 +152,23 @@ valasp:
             def succ(x): return x.number + 1
     wrap:
         - AtTerms
-    asp:
-        a(@succ(0)).
+    asp: a(@succ(0)).
     """
     out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
     assert 'Answer: a(1)' in out
     assert not err
+
+
+def test_count(tmp_path):
+    yaml = f"""
+valasp:
+    asp: predicate(1..5).
+predicate:
+    value:
+        type: Integer
+        count:
+            min: 10
+            max: 1002
+    """
+    out, err = call_main_on_yaml_and_asp(tmp_path, yaml)
+    assert 'count of value in predicate predicate cannot reach 10' in err
