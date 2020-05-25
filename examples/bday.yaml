@@ -1,7 +1,6 @@
 valasp:
     python: |+
         import datetime
-    asp: |+
 
 date:
     year: Integer
