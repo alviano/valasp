@@ -162,7 +162,11 @@ class Context:
                 methods = [('eq', '=='), ('ne', '!='), ('lt', '<'), ('le', '<='), ('ge', '>='), ('gt', '>')]
                 for m in methods:
                     if not has_method(f'__{m[0]}__'):
-                        set_method(f'__{m[0]}__', ['other'], [f"return {self_tuple} {m[1]} {other_tuple}"])
+                        set_method(f'__{m[0]}__', ['other'], [
+                            f"if not isinstance(other, {class_name}):",
+                            f"    raise TypeError('cannot compare {class_name} and ' + type(other).__name__ + ';')",
+                            f"return {self_tuple} {m[1]} {other_tuple}"
+                        ])
 
             with_fun_string = process_with_fun()
             add_init()
@@ -196,6 +200,8 @@ class Context:
             elif 'Error:' in line:
                 line = line.split(':')[1]
                 res.append(f'  with error: {line.strip()}')
+            elif 'Clasp::' in line:
+                res.append(f'error by clingo:\n\n{line}')
 
         return '\n'.join(res)
 
