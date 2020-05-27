@@ -1,0 +1,35 @@
+video_type:
+    value:    
+        type: String
+        enum: ["Documentary", "Video", "Cartoon", "Sport"]
+    valasp:
+        is_predicate: False
+
+user:
+    userid: Integer
+    videotype: video_type        
+    resolution: Integer
+    bandwidth: Integer
+    maxsat: Integer
+    maxbit: Integer
+        
+assign:
+    userid: Integer
+    videotype: video_type
+    resolution: Integer
+    bitrate: Integer
+    sat: Integer
+
+obj:
+    value:
+        type: Integer
+        min: 0
+        sum+: Integer
+    userid: Integer
+    
+valasp:
+    asp: |+
+        obj(BEST_SAT-SAT_VALUE,USER_ID) :- 
+            assign(USER_ID, _, _, BITRATE, SAT_VALUE),
+            user(USER_ID, _, _,_, BEST_SAT, _).
+
