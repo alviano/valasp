@@ -365,7 +365,7 @@ def test_symbol_having():
             assert "\tsecond: %s" % i in output
             assert "\tdef __post_init__(self):" in output
             oper = oper.lstrip().rstrip()
-            assert "\t\tif self.first %s self.second: raise ValueError(\"Expected first %s second\")" % (oper, oper) in output
+            assert "\t\tif not self.first %s self.second: raise ValueError(\"Expected first %s second\")" % (oper, oper) in output
 
 
 def test_symbol_pattern():

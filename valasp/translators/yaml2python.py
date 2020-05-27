@@ -123,7 +123,7 @@ class Symbol:
             having = m['first'], m['op'], m['second']
             assert len(having) == 3
             self.__post_init_content.append(
-                '\t\tif self.%s %s self.%s: raise ValueError("%s")' % (
+                '\t\tif not self.%s %s self.%s: raise ValueError("%s")' % (
                     having[0], having[1], having[2], f'Expected {having[0]} {having[1]} {having[2]}'))
 
         if self.__after_init is not None:
