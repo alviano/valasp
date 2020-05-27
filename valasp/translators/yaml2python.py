@@ -396,7 +396,7 @@ def _(x):
     return base64.b64decode(x).decode()
 """
         template = f"""
-def main(files, stdout=sys.stdout, stderr=sys.stderr):
+def main(files, with_solve=True, stdout=sys.stdout, stderr=sys.stderr):
     try:
         context = valasp.core.Context(wrap=[{', '.join(self.__valasp_wrap)}], max_arity={self.__valasp_max_arity})
 
@@ -410,7 +410,8 @@ def main(files, stdout=sys.stdout, stderr=sys.stderr):
                 control, 
                 on_validation_done=lambda: print("ALL VALID!{slash_slash}n==========", file=stdout), 
                 on_model=lambda m: print(f"Answer: {{m}}{slash_slash}n==========", file=stdout), 
-                aux_program=[_({self.__valasp_asp})]
+                aux_program=[_({self.__valasp_asp})],
+                with_solve=with_solve,
             )
         except RuntimeError as e:
             raise ValueError(context.valasp_extract_error_message(e)) from None

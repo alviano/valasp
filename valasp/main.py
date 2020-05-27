@@ -71,11 +71,14 @@ from valasp.translators.yaml2python import Yaml2Python
 
 def parse_args(args, stdout, stderr) -> Callable:
     print_only = False
+    valid_only = False
     for arg in args:
         if arg == '--print':
             print_only = True
-            break
+        if arg == '--valid-only':
+            valid_only = True
     args[:] = filter(lambda arg: arg != '--print', args)
+    args[:] = filter(lambda arg: arg != '--valid-only', args)
 
     if len(args) < 1:
         print('To validate a YAML file against one or more ASP files, also running clingo:\n'
@@ -84,9 +87,14 @@ def parse_args(args, stdout, stderr) -> Callable:
               '\tpython -m valasp --print <YAML file>', file=stderr)
         exit(1)
 
+    if print_only and valid_only:
+        print('Options --print and --valid-only are incompatible.')
+        exit(1)
     if print_only:
         return print_python_code
-    return run_clingo
+    if valid_only:
+        return run_clingo_without_solve
+    return run_clingo_with_solve
 
 
 def process_yaml(yaml_file: str) -> List[str]:
@@ -102,13 +110,21 @@ def print_python_code(asp_files, validation_code, stdout, stderr):
     print('\n'.join(validation_code), file=stdout)
 
 
-def run_clingo(asp_files, validation_code, stdout, stderr):
+def run_clingo(asp_files, validation_code, with_solve, stdout, stderr):
     with tempfile.NamedTemporaryFile() as validation_file:
         for line in validation_code:
             validation_file.write(line.encode())
         validation_file.seek(0)
         mod = runpy.run_path(path_name=validation_file.name)
-        mod['main'](asp_files, stdout, stderr)
+        mod['main'](asp_files, with_solve=with_solve, stdout=stdout, stderr=stderr)
+
+
+def run_clingo_with_solve(asp_files, validation_code, stdout, stderr):
+    run_clingo(asp_files, validation_code, True, stdout, stderr)
+
+
+def run_clingo_without_solve(asp_files, validation_code, stdout, stderr):
+    run_clingo(asp_files, validation_code, False, stdout, stderr)
 
 
 def main(args: List[str], stdout=sys.stdout, stderr=sys.stderr):
