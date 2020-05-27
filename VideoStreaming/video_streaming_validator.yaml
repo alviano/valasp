@@ -4,29 +4,47 @@ video_type:
         enum: ["Documentary", "Video", "Cartoon", "Sport"]
     valasp:
         is_predicate: False
+        
+resolution:
+    value:
+        type: Integer
+        enum: [224, 360, 720, 1080]
+    valasp:
+        is_predicate: False
+
+bitrate:
+    value:
+        type: Integer
+        min: 150
+        max: 8650        
+    valasp:
+        is_predicate: False
+        after_init: |+
+            if self.value % 50 != 0: raise ValueError("unexpected value for bitrate")
+
+f:
+    videotype: video_type
+    resolution: resolution
+    bitrate: bitrate
+    sat_value:
+        type: Integer
+        min: 0
 
 user:
     userid: Integer
     videotype: video_type        
-    resolution: Integer
-    bandwidth: Integer
-    maxsat: Integer
-    maxbit: Integer
+    resolution: resolution
+    bandwidth:
+        type: Integer
+        min: 0
+    max_sat: Integer
+    max_bitrate: bitrate
         
 assign:
     userid: Integer
     videotype: video_type
-    resolution: Integer
-    bitrate: Integer
-    sat: Integer
-
-obj:
-    value:
+    resolution: resolution
+    bitrate: bitrate
+    sat:
         type: Integer
         min: 0
-        sum+: Integer
-    userid: Integer
-    
-valasp:
-    asp: |+
-        obj(BEST_SAT-SAT_VALUE,USER_ID) :- assign(USER_ID, _, _, BITRATE, SAT_VALUE), user(USER_ID, _, _,_, BEST_SAT, _).
