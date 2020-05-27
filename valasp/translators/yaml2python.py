@@ -127,7 +127,9 @@ class Symbol:
                     having[0], having[1], having[2], f'Expected {having[0]} {having[1]} {having[2]}'))
 
         if self.__after_init is not None:
-            self.__post_init_content.append(f"\t\t{self.__after_init}")
+            afi = self.__after_init.split('\n')
+            for j in afi:
+                self.__post_init_content.append(f"\t\t{j}")
 
         for term in self.__terms:
             for i in term.other_methods_content:
