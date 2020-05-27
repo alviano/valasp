@@ -433,7 +433,7 @@
 <span class="s2">    return base64.b64decode(x).decode()</span>
 <span class="s2">&quot;&quot;&quot;</span>
         <span class="n">template</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">def main(files, stdout=sys.stdout, stderr=sys.stderr):</span>
+<span class="s2">def main(files, with_solve=True, stdout=sys.stdout, stderr=sys.stderr):</span>
 <span class="s2">    try:</span>
 <span class="s2">        context = valasp.core.Context(wrap=[</span><span class="si">{</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_wrap</span><span class="p">)</span><span class="si">}</span><span class="s2">], max_arity=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_max_arity</span><span class="si">}</span><span class="s2">)</span>
 
@@ -447,7 +447,8 @@
 <span class="s2">                control, </span>
 <span class="s2">                on_validation_done=lambda: print(&quot;ALL VALID!</span><span class="si">{</span><span class="n">slash_slash</span><span class="si">}</span><span class="s2">n==========&quot;, file=stdout), </span>
 <span class="s2">                on_model=lambda m: print(f&quot;Answer: </span><span class="se">{{</span><span class="s2">m</span><span class="se">}}</span><span class="si">{</span><span class="n">slash_slash</span><span class="si">}</span><span class="s2">n==========&quot;, file=stdout), </span>
-<span class="s2">                aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)]</span>
+<span class="s2">                aux_program=[_(</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__valasp_asp</span><span class="si">}</span><span class="s2">)],</span>
+<span class="s2">                with_solve=with_solve,</span>
 <span class="s2">            )</span>
 <span class="s2">        except RuntimeError as e:</span>
 <span class="s2">            raise ValueError(context.valasp_extract_error_message(e)) from None</span>

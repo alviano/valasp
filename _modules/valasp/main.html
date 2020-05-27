@@ -108,11 +108,14 @@
 
 <div class="viewcode-block" id="parse_args"><a class="viewcode-back" href="../../valasp.html#valasp.main.parse_args">[docs]</a><span class="k">def</span> <span class="nf">parse_args</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Callable</span><span class="p">:</span>
     <span class="n">print_only</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">valid_only</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s1">&#39;--print&#39;</span><span class="p">:</span>
             <span class="n">print_only</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="k">break</span>
+        <span class="k">if</span> <span class="n">arg</span> <span class="o">==</span> <span class="s1">&#39;--valid-only&#39;</span><span class="p">:</span>
+            <span class="n">valid_only</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">args</span><span class="p">[:]</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">arg</span><span class="p">:</span> <span class="n">arg</span> <span class="o">!=</span> <span class="s1">&#39;--print&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">args</span><span class="p">[:]</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">arg</span><span class="p">:</span> <span class="n">arg</span> <span class="o">!=</span> <span class="s1">&#39;--valid-only&#39;</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;To validate a YAML file against one or more ASP files, also running clingo:</span><span class="se">\n</span><span class="s1">&#39;</span>
@@ -121,9 +124,14 @@
               <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">python -m valasp --print &lt;YAML file&gt;&#39;</span><span class="p">,</span> <span class="n">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
         <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 
+    <span class="k">if</span> <span class="n">print_only</span> <span class="ow">and</span> <span class="n">valid_only</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Options --print and --valid-only are incompatible.&#39;</span><span class="p">)</span>
+        <span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">print_only</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">print_python_code</span>
-    <span class="k">return</span> <span class="n">run_clingo</span></div>
+    <span class="k">if</span> <span class="n">valid_only</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">run_clingo_without_solve</span>
+    <span class="k">return</span> <span class="n">run_clingo_with_solve</span></div>
 
 
 <div class="viewcode-block" id="process_yaml"><a class="viewcode-back" href="../../valasp.html#valasp.main.process_yaml">[docs]</a><span class="k">def</span> <span class="nf">process_yaml</span><span class="p">(</span><span class="n">yaml_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -139,13 +147,21 @@
     <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">validation_code</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">stdout</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="run_clingo"><a class="viewcode-back" href="../../valasp.html#valasp.main.run_clingo">[docs]</a><span class="k">def</span> <span class="nf">run_clingo</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">):</span>
+<div class="viewcode-block" id="run_clingo"><a class="viewcode-back" href="../../valasp.html#valasp.main.run_clingo">[docs]</a><span class="k">def</span> <span class="nf">run_clingo</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="n">with_solve</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">NamedTemporaryFile</span><span class="p">()</span> <span class="k">as</span> <span class="n">validation_file</span><span class="p">:</span>
         <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="n">validation_code</span><span class="p">:</span>
             <span class="n">validation_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span>
         <span class="n">validation_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
         <span class="n">mod</span> <span class="o">=</span> <span class="n">runpy</span><span class="o">.</span><span class="n">run_path</span><span class="p">(</span><span class="n">path_name</span><span class="o">=</span><span class="n">validation_file</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
-        <span class="n">mod</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">](</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+        <span class="n">mod</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">](</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">with_solve</span><span class="o">=</span><span class="n">with_solve</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_clingo_with_solve"><a class="viewcode-back" href="../../valasp.html#valasp.main.run_clingo_with_solve">[docs]</a><span class="k">def</span> <span class="nf">run_clingo_with_solve</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">):</span>
+    <span class="n">run_clingo</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_clingo_without_solve"><a class="viewcode-back" href="../../valasp.html#valasp.main.run_clingo_without_solve">[docs]</a><span class="k">def</span> <span class="nf">run_clingo_without_solve</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">):</span>
+    <span class="n">run_clingo</span><span class="p">(</span><span class="n">asp_files</span><span class="p">,</span> <span class="n">validation_code</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="main"><a class="viewcode-back" href="../../valasp.html#valasp.main.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="n">stdout</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">):</span>
