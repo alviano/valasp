@@ -196,6 +196,8 @@ class Context:
             elif 'Error:' in line:
                 line = line.split(':')[1]
                 res.append(f'  with error: {line.strip()}')
+            elif 'Clasp::' in line:
+                res.append(f'error by clingo:\n\n{line}')
 
         return '\n'.join(res)
 
