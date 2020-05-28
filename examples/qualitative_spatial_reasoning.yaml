@@ -1,0 +1,21 @@
+rel:
+    value:
+        type: Alpha
+        enum: [req, rp, rpi, rd, rdi, ro, roi, rm, rmi, rs, rsi, rf, rfi]        
+
+node:
+    value:
+        type: Integer
+        min: 0
+        max: 49
+
+    valasp:
+        is_predicate: False
+
+label:
+    x: node
+    y: node
+    l: rel
+    valasp:
+        having:
+            - x < y
