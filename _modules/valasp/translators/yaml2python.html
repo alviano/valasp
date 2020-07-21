@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>valasp.translators.yaml2python &#8212; ValAsp 0.2.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -25,7 +26,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp.translators.yaml2python</a></li> 
       </ul>
     </div>  
 
@@ -69,7 +71,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__having</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__validate_predicate</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span> <span class="o">=</span> <span class="s1">&#39;FORWARD_IMPLICIT&#39;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__after_init</span> <span class="o">=</span> <span class="kc">None</span>
@@ -117,8 +119,8 @@
             <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;having&#39;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__having</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__parse_having</span><span class="p">()</span>
-            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">:</span>
-                <span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;validate_predicate&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__validate_predicate</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp</span><span class="p">[</span><span class="n">c</span><span class="p">]</span>
             <span class="k">elif</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">:</span>
@@ -143,7 +145,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="si">}</span><span class="s1">: having: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s1">: </span><span class="si">{</span><span class="n">list_of_comparisons</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="si">}</span><span class="s1"> is not a term name&#39;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Symbol.convert2python"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml2python.Symbol.convert2python">[docs]</a>    <span class="k">def</span> <span class="nf">convert2python</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@context.valasp(is_predicate=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__is_predicate</span><span class="si">}</span><span class="s2">, with_fun=valasp.domain.primitive_types.Fun.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span><span class="si">}</span><span class="s2">, auto_blacklist=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;@context.valasp(validate_predicate=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__validate_predicate</span><span class="si">}</span><span class="s2">, with_fun=valasp.domain.primitive_types.Fun.</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__with_fun</span><span class="si">}</span><span class="s2">, auto_blacklist=</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__auto_blacklist</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;class </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">__name</span><span class="o">.</span><span class="n">to_class</span><span class="p">()</span><span class="o">.</span><span class="n">value</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">term</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__terms</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">__declaration_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="se">\t</span><span class="si">{</span><span class="n">term</span><span class="o">.</span><span class="n">term_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">term</span><span class="o">.</span><span class="n">term_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
@@ -462,6 +464,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">all_import</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__valasp_python</span><span class="p">,</span> <span class="n">template</span><span class="p">]</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -491,12 +494,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp.translators.yaml2python</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

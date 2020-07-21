@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>valasp.translators.yaml_validation &#8212; ValAsp 0.2.1 documentation</title>
     <link rel="stylesheet" href="../../../_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
@@ -25,7 +26,8 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp.translators.yaml_validation</a></li> 
       </ul>
     </div>  
 
@@ -318,14 +320,14 @@
 
 <div class="viewcode-block" id="YamlValidation.validate_valasp_in_symbol"><a class="viewcode-back" href="../../../valasp.translators.html#valasp.translators.yaml_validation.YamlValidation.validate_valasp_in_symbol">[docs]</a>    <span class="nd">@classmethod</span>
     <span class="k">def</span> <span class="nf">validate_valasp_in_symbol</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">content</span><span class="p">):</span>
-        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;having&#39;</span><span class="p">,</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">,</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">,</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">,</span> <span class="s1">&#39;after_init&#39;</span><span class="p">,</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">,</span>
+        <span class="n">keywords</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;having&#39;</span><span class="p">,</span> <span class="s1">&#39;validate_predicate&#39;</span><span class="p">,</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">,</span> <span class="s1">&#39;auto_blacklist&#39;</span><span class="p">,</span> <span class="s1">&#39;after_init&#39;</span><span class="p">,</span> <span class="s1">&#39;before_grounding&#39;</span><span class="p">,</span>
                     <span class="s1">&#39;after_grounding&#39;</span><span class="p">}</span>
         <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_keywords</span><span class="p">(</span><span class="n">keywords</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="s1">&#39;valasp of symbol&#39;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">content</span><span class="p">:</span>
             <span class="k">try</span><span class="p">:</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;having&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">validate_having</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
-                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;is_predicate&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;validate_predicate&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">__validate_bool</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
                 <span class="k">if</span> <span class="n">c</span> <span class="o">==</span> <span class="s1">&#39;with_fun&#39;</span><span class="p">:</span>
                     <span class="bp">cls</span><span class="o">.</span><span class="n">validate_with_fun</span><span class="p">(</span><span class="n">content</span><span class="p">[</span><span class="n">c</span><span class="p">])</span>
@@ -427,6 +429,7 @@
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">v</span><span class="p">))</span> <span class="kn">from</span> <span class="bp">None</span></div></div>
 </pre></div>
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -456,12 +459,13 @@
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="nav-item nav-item-0"><a href="../../../index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
-          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp.translators.yaml_validation</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>

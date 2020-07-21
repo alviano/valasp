@@ -4,6 +4,7 @@
 <html>
   <head>
     <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>valasp package &#8212; ValAsp 0.2.1 documentation</title>
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -32,7 +33,8 @@
         <li class="right" >
           <a href="index.html" title="Welcome to valasp’s documentation!"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp package</a></li> 
       </ul>
     </div>  
 
@@ -82,7 +84,7 @@ Classes can be registered by using a convenient decorator, and are used to injec
 at the end call the method <code class="docutils literal notranslate"><span class="pre">run()</span></code> to execute the ASP system.</p>
 <dl class="py method">
 <dt id="valasp.core.Context.valasp">
-<code class="sig-name descname">valasp</code><span class="sig-paren">(</span><em class="sig-param">is_predicate: bool = True</em>, <em class="sig-param">with_fun: valasp.domain.primitive_types.Fun = &lt;Fun.FORWARD_IMPLICIT: 0&gt;</em>, <em class="sig-param">auto_blacklist: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/core.html#Context.valasp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.core.Context.valasp" title="Permalink to this definition">¶</a></dt>
+<code class="sig-name descname">valasp</code><span class="sig-paren">(</span><em class="sig-param">validate_predicate: bool = True</em>, <em class="sig-param">with_fun: valasp.domain.primitive_types.Fun = &lt;Fun.FORWARD_IMPLICIT: 0&gt;</em>, <em class="sig-param">auto_blacklist: bool = True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/valasp/core.html#Context.valasp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#valasp.core.Context.valasp" title="Permalink to this definition">¶</a></dt>
 <dd><p>Decorator to process classes for ASP validation.</p>
 <p>Annotations on a decorated class are used to define attributes and to inject an <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method.
 If the class defines a <code class="docutils literal notranslate"><span class="pre">__post_init__()</span></code> method, it is called at the end of the <code class="docutils literal notranslate"><span class="pre">__init__()</span></code> method.
@@ -90,7 +92,7 @@ Other common magic methods are also injected, unless already defined in the clas
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>is_predicate</strong> – True if the class is associated with a predicate in the ASP program</p></li>
+<li><p><strong>validate_predicate</strong> – True if the class is associated with a predicate in the ASP program</p></li>
 <li><p><strong>with_fun</strong> – modality of initialization for instances of the class</p></li>
 <li><p><strong>auto_blacklist</strong> – if True, predicates with the same name but different arities are blacklisted</p></li>
 </ul>
@@ -311,7 +313,7 @@ date:
     day: Integer
 
     valasp:
-        is_predicate: False
+        validate_predicate: False
         with_fun: TUPLE
         after_init: <span class="p">|</span>+
             datetime.datetime<span class="o">(</span>self.year, self.month, self.day<span class="o">)</span>
@@ -388,6 +390,7 @@ bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982<
 </div>
 
 
+            <div class="clearer"></div>
           </div>
         </div>
       </div>
@@ -447,12 +450,13 @@ bday<span class="o">(</span>bigel, <span class="o">(</span><span class="m">1982<
         <li class="right" >
           <a href="index.html" title="Welcome to valasp’s documentation!"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">ValAsp 0.2.1 documentation</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">valasp package</a></li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
         &#169; Copyright 2020, Mario Alviano and Carmine Dodaro.
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.0.3.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 3.1.2.
     </div>
   </body>
 </html>
