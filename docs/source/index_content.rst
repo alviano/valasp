@@ -15,7 +15,7 @@ Below is an example usage of the Python layer.
     def main():
         context = Context()
 
-        @context.valasp(is_predicate=False, with_fun=Fun.IMPLICIT)
+        @context.valasp(validate_predicate=False, with_fun=Fun.IMPLICIT)
         class Date:
             year: int
             month: int

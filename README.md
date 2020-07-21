@@ -84,7 +84,7 @@ date:
     day: Integer    
 
     valasp:
-        is_predicate: False
+        validate_predicate: False
         with_fun: TUPLE
         after_init: |+
             datetime.datetime(self.year, self.month, self.day)

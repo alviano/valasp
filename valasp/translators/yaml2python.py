@@ -32,7 +32,7 @@ class Symbol:
         self.__terms = []
         self.__valasp = None
         self.__having = []
-        self.__is_predicate = True
+        self.__validate_predicate = True
         self.__with_fun = 'FORWARD_IMPLICIT'
         self.__auto_blacklist = True
         self.__after_init = None
@@ -81,7 +81,7 @@ class Symbol:
                 self.__having = self.__valasp[c]
                 self.__parse_having()
             elif c == 'validate_predicate':
-                self.__is_predicate = self.__valasp[c]
+                self.__validate_predicate = self.__valasp[c]
             elif c == 'with_fun':
                 self.__with_fun = self.__valasp[c]
             elif c == 'auto_blacklist':
@@ -106,7 +106,7 @@ class Symbol:
                 raise ValueError(f'{self.__name}: having: {i}: {list_of_comparisons[2]} is not a term name')
 
     def convert2python(self):
-        self.__declaration_content.append(f"@context.valasp(validate_predicate={self.__is_predicate}, with_fun=valasp.domain.primitive_types.Fun.{self.__with_fun}, auto_blacklist={self.__auto_blacklist})")
+        self.__declaration_content.append(f"@context.valasp(validate_predicate={self.__validate_predicate}, with_fun=valasp.domain.primitive_types.Fun.{self.__with_fun}, auto_blacklist={self.__auto_blacklist})")
         self.__declaration_content.append(f"class {self.__name.to_class().value}:")
         for term in self.__terms:
             self.__declaration_content.append(f"\t{term.term_name}: {term.term_type}")

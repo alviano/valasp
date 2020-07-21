@@ -10,7 +10,7 @@ node:
         max: 49
 
     valasp:
-        is_predicate: False
+        validate_predicate: False
 
 label:
     x: node

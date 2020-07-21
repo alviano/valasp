@@ -3,14 +3,14 @@ video_type:
         type: String
         enum: ["Documentary", "Video", "Cartoon", "Sport"]
     valasp:
-        is_predicate: False
+        validate_predicate: False
         
 resolution:
     value:
         type: Integer
         enum: [224, 360, 720, 1080]
     valasp:
-        is_predicate: False
+        validate_predicate: False
 
 bitrate:
     value:
@@ -18,7 +18,7 @@ bitrate:
         min: 150
         max: 8650        
     valasp:
-        is_predicate: False
+        validate_predicate: False
         after_init: |+
             if self.value % 50 != 0: raise ValueError("unexpected value for bitrate")
 f:

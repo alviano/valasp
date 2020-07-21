@@ -174,7 +174,7 @@ def test_yaml_having_valasp_in_user_defined_module_missing_list():
         YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_is_predicate_correct_bool():
+def test_yaml_validate_predicate_correct_bool():
     for i in {'True', 'true', 'TRUE'}:
         yaml_input = """
             validate_predicate: %s
@@ -182,7 +182,7 @@ def test_yaml_is_predicate_correct_bool():
         YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_is_predicate_not_bool():
+def test_yaml_validate_predicate_not_bool():
     for i in [0, 1, {'dict': 0}]:
         yaml_input = """
             validate_predicate: %s
@@ -191,7 +191,7 @@ def test_yaml_is_predicate_not_bool():
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
 
-def test_yaml_is_predicate_mispelled_true():
+def test_yaml_validate_predicate_mispelled_true():
     for i in {'TRue', 'TrUE', 'TruE', 'trUe', 'truE'}:
         yaml_input = """
             validate_predicate: %s
