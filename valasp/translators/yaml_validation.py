@@ -274,9 +274,9 @@ class YamlValidation:
             m = cls.match_having(c)
             if not m:
                 raise ValueError('having: expected field comparator field, where comparator is among ==, !=, <, <=, >=, >')
-            if not cls.__validate_predicate_name(m['first']):
+            if not cls.__is_predicate_name(m['first']):
                 raise ValueError('expected predicate or class name')
-            if not cls.__validate_predicate_name(m['second']):
+            if not cls.__is_predicate_name(m['second']):
                 raise ValueError('expected predicate or class name')
 
     @classmethod
@@ -332,7 +332,7 @@ class YamlValidation:
             raise ValueError('%s: %s' % (content, v))
 
     @classmethod
-    def __validate_predicate_name(cls, content):
+    def __is_predicate_name(cls, content):
         try:
             PredicateName(content)
             return True
@@ -352,7 +352,7 @@ class YamlValidation:
         if not isinstance(content, list):
             raise ValueError('expected a list')
         for c in content:
-            if not(cls.__validate_predicate_name(c)) and not(cls.__is_class_name(c)):
+            if not(cls.__is_predicate_name(c)) and not(cls.__is_class_name(c)):
                 raise ValueError('expected predicate or class name')
 
     @classmethod

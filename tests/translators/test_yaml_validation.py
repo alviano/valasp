@@ -4,6 +4,7 @@ from typing import Tuple, List
 
 import pytest
 import yaml
+from yaml.constructor import ConstructorError
 
 from valasp.translators.yaml_validation import YamlValidation
 
@@ -408,14 +409,20 @@ def test_yaml_symbol_name():
 
 
 def test_yaml_symbol_name_invalid_names():
-    for i in ['Name', 'Valasp', 'valasp', 'on', 'off', 1, -2, ['name'], '"1"', "_Predicate"]:
-        yaml_input = """
-        Name:
+    for i in ['Name', 'Valasp', 'valasp', 'on', 'off', 1, -2, '"1"', "_Predicate"]:
+        yaml_input = f"""
+        {i}:
             term1: Integer
         """
         with pytest.raises(ValueError):
             YamlValidation.validate(yaml.safe_load(yaml_input))
-
+    for i in [['name'], {'name'}]:
+        yaml_input = f"""
+                {i}:
+                    term1: Integer
+                """
+        with pytest.raises(ConstructorError):
+            yaml.safe_load(yaml_input)
 
 def test_yaml_symbol_name_not_a_dictionary():
     for i in ['Integer', 'String', 'pred', ['a', 'b']]:
