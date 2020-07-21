@@ -63,14 +63,14 @@ class Context:
 
         return method
 
-    def valasp(self, is_predicate: bool = True, with_fun: Fun = Fun.FORWARD_IMPLICIT, auto_blacklist: bool = True):
+    def valasp(self, validate_predicate: bool = True, with_fun: Fun = Fun.FORWARD_IMPLICIT, auto_blacklist: bool = True):
         """Decorator to process classes for ASP validation.
 
         Annotations on a decorated class are used to define attributes and to inject an ``__init__()`` method.
         If the class defines a ``__post_init__()`` method, it is called at the end of the ``__init__()`` method.
         Other common magic methods are also injected, unless already defined in the class.
 
-        :param is_predicate: True if the class is associated with a predicate in the ASP program
+        :param validate_predicate: True if the class is associated with a predicate in the ASP program
         :param with_fun: modality of initialization for instances of the class
         :param auto_blacklist: if True, predicates with the same name but different arities are blacklisted
         :return: a decorator
@@ -172,7 +172,7 @@ class Context:
             add_init()
             add_str()
             add_cmp()
-            if is_predicate:
+            if validate_predicate:
                 self.valasp_add_validator(class_name.to_predicate(), len(args), with_fun_string)
             if auto_blacklist:
                 self.valasp_blacklist(class_name.to_predicate(), self.valasp_all_arities_but(len(args)))

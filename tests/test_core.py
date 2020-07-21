@@ -471,7 +471,7 @@ def test_checks_must_have_no_arguments():
 def test_is_not_predicate():
     context = Context()
 
-    @context.valasp(is_predicate=False)
+    @context.valasp(validate_predicate=False)
     class Month:
         value: int
 
@@ -500,7 +500,7 @@ def test_is_not_predicate():
 def test_no_predicate_no_constraint():
     context = Context()
 
-    @context.valasp(is_predicate=False)
+    @context.valasp(validate_predicate=False)
     class Int:
         value: Integer
     Int(Number(1))
@@ -522,7 +522,7 @@ def test_with_fun_forward_must_have_arity_one():
 def test_complex_implicit_no_predicate():
     context = Context()
 
-    @context.valasp(is_predicate=False)
+    @context.valasp(validate_predicate=False)
     class Date:
         year: int
         month: int
@@ -555,7 +555,7 @@ def test_complex_implicit_no_predicate():
 def test_no_predicate_with_fun_implicit_no_constraint():
     context = Context()
 
-    @context.valasp(is_predicate=False, with_fun=Fun.IMPLICIT)
+    @context.valasp(validate_predicate=False, with_fun=Fun.IMPLICIT)
     class Int:
         value: Integer
     Int(Function('int', [Number(1)]))
@@ -567,7 +567,7 @@ def test_no_predicate_with_fun_implicit_no_constraint():
 def test_date_as_tuple():
     context = Context()
 
-    @context.valasp(is_predicate=False, with_fun=Fun.TUPLE)
+    @context.valasp(validate_predicate=False, with_fun=Fun.TUPLE)
     class Date:
         year: int
         month: int
@@ -599,7 +599,7 @@ def test_date_as_tuple():
 def test_date_as_fun():
     context = Context()
 
-    @context.valasp(is_predicate=False, with_fun=Fun.IMPLICIT)
+    @context.valasp(validate_predicate=False, with_fun=Fun.IMPLICIT)
     class Date:
         year: int
         month: int
@@ -702,7 +702,7 @@ def test_sum_of_salaries():
 def test_doc_example():
     context = Context()
 
-    @context.valasp(is_predicate=False, with_fun=Fun.IMPLICIT)
+    @context.valasp(validate_predicate=False, with_fun=Fun.IMPLICIT)
     class Date:
         year: int
         month: int

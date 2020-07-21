@@ -38,7 +38,7 @@ def test_yaml_valasp_in_user_defined_module():
         le:
             - [first, second]
             - [first2, second]
-    is_predicate: True
+    validate_predicate: True
     with_fun: FORWARD_IMPLICIT
     auto_blacklist: True
     after_init: |+
@@ -73,7 +73,7 @@ def test_yaml_valasp_in_user_defined_module():
             - first==second   
             - first  >=second
             - first>=second        
-        is_predicate: True        
+        validate_predicate: True        
     """
     YamlValidation.validate_symbol(yaml.safe_load(yaml_input))
 
@@ -177,7 +177,7 @@ def test_yaml_having_valasp_in_user_defined_module_missing_list():
 def test_yaml_is_predicate_correct_bool():
     for i in {'True', 'true', 'TRUE'}:
         yaml_input = """
-            is_predicate: %s
+            validate_predicate: %s
             """ % i
         YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
 
@@ -185,7 +185,7 @@ def test_yaml_is_predicate_correct_bool():
 def test_yaml_is_predicate_not_bool():
     for i in [0, 1, {'dict': 0}]:
         yaml_input = """
-            is_predicate: %s
+            validate_predicate: %s
             """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
@@ -194,7 +194,7 @@ def test_yaml_is_predicate_not_bool():
 def test_yaml_is_predicate_mispelled_true():
     for i in {'TRue', 'TrUE', 'TruE', 'trUe', 'truE'}:
         yaml_input = """
-            is_predicate: %s
+            validate_predicate: %s
             """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))
@@ -237,7 +237,7 @@ def test_yaml_auto_blacklist_not_bool():
 def test_yaml_auto_blacklist_mispelled_false():
     for i in {'falSe', 'FAlse', 'FaLSE', 'FalsE', 'falsE'}:
         yaml_input = """
-            is_predicate: %s
+            validate_predicate: %s
             """ % i
         with pytest.raises(ValueError):
             YamlValidation.validate_valasp_in_symbol(yaml.safe_load(yaml_input))

@@ -281,14 +281,14 @@ class YamlValidation:
 
     @classmethod
     def validate_valasp_in_symbol(cls, content):
-        keywords = {'having', 'is_predicate', 'with_fun', 'auto_blacklist', 'after_init', 'before_grounding',
+        keywords = {'having', 'validate_predicate', 'with_fun', 'auto_blacklist', 'after_init', 'before_grounding',
                     'after_grounding'}
         cls.__validate_keywords(keywords, content, 'valasp of symbol')
         for c in content:
             try:
                 if c == 'having':
                     cls.validate_having(content[c])
-                if c == 'is_predicate':
+                if c == 'validate_predicate':
                     cls.__validate_bool(content[c])
                 if c == 'with_fun':
                     cls.validate_with_fun(content[c])

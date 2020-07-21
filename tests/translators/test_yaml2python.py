@@ -24,7 +24,7 @@ def test_symbol_type_valasp():
         predicate:
             value: Integer
             valasp:
-                is_predicate: False
+                validate_predicate: False
                 auto_blacklist: False
                 with_fun: %s
                 before_grounding: cls.a = 0
@@ -33,7 +33,7 @@ def test_symbol_type_valasp():
         result = yaml.safe_load(yaml_input)
         obj = Symbol(result["predicate"], "predicate")
         output = obj.convert2python()
-        assert "@context.valasp(is_predicate=False, with_fun=valasp.domain.primitive_types.Fun.%s, auto_blacklist=False)" % i in output
+        assert "@context.valasp(validate_predicate=False, with_fun=valasp.domain.primitive_types.Fun.%s, auto_blacklist=False)" % i in output
         assert "\tvalue: Integer" in output
         assert "\tdef __post_init__(self):" not in output
         assert "\tdef after_grounding_predicate(cls):" in output
