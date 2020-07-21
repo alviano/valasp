@@ -1,0 +1,14 @@
+range:
+  value:
+    type: Integer
+    enum: [1, 2, 3, 4, 5, 6, 7]
+
+location:
+  x:
+    type: range
+  y:
+    type: range    
+  valasp:
+    after_init: |+
+        pos = [1,2,6,7]
+        if self.x.value in pos and self.y.value in pos: raise ValueError("Invalid position")
