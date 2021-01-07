@@ -20,7 +20,6 @@ valasp.translators.yaml\_validation module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 

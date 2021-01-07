@@ -28,7 +28,6 @@ valasp.domain.raisers module
    :undoc-members:
    :show-inheritance:
 
-
 Module contents
 ---------------
 
