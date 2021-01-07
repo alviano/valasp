@@ -105,13 +105,13 @@ class YamlValidation:
                         cls.__validate_negative_int(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        cls.__validate_min_less_than_max(content)
+        cls.__validate_min_less_than_or_equal_to_max(content)
 
     @classmethod
-    def __validate_min_less_than_max(cls, content):
+    def __validate_min_less_than_or_equal_to_max(cls, content):
         if isinstance(content, dict) and 'min' in content and 'max' in content:
-            if int(content['min']) >= int(content['max']):
-                raise ValueError('min (%s) is expected to be less than max (%s)' % (content['min'], content['max']))
+            if int(content['min']) > int(content['max']):
+                raise ValueError('min (%s) is expected to be less than or equal to max (%s)' % (content['min'], content['max']))
 
     @classmethod
     def validate_aggregate_sum_pos(cls, content):
@@ -119,9 +119,8 @@ class YamlValidation:
             keywords = {'min', 'max'}
             cls.__validate_keywords(keywords, content, 'sum+')
             cls.__validate_min_max(content, True)
-        else:
-            if content != 'Integer':
-                raise ValueError('expected keyword Integer')
+        elif content != 'Integer':
+            raise ValueError('expected keyword Integer')
 
     @classmethod
     def validate_aggregate_sum_neg(cls, content):
@@ -129,15 +128,20 @@ class YamlValidation:
             keywords = {'min', 'max'}
             cls.__validate_keywords(keywords, content, 'sum-')
             cls.__validate_min_max(content, False)
-        else:
-            if content != 'Integer':
-                raise ValueError('expected keyword Integer')
+        elif content != 'Integer':
+            raise ValueError('expected keyword Integer')
 
     @classmethod
     def validate_aggregate_count(cls, content):
-        keywords = {'min', 'max'}
-        cls.__validate_keywords(keywords, content, 'count')
-        cls.__validate_min_max(content, True)
+        if isinstance(content, dict):
+            keywords = {'min', 'max'}
+            cls.__validate_keywords(keywords, content, 'count')
+            cls.__validate_min_max(content, True)
+        elif isinstance(content, int):
+            if content < 0:
+                raise ValueError(f'expected non-negative integer for count, found {content}')
+        else:
+            raise ValueError(f'expecting dictionary or integer for count, found {type(content)}')
 
     @classmethod
     def validate_complex_term_int(cls, content):
@@ -157,7 +161,7 @@ class YamlValidation:
                     cls.__validate_enum(content[c], 'Integer')
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        cls.__validate_min_less_than_max(content)
+        cls.__validate_min_less_than_or_equal_to_max(content)
 
     @classmethod
     def validate_complex_term_string(cls, content):
@@ -175,7 +179,7 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        cls.__validate_min_less_than_max(content)
+        cls.__validate_min_less_than_or_equal_to_max(content)
 
     @classmethod
     def validate_complex_term_alpha(cls, content):
@@ -193,7 +197,7 @@ class YamlValidation:
                     cls.__validate_pattern(content[c])
             except ValueError as v:
                 raise ValueError('%s: %s' % (c, v))
-        cls.__validate_min_less_than_max(content)
+        cls.__validate_min_less_than_or_equal_to_max(content)
 
     @classmethod
     def validate_complex_term_any(cls, content):

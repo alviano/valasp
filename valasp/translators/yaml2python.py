@@ -174,7 +174,11 @@ class GenericTerm:
 
     def __parse_content(self, content):
         if 'count' in content:
-            self.__count = content['count']
+            value = content['count']
+            if isinstance(value, int):
+                self.__count = {'min': value, 'max': value}
+            else:
+                self.__count = value
 
     def convert2python(self):
         if self.__count is not None:
